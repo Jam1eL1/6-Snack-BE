@@ -8,7 +8,7 @@ const generateSafeFileName = (originalName: string): string => {
 };
 
 export const s3 = new S3Client({
-  region: "ap-northeast-2",
+  region: "us-west-2",
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
@@ -43,10 +43,21 @@ export const uploadImageToS3 = async (file: Express.Multer.File) => {
   }
 };
 
-export const getCloudFrontUrl = (s3Key: string) => {
-  const cloudFrontDomain = process.env.CLOUDFRONT_DOMAIN;
-  if (!cloudFrontDomain) {
-    throw new Error("CLOUDFRONT_DOMAIN 환경변수가 설정되지 않았습니다.");
+// export const getCloudFrontUrl = (s3Key: string) => {
+//   const cloudFrontDomain = process.env.CLOUDFRONT_DOMAIN;
+//   if (!cloudFrontDomain) {
+//     throw new Error("CLOUDFRONT_DOMAIN 환경변수가 설정되지 않았습니다.");
+//   }
+//   return `https://${cloudFrontDomain}/${s3Key}`;
+// };
+
+export const getS3URL = (s3Key: string) => {
+  const bucketName = process.env.AWS_BUCKET_NAME;
+  const region = "us-west-2";
+   if (!bucketName) {
+    throw new Error("AWS_BUCKET_NAME 환경변수가 설정되지 않았습니다.");
   }
-  return `https://${cloudFrontDomain}/${s3Key}`;
+  
+  return `https://${bucketName}.s3.${region}.amazonaws.com/${s3Key}`;
+
 };
