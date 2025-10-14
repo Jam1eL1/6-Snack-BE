@@ -196,119 +196,120 @@ async function main() {
     orderIdMap.set(index + 1, order.id); // 1-based 인덱스로 매핑
   });
 
+
   // 8. Receipt 데이터 삽입
   console.log("🧾 Seeding receipts...");
 
   // 각 Order에 맞는 Receipt 데이터를 동적으로 생성
   const receiptDataToInsert: any[] = [];
 
-  // Order 1: 초코파이 2개 + 칸쵸 1개
+  // Order 1: Chips Ahoy 2개 + Hershey's 3개
   receiptDataToInsert.push(
     {
-      productId: productIdMap.get(1),
+      productId: productIdMap.get(3),
       orderId: orderIdMap.get(1),
-      productName: "오리온 초코파이",
-      price: 1500,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/orion-chocopie.png",
+      productName: "Chips Ahoy! Original Cookies",
+      price: 3.49,
+      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/chips_ahoy.png",
       quantity: 2,
-      createdAt: new Date("2025-07-15T10:30:00Z"),
+      createdAt: new Date("2025-06-15T10:30:00Z"),
     },
     {
-      productId: productIdMap.get(6),
+      productId: productIdMap.get(5),
       orderId: orderIdMap.get(1),
-      productName: "롯데 칸쵸",
-      price: 1000,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/lotte-kancho.png",
-      quantity: 1,
-      createdAt: new Date("2025-07-15T10:30:00Z"),
-    },
-  );
-
-  // Order 2: 새우깡 3개
-  receiptDataToInsert.push({
-    productId: productIdMap.get(3),
-    orderId: orderIdMap.get(2),
-    productName: "농심 새우깡",
-    price: 800,
-    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/nongshim-saewookang.png",
-    quantity: 3,
-    createdAt: new Date("2025-07-16T14:15:00Z"),
-  });
-
-  // Order 3: 홈런볼 1개 + 산도 1개
-  receiptDataToInsert.push(
-    {
-      productId: productIdMap.get(4),
-      orderId: orderIdMap.get(3),
-      productName: "해태 홈런볼",
-      price: 2500,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/haetae-homerunball.png",
-      quantity: 1,
-      createdAt: new Date("2025-07-17T09:45:00Z"),
-    },
-    {
-      productId: productIdMap.get(7),
-      orderId: orderIdMap.get(3),
-      productName: "크라운 산도",
-      price: 2000,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/crown-sando.png",
-      quantity: 1,
-      createdAt: new Date("2025-07-17T09:45:00Z"),
-    },
-  );
-
-  // Order 4: 포카칩 2개
-  receiptDataToInsert.push({
-    productId: productIdMap.get(5),
-    orderId: orderIdMap.get(4),
-    productName: "오리온 포카칩",
-    price: 1800,
-    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/orion-pocachip.png",
-    quantity: 2,
-    createdAt: new Date("2025-07-18T11:20:00Z"),
-  });
-
-  // Order 5: 고래밥 2개
-  receiptDataToInsert.push({
-    productId: productIdMap.get(8),
-    orderId: orderIdMap.get(5),
-    productName: "오리온 고래밥",
-    price: 900,
-    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/orion-goraebap.png",
-    quantity: 2,
-    createdAt: new Date("2025-07-19T16:45:00Z"),
-  });
-
-  // Order 6: 마가렛트 2개
-  receiptDataToInsert.push({
-    productId: productIdMap.get(2),
-    orderId: orderIdMap.get(6),
-    productName: "롯데 마가렛트",
-    price: 1200,
-    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/lotte-margaret.png",
-    quantity: 2,
-    createdAt: new Date("2025-07-20T13:10:00Z"),
-  });
-
-  // Order 7: 초코파이 3개 + 칸쵸 1개 (user-7 주문)
-  receiptDataToInsert.push(
-    {
-      productId: productIdMap.get(1),
-      orderId: orderIdMap.get(7),
-      productName: "오리온 초코파이",
-      price: 1500,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/orion-chocopie.png",
+      productName: "Hershey's Milk Chocolate Bar",
+      price: 1.49,
+      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/hersheys_milk_chocolate.png",
       quantity: 3,
-      createdAt: new Date("2025-07-21T09:30:00Z"),
+      createdAt: new Date("2025-06-15T10:30:00Z"),
+    },
+  );
+
+  // Order 2: Coca-Cola 2개 + Tropicana 1개
+  receiptDataToInsert.push(
+    {
+      productId: productIdMap.get(9),
+      orderId: orderIdMap.get(2),
+      productName: "Coca-Cola Classic 500ml",
+      price: 1.99,
+      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/coca_cola_500ml.png",
+      quantity: 2,
+      createdAt: new Date("2025-07-01T14:15:00Z"),
     },
     {
-      productId: productIdMap.get(6),
-      orderId: orderIdMap.get(7),
-      productName: "롯데 칸쵸",
-      price: 1000,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/lotte-kancho.png",
+      productId: productIdMap.get(11),
+      orderId: orderIdMap.get(2),
+      productName: "Tropicana Orange Juice 500ml",
+      price: 2.79,
+      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/tropicana_orange_juice.png",
       quantity: 1,
-      createdAt: new Date("2025-07-21T09:30:00Z"),
+      createdAt: new Date("2025-07-01T14:15:00Z"),
+    },
+  );
+
+  // Order 3: Red Bull 2개 + Ramen 3개
+  receiptDataToInsert.push(
+    {
+      productId: productIdMap.get(14),
+      orderId: orderIdMap.get(3),
+      productName: "Red Bull Energy Drink",
+      price: 3.79,
+      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/red_bull.png",
+      quantity: 2,
+      createdAt: new Date("2025-07-07T09:45:00Z"),
+    },
+    {
+      productId: productIdMap.get(21),
+      orderId: orderIdMap.get(3),
+      productName: "Maruchan Chicken Ramen",
+      price: 1.29,
+      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/maruchan_chicken.png",
+      quantity: 3,
+      createdAt: new Date("2025-07-07T09:45:00Z"),
+    },
+  );
+
+  // Order 4: Post-it 2개 + Pens 5개 (PENDING 상태지만 Receipt는 생성됨)
+  receiptDataToInsert.push(
+    {
+      productId: productIdMap.get(25),
+      orderId: orderIdMap.get(4),
+      productName: "Post-it Super Sticky Notes",
+      price: 3.49,
+      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/post_it_notes.png",
+      quantity: 2,
+      createdAt: new Date("2025-07-12T11:20:00Z"),
+    },
+    {
+      productId: productIdMap.get(24),
+      orderId: orderIdMap.get(4),
+      productName: "BIC Round Stic Ballpoint Pen",
+      price: 0.99,
+      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/bic_pen.png",
+      quantity: 5,
+      createdAt: new Date("2025-07-12T11:20:00Z"),
+    },
+  );
+
+  // Order 5: Chips Ahoy 3개 + Hershey's 2개 (user-1-2 주문)
+  receiptDataToInsert.push(
+    {
+      productId: productIdMap.get(3),
+      orderId: orderIdMap.get(5),
+      productName: "Chips Ahoy! Original Cookies",
+      price: 3.49,
+      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/chips_ahoy.png",
+      quantity: 3,
+      createdAt: new Date("2025-07-20T13:10:00Z"),
+    },
+    {
+      productId: productIdMap.get(5),
+      orderId: orderIdMap.get(5),
+      productName: "Hershey's Milk Chocolate Bar",
+      price: 1.49,
+      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/hersheys_milk_chocolate.png",
+      quantity: 2,
+      createdAt: new Date("2025-07-20T13:10:00Z"),
     },
   );
 
@@ -316,6 +317,7 @@ async function main() {
     data: receiptDataToInsert,
     skipDuplicates: true,
   });
+
 
   // 9. Invite 데이터 삽입
   console.log("📧 Seeding invites...");

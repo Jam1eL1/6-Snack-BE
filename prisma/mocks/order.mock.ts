@@ -1,98 +1,62 @@
 export const orderMockData = [
-  // 토쓰(주) (companyId: 1) 주문들
+  // SAP (companyId: 1) Orders
   {
     companyId: 1,
-    userId: "user-1", // 최고관리자
-    approver: "최고관리자",
-    adminMessage: "스낵 주문이 승인되었습니다. 오후 2시에 배송됩니다.",
-    requestMessage: "오늘 오후중으로만 승인 부탁드려요",
-    deliveryFee: 3000,
-    productsPriceTotal: 4500, // 초코파이 2개(3000) + 칸쵸 1개(1500)
+    userId: "user-1", // Alex (SUPER_ADMIN)
+    approver: "Super Admin",
+    adminMessage: "Super Admin order automatically approved.",
+    requestMessage: "",
+    deliveryFee: 5.0,
+    productsPriceTotal: 11.45, // Chips Ahoy 2x ($3.49) + Hershey's 3x ($1.49) = $11.45
     status: "INSTANT_APPROVED",
     createdAt: new Date("2025-06-15"),
     updatedAt: new Date("2025-06-15"),
   },
   {
     companyId: 1,
-    userId: "user-2", // 관리자
-    approver: "관리자",
-    adminMessage: "관리자 주문이 자동 승인되었습니다.",
-    requestMessage: "내일 아침 회의 전에 스낵 준비해주세요.",
-    deliveryFee: 3000,
-    productsPriceTotal: 2400, // 새우깡 3개(2400)
+    userId: "user-2", // Andrew (ADMIN)
+    approver: "Admin",
+    adminMessage: "Admin order automatically approved.",
+    requestMessage: "",
+    deliveryFee: 5.0,
+    productsPriceTotal: 6.77, // Coca-Cola 2x ($1.99) + Tropicana 1x ($2.79) = $6.77
     status: "INSTANT_APPROVED",
     createdAt: new Date("2025-07-01"),
     updatedAt: new Date("2025-07-01"),
   },
   {
     companyId: 1,
-    userId: "user-3", // 일반 유저
-    approver: "관리자",
-    adminMessage: "일부 스낵 재고 부족으로 대체 상품으로 변경되었습니다.",
-    requestMessage: "팀 회식용 스낵 주문합니다.",
-    deliveryFee: 3000,
-    productsPriceTotal: 4500, // 홈런볼 1개(2500) + 산도 1개(2000)
+    userId: "user-3", // Elizabeth (USER)
+    approver: "Admin",
+    adminMessage: "Requested order approved.",
+    requestMessage: "Please approve those items.",
+    deliveryFee: 5.0,
+    productsPriceTotal: 11.45, // Red Bull 2x ($3.79) + Ramen 3x ($1.29) = $11.45
     status: "APPROVED",
     createdAt: new Date("2025-07-07"),
     updatedAt: new Date("2025-07-07"),
   },
   {
     companyId: 1,
-    userId: "user-4", // 일반 유저
-    approver: "관리자",
-    adminMessage: "스낵 주문이 승인되었습니다.",
-    requestMessage: "팀 미팅용 스낵입니다.",
-    deliveryFee: 3000,
-    productsPriceTotal: 3200, // 포카칩 2개(3200)
-    status: "APPROVED",
-    createdAt: new Date("2025-07-10"),
-    updatedAt: new Date("2025-07-10"),
-  },
-  {
-    companyId: 1,
-    userId: "user-5", // 일반 유저
+    userId: "user-3", // Elizabeth (USER)
     adminMessage: null,
-    requestMessage: "개발팀 야근용 스낵 부탁드립니다.",
-    deliveryFee: 3000,
-    productsPriceTotal: 1800, // 고래밥 2개(1800)
+    requestMessage: "Office supplies needed for Q3 planning.",
+    deliveryFee: 5.0,
+    productsPriceTotal: 11.93, // Post-it 2x ($3.49) + Pens 5x ($0.99) = $11.93
     status: "PENDING",
     createdAt: new Date("2025-07-12"),
     updatedAt: new Date("2025-07-12"),
   },
-  {
-    companyId: 1,
-    userId: "user-6", // 일반 유저
-    approver: "관리자",
-    adminMessage: "스낵 주문이 승인되었습니다.",
-    requestMessage: "디자인팀 회의용 스낵입니다.",
-    deliveryFee: 3000,
-    productsPriceTotal: 2800, // 마가렛트 2개(2800)
-    status: "APPROVED",
-    createdAt: new Date("2025-07-15"),
-    updatedAt: new Date("2025-07-15"),
-  },
-  // 토쓰(주) 추가 주문
-  {
-    companyId: 1,
-    userId: "user-7", // 일반 유저
-    approver: "관리자",
-    adminMessage: "스낵 주문이 승인되었습니다.",
-    requestMessage: "마케팅팀 회의용 스낵입니다.",
-    deliveryFee: 3000,
-    productsPriceTotal: 5500, // 초코파이 3개(4500) + 칸쵸 1개(1000)
-    status: "APPROVED",
-    createdAt: new Date("2025-07-21"),
-    updatedAt: new Date("2025-07-21"),
-  },
-  // 쿠빵(주) (companyId: 2) 주문
+
+  // RBC (companyId: 2) Orders
   {
     companyId: 2,
-    userId: "user-1-2", // 최고관리자
-    approver: "최고관리자 2",
-    adminMessage: "쿠빵(주) 첫 주문이 승인되었습니다.",
-    requestMessage: "회사 오픈 기념 스낵입니다.",
-    deliveryFee: 3000,
-    productsPriceTotal: 5500, // 초코파이 3개(4500) + 칸쵸 1개(1000)
+    userId: "user-1-2", // Jamie (SUPER_ADMIN)
+    approver: "Super Admin",
+    adminMessage: "Super Admin order automatically approved.",
+    requestMessage: "",
+    deliveryFee: 5.0,
+    productsPriceTotal: 13.45, // Chips Ahoy 3x ($3.49) + Hershey's 2x ($1.49) = $13.45
     status: "INSTANT_APPROVED",
     createdAt: new Date("2025-07-20"),
     updatedAt: new Date("2025-07-20"),
