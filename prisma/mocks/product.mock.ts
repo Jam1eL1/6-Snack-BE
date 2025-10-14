@@ -199,7 +199,7 @@ export const productMockData = [
     categoryId: 10,
     creatorId: "user-1",
     name: "Starbucks Medium Roast Whole Beans",
-    price: 3.49,
+    price: 17.99,
     imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/starbucks_medium_roast_whole_beans.png",
     linkUrl: "https://www.starbucks.com/",
     cumulativeSales: 112,
