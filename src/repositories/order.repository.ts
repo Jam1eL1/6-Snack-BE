@@ -160,7 +160,7 @@ const createOrder = async (
       adminMessage: orderData.adminMessage,
       requestMessage: orderData.requestMessage,
       productsPriceTotal: totalPrice,
-      deliveryFee: 3000,
+      deliveryFee: 5,
       status: user.role === "USER" ? "PENDING" : "INSTANT_APPROVED",
     },
   });
