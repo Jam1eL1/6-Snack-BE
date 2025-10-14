@@ -16,56 +16,56 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Starting database seeding...");
 
-  // 전체 데이터 삭제 (외래키 제약조건을 고려한 순서)
+  // Delete all data (ordered to respect foreign key constraints)
   console.log("🗑️ Deleting existing data...");
 
-  // 1. Receipt 삭제 (Order에 의존)
+  // 1. Delete Receipt (depends on Order)
   console.log("🗑️ Deleting receipts...");
   await prisma.receipt.deleteMany();
 
-  // 2. Payment 삭제 (Order에 의존)
+  // 2. Delete Payment (depends on Order)
   console.log("🗑️ Deleting payments...");
   await prisma.payment.deleteMany();
 
-  // 3. Order 삭제 (User, Company에 의존)
+  // 3. Delete Order (depends on User, Company)
   console.log("🗑️ Deleting orders...");
   await prisma.order.deleteMany();
 
-  // 4. Favorite 삭제 (User, Product에 의존)
+  // 4. Delete Favorite (depends on User, Product)
   console.log("🗑️ Deleting favorites...");
   await prisma.favorite.deleteMany();
 
-  // 5. Invite 삭제 (User, Company에 의존)
+  // 5. Delete Invite (depends on User, Company)
   console.log("🗑️ Deleting invites...");
   await prisma.invite.deleteMany();
 
-  // 6. CartItem 삭제 (User, Product에 의존)
+  // 6. Delete CartItem (depends on User, Product)
   console.log("🗑️ Deleting cart items...");
   await prisma.cartItem.deleteMany();
 
-  // 7. Product 삭제 (User, Category에 의존)
+  // 7. Delete Product (depends on User, Category)
   console.log("🗑️ Deleting products...");
   await prisma.product.deleteMany();
 
-  // 8. User 삭제 (Company에 의존)
+  // 8. Delete User (depends on Company)
   console.log("🗑️ Deleting users...");
   await prisma.user.deleteMany();
 
-  // 9. MonthlyBudget 삭제 (Company에 의존)
+  // 9. Delete MonthlyBudget (depends on Company)
   console.log("🗑️ Deleting monthly budgets...");
   await prisma.monthlyBudget.deleteMany();
 
-  // 10. Category 삭제 (자체 참조)
+  // 10. Delete Category (self-referencing)
   console.log("🗑️ Deleting categories...");
   await prisma.category.deleteMany();
 
-  // 11. Company 삭제 (의존성 없음)
+  // 11. Delete Company (no dependencies)
   console.log("🗑️ Deleting companies...");
   await prisma.company.deleteMany();
 
   console.log("✅ All existing data deleted successfully!");
 
-  // PostgreSQL autoincrement 시퀀스 리셋
+  // Reset PostgreSQL autoincrement sequences
   console.log("🔄 Resetting autoincrement sequences...");
   await prisma.$executeRaw`ALTER SEQUENCE "Company_id_seq" RESTART WITH 1;`;
   await prisma.$executeRaw`ALTER SEQUENCE "Category_id_seq" RESTART WITH 1;`;
@@ -76,14 +76,14 @@ async function main() {
   await prisma.$executeRaw`ALTER SEQUENCE "Favorite_id_seq" RESTART WITH 1;`;
   await prisma.$executeRaw`ALTER SEQUENCE "MonthlyBudget_id_seq" RESTART WITH 1;`;
 
-  // 1. Company 데이터 삽입
+  // 1. Insert Company data
   console.log("📦 Seeding companies...");
   const companies = await prisma.company.createMany({
     data: companyMockData,
     skipDuplicates: true,
   });
 
-  // 생성된 Company들의 id를 가져옴
+  // Get the IDs of the created Companies
   const createdCompanies = await prisma.company.findMany();
   const firstCompanyId = createdCompanies[0]?.id;
   const secondCompanyId = createdCompanies[1]?.id;
@@ -92,14 +92,14 @@ async function main() {
     throw new Error("No company created");
   }
 
-  // 2. User 데이터 삽입
+  // 2. Insert User data
   console.log("👥 Seeding users...");
   const hashedUserData = await Promise.all(
     userMockData.map(async (user, index) => ({
       ...user,
       password: await bcrypt.hash(user.password, 10),
-      role: user.role as any, // Role enum으로 캐스팅
-      companyId: index === 1 ? secondCompanyId : firstCompanyId, // user-1-2는 두 번째 회사에, 나머지는 첫 번째 회사에
+      role: user.role as any, // Cast to Role enum
+      companyId: index === 1 ? secondCompanyId : firstCompanyId, // user-1-2 to the second company, the rest to the first
     })),
   );
 
@@ -108,7 +108,7 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // 3. MonthlyBudget 데이터 삽입
+  // 3. Insert MonthlyBudget data
   console.log("💰 Seeding monthly budgets...");
 
   await prisma.monthlyBudget.createMany({
@@ -119,17 +119,17 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // 4. Category 데이터 삽입
+  // 4. Insert Category data
   console.log("🏷️ Seeding categories...");
 
-  // Category를 개별적으로 생성하여 parentId 관계 설정
+  // Create Categories individually to establish parentId relationships
   const categories: any[] = [];
-  const categoryMap = new Map(); // name -> id 매핑
+  const categoryMap = new Map(); // name -> id mapping
 
   for (const category of categoryMockData) {
     let parentId = null;
 
-    // parentId가 숫자인 경우, 해당 인덱스의 카테고리를 찾아서 id를 가져옴
+    // If parentId is a number, find the category ID at that index
     if (category.parentId !== null) {
       const parentIndex = category.parentId - 1; // 1-based to 0-based
       if (parentIndex >= 0 && parentIndex < categories.length) {
@@ -148,34 +148,34 @@ async function main() {
     categoryMap.set(category.name, createdCategory.id);
   }
 
-  // 5. Product 데이터 삽입
+  // 5. Insert Product data
   console.log("🍪 Seeding products...");
   await prisma.product.createMany({
     data: productMockData.map((product) => ({
       ...product,
-      categoryId: categories[product.categoryId - 1].id, // categoryId를 실제 생성된 id로 매핑
+      categoryId: categories[product.categoryId - 1].id, // Map categoryId to the actual created ID
     })),
     skipDuplicates: true,
   });
 
-  // 생성된 Product들의 id를 가져옴
+  // Get the IDs of the created Products
   const createdProducts = await prisma.product.findMany();
-  const productIdMap = new Map(); // 원래 인덱스 -> 실제 id 매핑
+  const productIdMap = new Map(); // Original index -> actual ID mapping
   createdProducts.forEach((product, index) => {
-    productIdMap.set(index + 1, product.id); // 1-based 인덱스로 매핑
+    productIdMap.set(index + 1, product.id); // Map using 1-based index
   });
 
-  // 6. CartItem 데이터 삽입
+  // 6. Insert CartItem data
   console.log("🛒 Seeding cart items...");
   await prisma.cartItem.createMany({
     data: cartItemMockData.map((cartItem) => ({
       ...cartItem,
-      productId: productIdMap.get(cartItem.productId), // 실제 생성된 Product id로 매핑
+      productId: productIdMap.get(cartItem.productId), // Map to the actual created Product ID
     })),
     skipDuplicates: true,
   });
 
-  // 7. Order 데이터 삽입
+  // 7. Insert Order data
   console.log("📋 Seeding orders...");
 
   await prisma.order.createMany({
@@ -189,21 +189,20 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // 생성된 Order들의 id를 가져옴
+  // Get the IDs of the created Orders
   const createdOrders = await prisma.order.findMany();
-  const orderIdMap = new Map(); // 원래 인덱스 -> 실제 id 매핑
+  const orderIdMap = new Map(); // Original index -> actual ID mapping
   createdOrders.forEach((order, index) => {
-    orderIdMap.set(index + 1, order.id); // 1-based 인덱스로 매핑
+    orderIdMap.set(index + 1, order.id); // Map using 1-based index
   });
 
-
-  // 8. Receipt 데이터 삽입
+  // 8. Insert Receipt data
   console.log("🧾 Seeding receipts...");
 
-  // 각 Order에 맞는 Receipt 데이터를 동적으로 생성
+  // Dynamically create Receipt data corresponding to each Order
   const receiptDataToInsert: any[] = [];
 
-  // Order 1: Chips Ahoy 2개 + Hershey's 3개
+  // Order 1: Chips Ahoy x 2 + Hershey's x 3
   receiptDataToInsert.push(
     {
       productId: productIdMap.get(3),
@@ -225,7 +224,7 @@ async function main() {
     },
   );
 
-  // Order 2: Coca-Cola 2개 + Tropicana 1개
+  // Order 2: Coca-Cola x 2 + Tropicana x 1
   receiptDataToInsert.push(
     {
       productId: productIdMap.get(9),
@@ -247,7 +246,7 @@ async function main() {
     },
   );
 
-  // Order 3: Red Bull 2개 + Ramen 3개
+  // Order 3: Red Bull x 2 + Ramen x 3
   receiptDataToInsert.push(
     {
       productId: productIdMap.get(14),
@@ -269,7 +268,7 @@ async function main() {
     },
   );
 
-  // Order 4: Post-it 2개 + Pens 5개 (PENDING 상태지만 Receipt는 생성됨)
+  // Order 4: Post-it x 2 + Pens x 5 (PENDING status but Receipt is created)
   receiptDataToInsert.push(
     {
       productId: productIdMap.get(25),
@@ -291,7 +290,7 @@ async function main() {
     },
   );
 
-  // Order 5: Chips Ahoy 3개 + Hershey's 2개 (user-1-2 주문)
+  // Order 5: Chips Ahoy x 3 + Hershey's x 2 (ordered by user-1-2)
   receiptDataToInsert.push(
     {
       productId: productIdMap.get(3),
@@ -318,24 +317,24 @@ async function main() {
     skipDuplicates: true,
   });
 
-
-  // 9. Invite 데이터 삽입
+  // 9. Insert Invite data
   console.log("📧 Seeding invites...");
   await prisma.invite.createMany({
-    data: inviteMockData.map((invite) => ({
+    data: inviteMockData.map((invite, index) => ({
       ...invite,
-      companyId: firstCompanyId, // 첫 번째 회사에 할당
-      role: invite.role as any, // Role enum으로 캐스팅
+      // Assign invite-2 (index 1) to the second company, the rest to the first.
+      companyId: index === 1 ? secondCompanyId : firstCompanyId,
+      role: invite.role as any, // Cast to Role enum
     })),
     skipDuplicates: true,
   });
 
-  // 10. Favorite 데이터 삽입
+  // 10. Insert Favorite data
   console.log("❤️ Seeding favorites...");
   await prisma.favorite.createMany({
     data: favoriteMockData.map((favorite) => ({
       ...favorite,
-      productId: productIdMap.get(favorite.productId), // 실제 생성된 Product id로 매핑
+      productId: productIdMap.get(favorite.productId), // Map to the actual created Product ID
     })),
     skipDuplicates: true,
   });

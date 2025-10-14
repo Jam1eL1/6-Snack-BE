@@ -1,51 +1,51 @@
 export const inviteMockData = [
   {
     id: "invite-1",
-    email: "newuser1@codeit.com",
-    name: "김신입",
-    invitedById: "user-1", // 최고관리자가 초대
-    expiresAt: new Date("2025-08-20"), // 7일 후 만료
+    email: "sarah.connor@acme.inc",
+    name: "Sarah Connor",
+    invitedById: "user-1", // Alex Toporowski (SUPER_ADMIN)
+    expiresAt: new Date(new Date().setDate(new Date().getDate() + 7)), // Expires 7 days from seeding
     isUsed: false,
     role: "USER",
   },
   {
     id: "invite-2",
-    email: "newuser2@codeit.com",
-    name: "박사원",
-    invitedById: "user-2", // 관리자가 초대
-    expiresAt: new Date("2025-08-20"), // 5일 후 만료
+    email: "john.doe@globalcorp.net",
+    name: "John Doe",
+    invitedById: "user-1-2", // Jamie Lee (RBC Super-Admin)
+    expiresAt: new Date(new Date().setDate(new Date().getDate() + 5)), // Expires 5 days from seeding
     isUsed: false,
     role: "USER",
   },
   {
     id: "invite-3",
-    email: "newadmin@codeit.com",
-    name: "이관리자",
-    invitedById: "user-1", // 최고관리자가 관리자로 초대
-    expiresAt: new Date("2025-08-20"), // 10일 후 만료
+    email: "jane.smith@techwave.io",
+    name: "Jane Smith",
+    invitedById: "user-1", // Alex Toporowski (SUPER_ADMIN) invites as Admin
+    expiresAt: new Date(new Date().setDate(new Date().getDate() + 10)), // Expires 10 days from seeding
     isUsed: false,
     role: "ADMIN",
   },
 
-  // validation 테스트용
-  // 1. 이미 가입된 유저
+  // Validation Test Data
+  // 1. Used/Accepted Invite (for a new user who has already joined)
   {
     id: "invite-4",
-    email: "user4@codeit.com",
-    name: "유저4",
+    email: "used.invite@zenithco.com",
+    name: "Used User",
     invitedById: "user-1",
-    expiresAt: new Date("2025-07-14"), // 만료는 아직 안됨
-    isUsed: true, // 이미 사용됨
+    expiresAt: new Date(new Date().setDate(new Date().getDate() + 1)), // Not expired yet
+    isUsed: true, // Already used
     role: "USER",
   },
 
-  // 2. 만료된 초대
+  // 2. Expired Invite
   {
     id: "invite-5",
-    email: "expireduser@codeit.com",
-    name: "만료된초대",
+    email: "expired.link@oldco.org",
+    name: "Expired User",
     invitedById: "user-2",
-    expiresAt: new Date("2025-01-30"), // 이미 만료됨
+    expiresAt: new Date("2025-01-30"), // Expired date (kept in the past)
     isUsed: false,
     role: "USER",
   },
