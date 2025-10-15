@@ -23,15 +23,15 @@ import { Role } from "@prisma/client";
  * @swagger
  * tags:
  *   - name: Product
- *     description: 상품 API
+ *     description: Product API
  */
 
 /**
  * @swagger
  * /product:
  *   post:
- *     summary: 상품 등록
- *     description: "새로운 상품을 등록합니다. 이미지 파일 업로드도 지원합니다."
+ *     summary: Product Registration
+ *     description: "Register a new product. Also supports image file upload."
  *     tags: [Product]
  *     security:
  *       - bearerAuth: []
@@ -48,30 +48,30 @@ import { Role } from "@prisma/client";
  *             properties:
  *               name:
  *                 type: string
- *                 description: "상품명 (1-15자)"
- *                 example: "테스트 상품"
+ *                 description: "Product name (1-15 characters)"
+ *                 example: "Test Product"
  *               price:
  *                 type: string
- *                 description: "가격 (0 이상)"
+ *                 description: "Price (0 or higher)"
  *                 example: "10000"
  *               linkUrl:
  *                 type: string
- *                 description: "상품 링크 URL"
+ *                 description: "Product link URL"
  *                 example: "https://example.com"
  *               categoryId:
  *                 type: string
- *                 description: "카테고리 ID"
+ *                 description: "Category ID"
  *                 example: "1"
  *               file:
  *                 type: string
  *                 format: binary
- *                 description: "상품 이미지 파일 (선택사항)"
+ *                 description: "Product image file (optional)"
  *     responses:
  *       201:
- *         description: "상품이 성공적으로 생성됨"
+ *         description: "Product successfully created"
  *         headers:
  *           Location:
- *             description: "생성된 상품의 URL"
+ *             description: "URL of the created product"
  *             schema:
  *               type: string
  *               example: "/products/1"
@@ -102,11 +102,11 @@ import { Role } from "@prisma/client";
  *                   type: string
  *                   example: "user123"
  *       401:
- *         description: "로그인이 필요합니다"
+ *         description: "Login required"
  *       400:
- *         description: "잘못된 요청 데이터"
+ *         description: "Invalid request data"
  *       500:
- *         description: "서버 에러"
+ *         description: "Server error"
  */
 //상품등록
 const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res) => {
@@ -118,7 +118,7 @@ const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res
     const categoryIdNum = parseNumberOrThrow(categoryId, "categoryId");
 
     if (!creatorId) {
-      throw new AuthenticationError("사용자 인증이 필요합니다. 다시 로그인해주세요.");
+      throw new AuthenticationError("User authentication required. Please log in again.");
     }
 
     let imageUrl = "";
@@ -130,7 +130,7 @@ const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res
         if (error instanceof Error) {
           throw new BadRequestError(error.message);
         }
-        throw new BadRequestError('이미지 업로드에 실패했습니다.');
+        throw new BadRequestError("Image upload failed.");
       }
     }
 
@@ -146,7 +146,7 @@ const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res
     if (product) {
       res.status(201).location(`/products/${product.id}`).json(product);
     } else {
-      throw new ServerError("상품 등록 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      throw new ServerError("A problem occurred while registering the product. Please try again later.");
     }
   } catch (error) {
     if (error instanceof AppError) {
@@ -154,7 +154,7 @@ const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res
     } else if (error instanceof Error) {
       res.status(500).json({ message: error.message });
     } else {
-      res.status(500).json({ message: "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요." });
+      res.status(500).json({ message: "A server error occurred. Please try again later." });
     }
   }
 };
@@ -163,8 +163,8 @@ const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res
  * @swagger
  * /products:
  *   get:
- *     summary: 상품 조회
- *     description: "상품 목록을 조회합니다. 정렬, 카테고리 필터링, 페이지네이션을 지원합니다."
+ *     summary: Product Search
+ *     description: "Search product list. Supports sorting, category filtering, and pagination."
  *     tags: [Product]
  *     security:
  *       - bearerAuth: []
@@ -174,29 +174,29 @@ const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res
  *         schema:
  *           type: string
  *           enum: [latest, popular, low, high]
- *         description: "정렬 기준"
+ *         description: "Sort criteria"
  *         example: "latest"
  *       - in: query
  *         name: category
  *         schema:
  *           type: string
- *         description: "카테고리 ID로 필터링"
+ *         description: "Filter by category ID"
  *         example: "1"
  *       - in: query
  *         name: limit
  *         schema:
  *           type: string
- *         description: "한 번에 가져올 상품 수 (최대 50)"
+ *         description: "Number of products to fetch at once (max 50)"
  *         example: "9"
  *       - in: query
  *         name: cursor
  *         schema:
  *           type: string
- *         description: "커서 기반 페이지네이션을 위한 상품 ID"
+ *         description: "Product ID for cursor-based pagination"
  *         example: "10"
  *     responses:
  *       200:
- *         description: "상품 목록 조회 성공"
+ *         description: "Product list search successful"
  *         content:
  *           application/json:
  *             schema:
@@ -222,12 +222,12 @@ const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res
  *                 nextCursor:
  *                   type: integer
  *                   nullable: true
- *                   description: "다음 페이지를 위한 커서"
+ *                   description: "Cursor for next page"
  *                   example: 15
  *       400:
- *         description: "잘못된 요청 데이터"
+ *         description: "Invalid request data"
  *       500:
- *         description: "서버 에러"
+ *         description: "Server error"
  */
 //상품 조회
 const getProducts: RequestHandler<{}, {}, {}, TGetProductsQueryDto> = async (req, res, next) => {
@@ -257,7 +257,7 @@ const getProducts: RequestHandler<{}, {}, {}, TGetProductsQueryDto> = async (req
 
     res.json({ items, nextCursor: nextCursor || null });
   } catch (error) {
-    next(error instanceof Error ? error : new ServerError("예기치 못한 에러", error));
+    next(error instanceof Error ? error : new ServerError("Unexpected error", error));
   }
 };
 
@@ -265,8 +265,8 @@ const getProducts: RequestHandler<{}, {}, {}, TGetProductsQueryDto> = async (req
  * @swagger
  * /products/my:
  *   get:
- *     summary: "내가 등록한 상품 조회"
- *     description: 현재 로그인한 사용자가 등록한 상품 목록을 조회합니다.
+ *     summary: "My Registered Products Search"
+ *     description: Search the list of products registered by the currently logged-in user.
  *     tags: [Product]
  *     security:
  *       - bearerAuth: []
@@ -275,24 +275,24 @@ const getProducts: RequestHandler<{}, {}, {}, TGetProductsQueryDto> = async (req
  *         name: page
  *         schema:
  *           type: string
- *         description: "페이지 번호 (기본값: 1)"
+ *         description: "Page number (default: 1)"
  *         example: "1"
  *       - in: query
  *         name: limit
  *         schema:
  *           type: string
- *         description: "한 페이지당 상품 수 (기본값: 10)"
+ *         description: "Number of products per page (default: 10)"
  *         example: "10"
  *       - in: query
  *         name: orderBy
  *         schema:
  *           type: string
  *           enum: [latest, oldest, priceLow, priceHigh]
- *         description: "정렬 기준 (기본값: latest)"
+ *         description: "Sort criteria (default: latest)"
  *         example: "latest"
  *     responses:
  *       200:
- *         description: "내 상품 목록 조회 성공"
+ *         description: "My product list search successful"
  *         content:
  *           application/json:
  *             schema:
@@ -308,7 +308,7 @@ const getProducts: RequestHandler<{}, {}, {}, TGetProductsQueryDto> = async (req
  *                         example: 1
  *                       name:
  *                         type: string
- *                         example: "내 상품1"
+ *                         example: "My Product 1"
  *                       price:
  *                         type: integer
  *                         example: 10000
@@ -335,16 +335,16 @@ const getProducts: RequestHandler<{}, {}, {}, TGetProductsQueryDto> = async (req
  *                       type: integer
  *                       example: 3
  *       401:
- *         description: "로그인이 필요합니다"
+ *         description: "Login required"
  *       500:
- *         description: "서버 에러"
+ *         description: "Server error"
  */
 // 유저가 등록한 상품 목록
 const getMyProducts: RequestHandler<{}, {}, {}, TGetMyProductsQueryDto> = async (req, res, next) => {
   try {
     const creatorId = req.user?.id;
     if (!creatorId) {
-      throw new AuthenticationError("로그인이 필요합니다.");
+      throw new AuthenticationError("Login required.");
     }
 
     const page = req.query.page ? parseNumberOrThrow(req.query.page, "page") : 1;
@@ -395,8 +395,8 @@ const getMyProducts: RequestHandler<{}, {}, {}, TGetMyProductsQueryDto> = async 
  * @swagger
  * /products/{id}:
  *   get:
- *     summary: 상품 상세 조회
- *     description: "특정 상품의 상세 정보를 조회합니다."
+ *     summary: Product Detail Search
+ *     description: "Search detailed information of a specific product."
  *     tags: [Product]
  *     security:
  *       - bearerAuth: []
@@ -406,11 +406,11 @@ const getMyProducts: RequestHandler<{}, {}, {}, TGetMyProductsQueryDto> = async 
  *         required: true
  *         schema:
  *           type: string
- *         description: "상품 ID"
+ *         description: "Product ID"
  *         example: "1"
  *     responses:
  *       200:
- *         description: "상품 상세 정보 조회 성공"
+ *         description: "Product detail information search successful"
  *         content:
  *           application/json:
  *             schema:
@@ -453,7 +453,7 @@ const getMyProducts: RequestHandler<{}, {}, {}, TGetMyProductsQueryDto> = async 
  *                       example: 1
  *                     name:
  *                       type: string
- *                       example: "음료"
+ *                       example: "Beverages"
  *                 creator:
  *                   type: object
  *                   properties:
@@ -462,15 +462,15 @@ const getMyProducts: RequestHandler<{}, {}, {}, TGetMyProductsQueryDto> = async 
  *                       example: "user123"
  *                     name:
  *                       type: string
- *                       example: "테스트 유저"
+ *                       example: "Test User"
  *       404:
- *         description: "상품을 찾을 수 없습니다"
+ *         description: "Product not found"
  *       500:
- *         description: "서버 에러"
+ *         description: "Server error"
  */
 export const getProductDetail: RequestHandler<TProductIdParamsDto> = async (req, res, next) => {
   try {
-    const id = parseNumberOrThrow(req.params.id, "상품 ID");
+    const id = parseNumberOrThrow(req.params.id, "Product ID");
     const user = req.user;
 
     const product = await productService.getProductById(id, user?.id);
@@ -483,17 +483,17 @@ export const getProductDetail: RequestHandler<TProductIdParamsDto> = async (req,
 //상품 수정
 export const updateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdateProductDto> = async (req, res, next) => {
   try {
-    const id = parseNumberOrThrow(req.params.id, "상품 ID");
+    const id = parseNumberOrThrow(req.params.id, "Product ID");
     const { name, price, linkUrl, categoryId } = req.body;
     const creatorId = req.user?.id;
 
     if (!creatorId) {
-      throw new AuthenticationError("로그인이 필요합니다.");
+      throw new AuthenticationError("Login required.");
     }
 
     const product = await productService.getProductById(id);
     if (!product) {
-      throw new NotFoundError("상품을 찾을 수 없습니다.");
+      throw new NotFoundError("Product not found.");
     }
 
     const priceNum = parseNumberOrThrow(price, "price");
@@ -516,7 +516,7 @@ export const updateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdateProdu
     if (updated) {
       res.status(200).json(updated);
     } else {
-      throw new ServerError("상품 수정에 실패했습니다.");
+      throw new ServerError("Failed to update product.");
     }
   } catch (error) {
     next(error);
@@ -530,22 +530,22 @@ export const forceUpdateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdate
   next,
 ) => {
   try {
-    const id = parseNumberOrThrow(req.params.id, "상품 ID");
+    const id = parseNumberOrThrow(req.params.id, "Product ID");
     const { name, price, linkUrl, categoryId } = req.body;
     const user = req.user;
 
     if (!user?.id) {
-      throw new AuthenticationError("로그인이 필요합니다.");
+      throw new AuthenticationError("Login required.");
     }
 
     const admin = user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN;
     if (!admin) {
-      throw new ForbiddenError("관리자만 접근할 수 있습니다.");
+      throw new ForbiddenError("Only administrators can access.");
     }
 
     const product = await productService.getProductById(id);
     if (!product) {
-      throw new NotFoundError("상품을 찾을 수 없습니다.");
+      throw new NotFoundError("Product not found.");
     }
 
     const priceNum = parseNumberOrThrow(price, "price");
@@ -568,7 +568,7 @@ export const forceUpdateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdate
     if (updated) {
       res.status(200).json(updated);
     } else {
-      throw new ServerError("상품 수정에 실패했습니다.");
+      throw new ServerError("Failed to update product.");
     }
   } catch (error) {
     next(error);
@@ -580,8 +580,8 @@ export const forceUpdateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdate
  * @swagger
  * /products/{id}:
  *   delete:
- *     summary: 상품 삭제
- *     description: "자신이 등록한 상품을 삭제합니다 (소프트 삭제)."
+ *     summary: Product Delete
+ *     description: "Delete products you registered (soft delete)."
  *     tags: [Product]
  *     security:
  *       - bearerAuth: []
@@ -591,17 +591,17 @@ export const forceUpdateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdate
  *         required: true
  *         schema:
  *           type: string
- *         description: "삭제할 상품 ID"
+ *         description: "Product ID to delete"
  *         example: "1"
  *     responses:
  *       204:
- *         description: "상품 삭제 성공"
+ *         description: "Product deletion successful"
  *       401:
- *         description: "로그인이 필요하거나 권한이 없습니다"
+ *         description: "Login required or no permission"
  *       404:
- *         description: 상품을 찾을 수 없습니다
+ *         description: Product not found
  *       500:
- *         description: 서버 에러
+ *         description: Server error
  */
 export const deleteProduct: RequestHandler<{ id: string }> = async (req, res, next) => {
   try {
@@ -610,12 +610,12 @@ export const deleteProduct: RequestHandler<{ id: string }> = async (req, res, ne
 
     const product = await productService.getProductById(productId);
     if (!product) {
-      throw new NotFoundError("상품을 찾을 수 없습니다.");
+      throw new NotFoundError("Product not found.");
     }
 
     const owner = product.creatorId === userId;
     if (!owner) {
-      throw new ForbiddenError("본인이 등록한 상품만 삭제할 수 있습니다.");
+      throw new ForbiddenError("You can only delete products you registered.");
     }
 
     await productService.deleteProduct(productId);
@@ -630,8 +630,8 @@ export const deleteProduct: RequestHandler<{ id: string }> = async (req, res, ne
  * @swagger
  * /admin/products/{id}:
  *   delete:
- *     summary: 상품 삭제(관리자)
- *     description: "관리자가 모든 상품을 강제로 삭제합니다 (소프트 삭제)."
+ *     summary: Product Delete (Admin)
+ *     description: "Administrator forcibly deletes all products (soft delete)."
  *     tags: [Product]
  *     security:
  *       - bearerAuth: []
@@ -641,19 +641,19 @@ export const deleteProduct: RequestHandler<{ id: string }> = async (req, res, ne
  *         required: true
  *         schema:
  *           type: string
- *         description: "삭제할 상품 ID"
+ *         description: "Product ID to delete"
  *         example: "1"
  *     responses:
  *       204:
- *         description: "상품 강제 삭제 성공"
+ *         description: "Product forced deletion successful"
  *       401:
- *         description: "로그인이 필요합니다"
+ *         description: "Login required"
  *       403:
- *         description: "관리자 권한이 필요합니다"
+ *         description: "Administrator permission required"
  *       404:
- *         description: "상품을 찾을 수 없습니다"
+ *         description: "Product not found"
  *       500:
- *         description: "서버 에러"
+ *         description: "Server error"
  */
 export const forceDeleteProduct: RequestHandler<{ id: string }> = async (req, res, next) => {
   try {
@@ -662,12 +662,12 @@ export const forceDeleteProduct: RequestHandler<{ id: string }> = async (req, re
 
     const admin = userRole === Role.ADMIN || userRole === Role.SUPER_ADMIN;
     if (!admin) {
-      throw new ForbiddenError("관리자만 접근할 수 있습니다.");
+      throw new ForbiddenError("Only administrators can access.");
     }
 
     const product = await productService.getProductById(productId);
     if (!product) {
-      throw new NotFoundError("상품을 찾을 수 없습니다.");
+      throw new NotFoundError("Product not found.");
     }
 
     await productService.deleteProduct(productId);
@@ -681,12 +681,12 @@ export const forceDeleteProduct: RequestHandler<{ id: string }> = async (req, re
  * @swagger
  * /categories:
  *   get:
- *     summary: 상품 카테고리 조회
- *     description: "상품 카테고리의 계층 구조를 조회합니다."
+ *     summary: Product Category Search
+ *     description: "Search the hierarchical structure of product categories."
  *     tags: [Product]
  *     responses:
  *       200:
- *         description: "카테고리 트리 조회 성공"
+ *         description: "Category tree search successful"
  *         content:
  *           application/json:
  *             schema:
@@ -694,7 +694,7 @@ export const forceDeleteProduct: RequestHandler<{ id: string }> = async (req, re
  *               properties:
  *                 parentCategory:
  *                   type: array
- *                   description: "부모 카테고리 목록"
+ *                   description: "Parent category list"
  *                   items:
  *                     type: object
  *                     properties:
@@ -706,7 +706,7 @@ export const forceDeleteProduct: RequestHandler<{ id: string }> = async (req, re
  *                         example: "음료"
  *                 childrenCategory:
  *                   type: object
- *                   description: "자식 카테고리 목록 (부모 카테고리명을 키로 사용)"
+ *                   description: "Child category list (using parent category name as key)"
  *                   additionalProperties:
  *                     type: array
  *                     items:
@@ -728,14 +728,14 @@ export const forceDeleteProduct: RequestHandler<{ id: string }> = async (req, re
  *                       - id: 5
  *                         name: "초코파이"
  *       500:
- *         description: "서버 에러"
+ *         description: "Server error"
  */
 const getCategoryTree: RequestHandler = async (req, res, next) => {
   try {
     const categories = await productService.getCategory();
     res.json(categories);
   } catch (error) {
-    next(error instanceof Error ? error : new ServerError("카테고리 조회 중 에러", error));
+    next(error instanceof Error ? error : new ServerError("Error during category search", error));
   }
 };
 
