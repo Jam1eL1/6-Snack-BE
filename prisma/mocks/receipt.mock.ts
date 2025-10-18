@@ -1,95 +1,91 @@
 export const receiptMockData = [
-  // Order 1의 Receipt들 (user-1의 주문: 초코파이 2개 + 칸쵸 1개 = 4000원)
-  {
-    productId: 1,
-    productName: "오리온 초코파이",
-    price: 1500,
-    imageUrl: "https://d2beg4tvxabcw1.cloudfront.net/products/orion-chocopie.png",
-    quantity: 2,
-    createdAt: new Date("2025-07-15T10:30:00Z"),
-  },
-  {
-    productId: 6,
-    productName: "롯데 칸쵸",
-    price: 1000,
-    imageUrl: "https://d2beg4tvxabcw1.cloudfront.net/products/lotte-kancho.png",
-    quantity: 1,
-    createdAt: new Date("2025-07-15T10:30:00Z"),
-  },
-
-  // Order 2의 Receipt들 (user-2의 주문: 새우깡 3개 = 2400원)
+  // Order 1 Receipts (user-1: Chips Ahoy 2x + Hershey's 3x)
   {
     productId: 3,
-    productName: "농심 새우깡",
-    price: 800,
-    imageUrl: "https://d2beg4tvxabcw1.cloudfront.net/products/nongshim-saewookang.png",
-    quantity: 3,
-    createdAt: new Date("2025-07-16T14:15:00Z"),
+    productName: "Chips Ahoy! Original Cookies",
+    price: 3.49,
+    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/chips_ahoy.png",
+    quantity: 2,
+    createdAt: new Date("2025-06-15T10:30:00Z"),
   },
-
-  // Order 3의 Receipt들 (user-3의 주문: 홈런볼 1개 + 산도 1개 = 4500원)
-  {
-    productId: 4,
-    productName: "해태 홈런볼",
-    price: 2500,
-    imageUrl: "https://d2beg4tvxabcw1.cloudfront.net/products/haetae-homerunball.png",
-    quantity: 1,
-    createdAt: new Date("2025-07-17T09:45:00Z"),
-  },
-  {
-    productId: 7,
-    productName: "크라운 산도",
-    price: 2000,
-    imageUrl: "https://d2beg4tvxabcw1.cloudfront.net/products/crown-sando.png",
-    quantity: 1,
-    createdAt: new Date("2025-07-17T09:45:00Z"),
-  },
-
-  // Order 4의 Receipt들 (user-4의 주문: 포카칩 2개 = 3600원)
   {
     productId: 5,
-    productName: "오리온 포카칩",
-    price: 1800,
-    imageUrl: "https://d2beg4tvxabcw1.cloudfront.net/products/orion-pocachip.png",
-    quantity: 2,
-    createdAt: new Date("2025-07-18T11:20:00Z"),
+    productName: "Hershey's Milk Chocolate Bar",
+    price: 1.49,
+    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/hersheys_milk_chocolate.png",
+    quantity: 3,
+    createdAt: new Date("2025-06-15T10:30:00Z"),
   },
 
-  // Order 5의 Receipt들 (user-5의 주문: 고래밥 2개 = 1800원)
+  // Order 2 Receipts (user-2: Coca-Cola 2x + Tropicana 1x)
   {
-    productId: 8,
-    productName: "오리온 고래밥",
-    price: 900,
-    imageUrl: "https://d2beg4tvxabcw1.cloudfront.net/products/orion-goraebap.png",
+    productId: 9,
+    productName: "Coca-Cola Classic 500ml",
+    price: 1.99,
+    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/coca_cola_500ml.png",
     quantity: 2,
-    createdAt: new Date("2025-07-19T16:45:00Z"),
+    createdAt: new Date("2025-07-01T14:15:00Z"),
+  },
+  {
+    productId: 11,
+    productName: "Tropicana Orange Juice 500ml",
+    price: 2.79,
+    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/tropicana_orange_juice.png",
+    quantity: 1,
+    createdAt: new Date("2025-07-01T14:15:00Z"),
   },
 
-  // Order 6의 Receipt들 (user-6의 주문: 마가렛트 2개 = 2400원)
+  // Order 3 Receipts (user-3: Red Bull 2x + Ramen 3x)
   {
-    productId: 2,
-    productName: "롯데 마가렛트",
-    price: 1200,
-    imageUrl: "https://d2beg4tvxabcw1.cloudfront.net/products/lotte-margaret.png",
+    productId: 14,
+    productName: "Red Bull Energy Drink",
+    price: 3.79,
+    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/red_bull.png",
     quantity: 2,
+    createdAt: new Date("2025-07-07T09:45:00Z"),
+  },
+  {
+    productId: 21,
+    productName: "Maruchan Chicken Ramen",
+    price: 1.29,
+    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/maruchan_chicken.png",
+    quantity: 3,
+    createdAt: new Date("2025-07-07T09:45:00Z"),
+  },
+
+  // Order 4 Receipts (user-3: Post-it 2x + Pens 5x) - PENDING status
+  {
+    productId: 25,
+    productName: "Post-it Super Sticky Notes",
+    price: 3.49,
+    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/post_it_notes.png",
+    quantity: 2,
+    createdAt: new Date("2025-07-12T11:20:00Z"),
+  },
+  {
+    productId: 24,
+    productName: "BIC Round Stic Ballpoint Pen",
+    price: 0.99,
+    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/bic_pen.png",
+    quantity: 5,
+    createdAt: new Date("2025-07-12T11:20:00Z"),
+  },
+
+  // Order 5 Receipts (user-1-2: Chips Ahoy 3x + Hershey's 2x)
+  {
+    productId: 3,
+    productName: "Chips Ahoy! Original Cookies",
+    price: 3.49,
+    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/chips_ahoy.png",
+    quantity: 3,
     createdAt: new Date("2025-07-20T13:10:00Z"),
   },
-
-  // Order 7의 Receipt들 (user-1-2의 주문: 초코파이 3개 + 칸쵸 1개 = 5500원)
   {
-    productId: 1,
-    productName: "오리온 초코파이",
-    price: 1500,
-    imageUrl: "https://d2beg4tvxabcw1.cloudfront.net/products/orion-chocopie.png",
-    quantity: 3,
-    createdAt: new Date("2025-07-21T09:30:00Z"),
-  },
-  {
-    productId: 6,
-    productName: "롯데 칸쵸",
-    price: 1000,
-    imageUrl: "https://d2beg4tvxabcw1.cloudfront.net/products/lotte-kancho.png",
-    quantity: 1,
-    createdAt: new Date("2025-07-21T09:30:00Z"),
+    productId: 5,
+    productName: "Hershey's Milk Chocolate Bar",
+    price: 1.49,
+    imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/hersheys_milk_chocolate.png",
+    quantity: 2,
+    createdAt: new Date("2025-07-20T13:10:00Z"),
   },
 ];

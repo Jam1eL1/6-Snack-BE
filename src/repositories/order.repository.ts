@@ -19,7 +19,7 @@ const getStatusCondition = (status: keyof TGetOrderStatus) => {
   return Array.isArray(statusValue) ? { status: { in: statusValue } } : { status: statusValue };
 };
 
-// 주문 목록 조회
+// Order list search
 const getOrders = async ({ offset, limit, orderBy, status }: TGetOrdersRepositoryQuery, companyId: Company["id"]) => {
   const statusOptions = getStatusCondition(status);
 
@@ -35,7 +35,7 @@ const getOrders = async ({ offset, limit, orderBy, status }: TGetOrdersRepositor
   });
 };
 
-// 주문 목록 총 갯수 조회
+// Order list total count search
 const getOrdersTotalCount = async ({ status }: Pick<TGetOrdersQuery, "status">, companyId: Company["id"]) => {
   const statusOptions = getStatusCondition(status);
 
@@ -44,7 +44,7 @@ const getOrdersTotalCount = async ({ status }: Pick<TGetOrdersQuery, "status">, 
   });
 };
 
-// 주문 조회(대기 or 승인)
+// Order search (pending or approved)
 const getOrderByIdAndStatus = async (id: Order["id"], status: "pending" | "approved", companyId: Company["id"]) => {
   const statusOptions = getStatusCondition(status);
 
@@ -57,7 +57,7 @@ const getOrderByIdAndStatus = async (id: Order["id"], status: "pending" | "appro
   });
 };
 
-// 주문 조회(단건)
+// Order search (single)
 const getOrderById = async (id: Order["id"]) => {
   return await prisma.order.findUnique({
     where: { id },
@@ -101,18 +101,18 @@ const revertOrder = async (id: Order["id"]) => {
 const deleteReceiptAndOrder = async (orderId: Order["id"], tx?: Prisma.TransactionClient) => {
   const client = tx || prisma;
 
-  // 1. receipt 삭제
+  // 1. Delete receipt
   await client.receipt.deleteMany({
     where: { orderId },
   });
 
-  // 2. order 삭제
+  // 2. Delete order
   await client.order.delete({
     where: { id: orderId },
   });
 };
 
-// OrderRequest 관련 기능들 추가
+// OrderRequest related features added
 const createOrder = async (
   orderData: {
     userId: string;
@@ -136,23 +136,23 @@ const createOrder = async (
   });
 
   if (cartItems.length !== orderData.cartItemIds.length) {
-    throw new Error("일부 카트 아이템을 찾을 수 없습니다.");
+    throw new Error("Some cart items not found.");
   }
 
-  // 2. 총 가격 계산
+  // 2. Calculate total price
   const totalPrice = cartItems.reduce((sum, cartItem) => {
     return sum + cartItem.product.price * cartItem.quantity;
   }, 0);
 
-  // 2-1. 유저 역할 확인
+  // 2-1. Check user role
   const user = await client.user.findUnique({
     where: { id: orderData.userId },
     select: { role: true },
   });
 
-  if (!user) throw new AuthenticationError("로그인이 필요합니다.");
+  if (!user) throw new AuthenticationError("Login required.");
 
-  // 3. 주문 생성
+  // 3. Create order
   const order = await client.order.create({
     data: {
       userId: orderData.userId,
@@ -160,12 +160,12 @@ const createOrder = async (
       adminMessage: orderData.adminMessage,
       requestMessage: orderData.requestMessage,
       productsPriceTotal: totalPrice,
-      deliveryFee: 3000,
+      deliveryFee: 5,
       status: user.role === "USER" ? "PENDING" : "INSTANT_APPROVED",
     },
   });
 
-  // 4. 각 카트 아이템으로부터 receipt 생성
+  // 4. Create receipt from each cart item
   const receipts = await Promise.all(
     cartItems.map(async (cartItem) => {
       return await client.receipt.create({
@@ -181,7 +181,7 @@ const createOrder = async (
     }),
   );
 
-  // 5. 주문에 포함된 카트 아이템들을 장바구니에서 삭제
+  // 5. Delete cart items included in order from cart
   await client.cartItem.updateMany({
     where: {
       id: { in: orderData.cartItemIds },
@@ -191,7 +191,7 @@ const createOrder = async (
     },
   });
 
-  // 6. 생성된 주문 정보 반환
+  // 6. Return created order information
   const result = await client.order.findUnique({
     where: { id: order.id },
     include: {
@@ -208,7 +208,7 @@ const createOrder = async (
   });
 
   if (!result) {
-    throw new Error("생성된 주문을 찾을 수 없습니다.");
+    throw new Error("Created order not found.");
   }
 
   return result;
@@ -261,7 +261,7 @@ const updateOrderStatus = async (
     return updatedOrder;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-      throw new Error(`ID ${orderId}인 주문을 찾을 수 없습니다.`);
+      throw new Error(`Order with ID ${orderId} not found.`);
     }
     throw error;
   }
@@ -276,7 +276,7 @@ export default {
   updateOrder,
   revertOrder,
   deleteReceiptAndOrder,
-  // OrderRequest 관련 기능들
+  // OrderRequest related features
   createOrder,
   getOrdersByUserId,
   updateOrderStatus,

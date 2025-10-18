@@ -1,10 +1,10 @@
 export const monthlyBudgetMockData = [
-  // 토쓰(주) (첫 번째 회사, ID: 1) 데이터
+  // SAP (Company 1)
   {
     companyId: 1,
-    currentMonthExpense: 145000,
-    currentMonthBudget: 3000000,
-    monthlyBudget: 3000000,
+    currentMonthExpense: 1450.0,
+    currentMonthBudget: 3000.0,
+    monthlyBudget: 3000.0,
     year: "2024",
     month: "06",
     createdAt: new Date("2024-06-01"),
@@ -13,9 +13,9 @@ export const monthlyBudgetMockData = [
   },
   {
     companyId: 1,
-    currentMonthExpense: 570000,
-    currentMonthBudget: 3500000,
-    monthlyBudget: 1500000,
+    currentMonthExpense: 5700.0,
+    currentMonthBudget: 3000.0,
+    monthlyBudget: 15000.0,
     year: "2024",
     month: "07",
     createdAt: new Date("2024-07-01"),
@@ -24,9 +24,9 @@ export const monthlyBudgetMockData = [
   },
   {
     companyId: 1,
-    currentMonthExpense: 4500, // user-1의 6월 APPROVED 주문 (4500)
-    currentMonthBudget: 2000000,
-    monthlyBudget: 2000000,
+    currentMonthExpense: 11.45, // user-1 order ($11.45)
+    currentMonthBudget: 2000.0,
+    monthlyBudget: 2000.0,
     year: "2025",
     month: "06",
     createdAt: new Date("2025-06-01"),
@@ -35,9 +35,9 @@ export const monthlyBudgetMockData = [
   },
   {
     companyId: 1,
-    currentMonthExpense: 22900, // 토쓰(주) 7월 APPROVED 주문들: user-1(4500) + user-2(2400) + user-3(4500) + user-4(3200) + user-6(2800) + user-7(5500)
-    currentMonthBudget: 3500000,
-    monthlyBudget: 2000000,
+    currentMonthExpense: 29.67, // July approved orders: user-2($6.77) + user-3($11.45) + user-1($11.45) = $29.67
+    currentMonthBudget: 3000.0,
+    monthlyBudget: 3000.0,
     year: "2025",
     month: "07",
     createdAt: new Date("2025-07-01"),
@@ -47,20 +47,42 @@ export const monthlyBudgetMockData = [
   {
     companyId: 1,
     currentMonthExpense: 0,
-    currentMonthBudget: 2000000,
-    monthlyBudget: 2000000,
+    currentMonthBudget: 2000.0,
+    monthlyBudget: 2000.0,
     year: "2025",
     month: "08",
     createdAt: new Date("2025-08-01"),
     updatedAt: new Date("2025-08-15"),
     deletedAt: null,
   },
-  // 쿠빵(주) (두 번째 회사, ID: 2) 데이터
+  {
+    companyId: 1,
+    currentMonthExpense: 0,
+    currentMonthBudget: 2000.0,
+    monthlyBudget: 2000.0,
+    year: "2025",
+    month: "00",
+    createdAt: new Date("2025-09-01"),
+    updatedAt: new Date("2025-09-01"),
+    deletedAt: null,
+  },
+  {
+    companyId: 1,
+    currentMonthExpense: 0,
+    currentMonthBudget: 2000.0,
+    monthlyBudget: 2000.0,
+    year: "2025",
+    month: "10",
+    createdAt: new Date("2025-10-01"),
+    updatedAt: new Date("2025-10-01"),
+    deletedAt: null,
+  },
+  // RBC (Company 2)
   {
     companyId: 2,
     currentMonthExpense: 0,
-    currentMonthBudget: 1000000,
-    monthlyBudget: 1000000,
+    currentMonthBudget: 1500.0,
+    monthlyBudget: 1500.0,
     year: "2024",
     month: "06",
     createdAt: new Date("2024-06-01"),
@@ -70,8 +92,8 @@ export const monthlyBudgetMockData = [
   {
     companyId: 2,
     currentMonthExpense: 0,
-    currentMonthBudget: 1000000,
-    monthlyBudget: 1000000,
+    currentMonthBudget: 1500.0,
+    monthlyBudget: 1500.0,
     year: "2024",
     month: "07",
     createdAt: new Date("2024-07-01"),
@@ -81,8 +103,8 @@ export const monthlyBudgetMockData = [
   {
     companyId: 2,
     currentMonthExpense: 0,
-    currentMonthBudget: 1000000,
-    monthlyBudget: 1000000,
+    currentMonthBudget: 1500.0,
+    monthlyBudget: 1500.0,
     year: "2025",
     month: "06",
     createdAt: new Date("2025-06-01"),
@@ -91,9 +113,9 @@ export const monthlyBudgetMockData = [
   },
   {
     companyId: 2,
-    currentMonthExpense: 5500, // 쿠빵(주) 7월 APPROVED 주문: user-1-2(5500)
-    currentMonthBudget: 1000000,
-    monthlyBudget: 1000000,
+    currentMonthExpense: 13.45, // user-1-2 order ($13.45) - Expense remains unchanged
+    currentMonthBudget: 1500.0,
+    monthlyBudget: 1500.0,
     year: "2025",
     month: "07",
     createdAt: new Date("2025-07-01"),
@@ -103,12 +125,34 @@ export const monthlyBudgetMockData = [
   {
     companyId: 2,
     currentMonthExpense: 0,
-    currentMonthBudget: 1000000,
-    monthlyBudget: 1000000,
+    currentMonthBudget: 1500.0,
+    monthlyBudget: 1500.0,
     year: "2025",
     month: "08",
     createdAt: new Date("2025-08-01"),
     updatedAt: new Date("2025-08-01"),
+    deletedAt: null,
+  },
+  {
+    companyId: 2,
+    currentMonthExpense: 0,
+    currentMonthBudget: 1500.0,
+    monthlyBudget: 1500.0,
+    year: "2025",
+    month: "09",
+    createdAt: new Date("2025-09-01"),
+    updatedAt: new Date("2025-09-01"),
+    deletedAt: null,
+  },
+  {
+    companyId: 2,
+    currentMonthExpense: 0,
+    currentMonthBudget: 1500.0,
+    monthlyBudget: 1500.0,
+    year: "2025",
+    month: "10",
+    createdAt: new Date("2025-10-01"),
+    updatedAt: new Date("2025-10-01"),
     deletedAt: null,
   },
 ];
