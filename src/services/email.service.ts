@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 type TEmailOptions = {
   to: string;
@@ -7,8 +7,8 @@ type TEmailOptions = {
 };
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: parseInt(process.env.SMTP_PORT || "587"),
   secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.SMTP_USER,
@@ -26,30 +26,30 @@ const sendEmail = async (options: TEmailOptions): Promise<void> => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`[이메일 발송 성공] 수신자: ${options.to}`);
+    console.log(`[Email Sent Successfully] Recipient: ${options.to}`);
   } catch (error) {
-    console.error('[이메일 발송 실패]', error);
-    throw new Error('이메일 발송에 실패했습니다.');
+    console.error("[Email Sending Failed]", error);
+    throw new Error("Failed to send email.");
   }
 };
 
 const generateInviteEmailTemplate = (name: string, inviteLink: string, role: string, expiresAt: Date): string => {
-    const roleText = role === 'ADMIN' ? '관리자' : '일반 사용자';
-    const formattedExpiresAt = expiresAt.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const roleText = role === "ADMIN" ? "Administrator" : "User";
+  const formattedExpiresAt = expiresAt.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-    return `
+  return `
       <!DOCTYPE html>
-      <html lang="ko">
+      <html lang="en">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>회사 초대</title>
+        <title></title>
         <style>
           body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -109,34 +109,34 @@ const generateInviteEmailTemplate = (name: string, inviteLink: string, role: str
         <div class="container">
           <div class="header">
             <div class="logo">🍽️ Snack</div>
-            <h2>회사 초대</h2>
+            <h2>Snack Sign Up Invitation</h2>
           </div>
           
-          <p>안녕하세요, <strong>${name}</strong>님!</p>
+          <p>Hello, <strong>${name}</strong>!</p>
           
-          <p>회사 관리자가 귀하를 <strong>${roleText}</strong>로 초대했습니다.</p>
+          <p>Your company administrator has invited you as a <strong>${roleText}</strong>.</p>
           
           <div class="info-box">
-            <strong>초대 정보:</strong><br>
-            • 역할: ${roleText}<br>
-            • 만료일: ${formattedExpiresAt}
+            <strong>Invitation Details:</strong><br>
+            • Role: ${roleText}<br>
+            • Expiration Date: ${formattedExpiresAt}
           </div>
           
-          <p>아래 버튼을 클릭하여 회원가입을 완료해주세요:</p>
+          <p>Please click the button below to complete your registration:</p>
           
           <div style="text-align: center;">
-            <a href="${inviteLink}" class="invite-button">회원가입 완료하기</a>
+            <a href="${inviteLink}" class="invite-button">Complete Registration</a>
           </div>
           
-          <p><strong>주의사항:</strong></p>
+          <p><strong>Note:</strong></p>
           <ul>
-            <li>이 초대 링크는 ${formattedExpiresAt}까지 유효합니다.</li>
-            <li>링크를 클릭하면 비밀번호를 설정하여 회원가입이 완료됩니다.</li>
-            <li>본인이 요청하지 않은 초대라면 이 이메일을 무시하셔도 됩니다.</li>
+            <li>This invitation link is valid until ${formattedExpiresAt}.</li>
+            <li>Clicking the link will complete your registration by setting a password.</li>
+            <li>If you did not request this invitation, you may ignore this email.</li>
           </ul>
           
           <div class="footer">
-            <p>이 이메일은 자동으로 발송되었습니다. 문의사항이 있으시면 관리자에게 연락해주세요.</p>
+            <p>This email was sent automatically. Please contact an administrator if you have any questions.</p>
           </div>
         </div>
       </body>
@@ -147,4 +147,4 @@ const generateInviteEmailTemplate = (name: string, inviteLink: string, role: str
 export default {
   sendEmail,
   generateInviteEmailTemplate,
-}; 
+};
