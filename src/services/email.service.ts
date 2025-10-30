@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async (options: TEmailOptions): Promise<void> => {
   try {
     const mailOptions = {
-      from: process.env.SMTP_USER,
+      from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_USER}>`,
       to: options.to,
       subject: options.subject,
       html: options.html,
@@ -34,7 +34,8 @@ const sendEmail = async (options: TEmailOptions): Promise<void> => {
 };
 
 const generateInviteEmailTemplate = (name: string, inviteLink: string, role: string, expiresAt: Date): string => {
-  const roleText = role === "ADMIN" ? "Administrator" : "User";
+  const roleText = role === "ADMIN" ? "Admin" : "User";
+  const article = /^[aeiou]/i.test(roleText) ? "an" : "a";
   const formattedExpiresAt = expiresAt.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -78,7 +79,7 @@ const generateInviteEmailTemplate = (name: string, inviteLink: string, role: str
           }
           .invite-button {
             display: inline-block;
-            background-color: #3498db;
+            background-color: #4c8ae1;
             color: white;
             padding: 15px 30px;
             text-decoration: none;
@@ -87,8 +88,8 @@ const generateInviteEmailTemplate = (name: string, inviteLink: string, role: str
             margin: 20px 0;
             text-align: center;
           }
-          .invite-button:hover {
-            background-color: #2980b9;
+          a.invite-button:hover {
+            background-color: #1363d4 !important; 
           }
           .info-box {
             background-color: #f8f9fa;
@@ -108,13 +109,13 @@ const generateInviteEmailTemplate = (name: string, inviteLink: string, role: str
       <body>
         <div class="container">
           <div class="header">
-            <div class="logo">🍽️ Snack</div>
-            <h2>Snack Sign Up Invitation</h2>
+            <div class="logo">🍪 Snack</div>
+            <h2>Sign Up Required</h2>
           </div>
           
           <p>Hello, <strong>${name}</strong>!</p>
           
-          <p>Your company administrator has invited you as a <strong>${roleText}</strong>.</p>
+          <p>Your company administrator has invited you as ${article} <strong>${roleText}</strong>.</p>
           
           <div class="info-box">
             <strong>Invitation Details:</strong><br>
@@ -124,8 +125,12 @@ const generateInviteEmailTemplate = (name: string, inviteLink: string, role: str
           
           <p>Please click the button below to complete your registration:</p>
           
-          <div style="text-align: center;">
-            <a href="${inviteLink}" class="invite-button">Complete Registration</a>
+          <div style="text-align:center;">
+            <a href="${inviteLink}"
+              class="invite-button"
+              style="display:inline-block;background-color:#4c8ae1;color:#ffffff !important;padding:15px 30px;text-decoration:none;border-radius:5px;font-weight:bold;margin:20px 0;text-align:center;-webkit-text-size-adjust:none;mso-line-height-rule:exactly;">
+              <span style="color:#ffffff !important;text-decoration:none;">Complete Registration</span>
+            </a>
           </div>
           
           <p><strong>Note:</strong></p>

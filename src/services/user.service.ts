@@ -15,12 +15,12 @@ import bcrypt from "bcrypt";
 
 const getUserInfo = async (userId: string, currentUser: TCurrentUser): Promise<TGetUserInfoResponseDto> => {
   if (userId !== currentUser.id) {
-    throw new BadRequestError("자기 자신의 정보만 조회할 수 있습니다.");
+    throw new BadRequestError("You can only view your own information."); 
   }
 
   if (currentUser.role === "USER") {
     return {
-      message: "일반 유저 정보 조회 완료",
+      message: "User information successfully retrieved",
       user: {
         company: { name: currentUser.company!.name },
         name: currentUser.name,
@@ -29,7 +29,7 @@ const getUserInfo = async (userId: string, currentUser: TCurrentUser): Promise<T
     };
   } else {
     return {
-      message: "관리자/최고 관리자 정보 조회 완료",
+      message: "Admin/Super Admin information successfully retrieved", 
       user: {
         company: { name: currentUser.company!.name },
         role: currentUser.role as "ADMIN" | "SUPER_ADMIN",
@@ -40,25 +40,25 @@ const getUserInfo = async (userId: string, currentUser: TCurrentUser): Promise<T
   }
 };
 
-// 유저 탈퇴
+// User deletion/withdrawal
 const deleteUser = async (userId: string, currentUser: TCurrentUser): Promise<TDeleteUserResponseDto> => {
   const userToDelete = await userRepository.findActiveUserById(userId);
   if (!userToDelete) {
-    throw new NotFoundError("유저가 존재하지 않습니다");
+    throw new NotFoundError("User does not exist"); 
   }
 
   if (userToDelete.id === currentUser.id) {
-    throw new BadRequestError("최고 관리자는 자기 자신을 삭제할 수 없습니다.");
+    throw new BadRequestError("A Super Admin cannot delete themselves."); 
   }
 
   await userRepository.deleteUser(userId);
 
   return {
-    message: "사용자가 성공적으로 삭제되었습니다.",
+    message: "User successfully deleted.", 
   };
 };
 
-// 유저 권한 변경
+// Update user role
 const updateRole = async (
   userId: string,
   role: UserRole,
@@ -66,39 +66,39 @@ const updateRole = async (
 ): Promise<TUpdateRoleResponseDto> => {
   const userToUpdateRole = await userRepository.findActiveUserById(userId);
   if (!userToUpdateRole) {
-    throw new NotFoundError("유저가 존재하지 않습니다");
+    throw new NotFoundError("User does not exist");
   }
   if (role !== "ADMIN" && role !== "USER") {
-    throw new BadRequestError("잘못된 Role 값입니다.");
+    throw new BadRequestError("Invalid Role value."); 
   }
   if (userToUpdateRole.id === currentUser.id) {
-    throw new BadRequestError("최고 관리자는 자기 자신의 권한을 변경할 수 없습니다.");
+    throw new BadRequestError("A Super Admin cannot change their own role."); 
   }
 
   const updatedUser = await userRepository.updateUserRole(userId, role);
 
   return {
-    message: "사용자 권한이 성공적으로 변경되었습니다.",
+    message: "User role successfully changed.", 
     role: updatedUser.role as "ADMIN" | "USER",
   };
 };
 
-// 유저 비밀번호 변경
+// Update user password
 const updatePassword = async (
   userId: string,
   passwordData: TUpdatePasswordDto,
   currentUser: TCurrentUser,
 ): Promise<TUpdatePasswordResponseDto> => {
   if (userId !== currentUser.id) {
-    throw new BadRequestError("자기 자신의 비밀번호만 변경할 수 있습니다.");
+    throw new BadRequestError("You can only change your own password."); 
   }
 
   if (passwordData.newPassword !== passwordData.newPasswordConfirm) {
-    throw new BadRequestError("비밀번호가 일치하지 않습니다.");
+    throw new BadRequestError("The passwords do not match."); 
   }
 
   if (passwordData.newPassword.length < 8) {
-    throw new BadRequestError("비밀번호는 최소 8자 이상이어야 합니다.");
+    throw new BadRequestError("The password must be at least 8 characters long."); 
   }
 
   const hashedPassword = await bcrypt.hash(passwordData.newPassword, 10);
@@ -106,11 +106,11 @@ const updatePassword = async (
   await userRepository.updatePassword(userId, hashedPassword);
 
   return {
-    message: "비밀번호가 성공적으로 변경되었습니다.",
+    message: "Password successfully changed.", 
   };
 };
 
-// 회사 유저 목록 조회
+// Retrieve list of company users
 const getUsersByCompany = async (
   currentUser: TCurrentUser,
   query: TGetUsersQueryDto,
@@ -127,7 +127,7 @@ const getUsersByCompany = async (
   const prevCursor = result.users.length > 0 ? result.users[0].id : undefined;
 
   return {
-    message: query.name ? `"${query.name}" 검색 결과입니다.` : "회사 유저 목록 조회가 완료되었습니다.",
+    message: query.name ? `Search results for "${query.name}".` : "Company user list retrieval complete.", 
     users: result.users.map((user) => ({
       id: user.id,
       email: user.email,
@@ -143,11 +143,11 @@ const getUsersByCompany = async (
   };
 };
 
-// 내 정보 + 장바구니 개수
+// My info + cart count
 const getMe = async (userId: string) => {
   const user = await userRepository.findUserWithCompanyById(userId);
   if (!user) {
-    throw new NotFoundError("사용자 정보를 찾을 수 없습니다. 다시 로그인해 주세요.");
+    throw new NotFoundError("User information could not be found. Please log in again."); 
   }
   return {
     id: user.id,
