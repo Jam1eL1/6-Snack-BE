@@ -1,43 +1,43 @@
 ---
-name: "🧪 QA 리포트"
-about: "QA 테스트 중 발견된 버그 및 개선사항을 작성합니다."
-title: "[QA] 제목 [작성자 -> 대상자]"
+name: "🧪 QA Report"
+about: "Write bugs and improvements found during QA testing."
+title: "[QA] title [Author -> Subject]"
 labels: [qa, needs-triage]
 assignees: []
 ---
 
-# 🧪 QA 리포트
+# 🧪 QA report
 
-## 📍 테스트 위치
+## 📍 test location
 
-> **어떤 페이지 또는 기능에서 테스트했는지 적어주세요.**
+> **Please indicate which pages or features you tested on.**
 
-> 예시 :
+> example :
 >
-> - 기능 : 비밀번호 변경
-> - 위치 : 회원가입 페이지 (`/signup`), 마이페이지
+> - Function: Change password
+> - Location: Membership registration page (`/signup`), My page
 
-- 기능 : 
-- 위치 : 
+- Features: 
+- Location: 
 
-## 🐛 버그 내용
+## 🐛 bug details
 
-> **명확한 버그가 있다면 아래에 정리해 주세요.**
+> **If there are any clear bugs, please list them below.**
 
-> 예시 : - [ ] 비밀번호 변경 시 띄어쓰기도 가능한 버그
-
-- [ ]
-
-## ✨ 개선 제안
-
-> **UX / UI / 성능 등 개선 제안이 있다면 자유롭게 작성해 주세요.**
-
-> 예시 : - [ ] 회원정보 수정 후 저장 여부에 대한 피드백이 없음
+> example : - [ ] A bug that allows spaces to be entered when changing the password
 
 - [ ]
 
-## 📷 스크린샷 또는 증거 자료
+## ✨ improvement suggestions
 
-> **시각적 증거가 있다면 첨부해 주세요 (스크린샷, 에러 메시지 등)**
+> **UX / UI / If you have suggestions for improvements, such as performance, please feel free to write them.**
 
-(파일 또는 이미지 첨부)
+> example : - [ ] There is no feedback on whether or not to save member information after editing it.
+
+- [ ]
+
+## 📷 Screenshots or evidence
+
+> **Please attach any visual evidence (screenshots, error messages, etc.)**
+
+(file or image attached)

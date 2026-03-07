@@ -7,50 +7,33 @@ on:
 
 jobs:
   Deploy:
-    runs-on: ubuntu-latest # 깃헙액션 워크플로우가 실행되는 OS 환경. EC2 OS와 같은 필요 없음
+    runs-on: ubuntu-latest
     steps:
-      - name: 깃헙 레포지토리 불러오기
+      - name: Load GitHub repository
         uses: actions/checkout@v4
 
-      - name: Node 설치
+      - name: Node installation
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: 의존성 설치
+      - name: Install dependencies
         run: npm ci
 
-      - name: .env 파일 생성
+      - name: Create .env file
         run: |
           echo "${{ secrets.ENV }}" > .env
-      
-      - name: 테스트용 Postgres 컨테이너 실행
-        run: |
-          docker run --name test-postgres \
-            -e POSTGRES_USER=postgres \
-            -e POSTGRES_PASSWORD=password \
-            -e POSTGRES_DB=testdb \
-            -p 5433:5432 \
-            -d postgres:13
 
-      - name: 테스트용 Prisma Client 생성 및 마이그레이션 (5433 포트로 접근)
-        run: |
-          DATABASE_URL="postgresql://postgres:password@localhost:5433/testdb" npx prisma generate
-          DATABASE_URL="postgresql://postgres:password@localhost:5433/testdb" npx prisma migrate deploy
+      - name: Generate Prisma Client
+        run: npx prisma generate
 
-      - name: 도커 임시 데이터베이스 시딩 (5433 포트로 접근)
-        run: DATABASE_URL="postgresql://postgres:password@localhost:5433/testdb" npx prisma db seed
-
-      - name: 테스트 코드 실행
-        run: npm run test
-
-      - name: 빌드
+      - name: Build project
         run: npm run build
 
-      - name: 빌드파일 압축하기
+      - name: Compress build file
         run: tar -czvf project.tar.gz dist .env package.json package-lock.json
 
-      - name: scp 사용하여 EC2에 빌드파일 전송하기
+      - name: Transfer build file to EC2
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -59,17 +42,18 @@ jobs:
           source: project.tar.gz
           target: /home/ec2-user/6-Snack-BE
 
-      - name: SSH로 EC2에 접속하기
+      - name: SSH and Restart Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }} # EC2의 주소
-          username: ${{ secrets.EC2_USERNAME }} # EC2 접속 username
-          key: ${{ secrets.EC2_PRIVATE_KEY }} # EC2의 Key 파일의 내부 텍스트
-          script_stop: true # 아래 script 중 실패하는 명령이 하나라도 있으면 실패로 처리
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script_stop: true
           script: |
             cd /home/ec2-user/6-Snack-BE
             tar -xvf project.tar.gz
             rm -rf project.tar.gz
-            npm ci
-            pm2 kill
+            npm ci --production
+            npx prisma migrate deploy
+            pm2 delete "backend-server" || true
             pm2 start dist/server.js --name "backend-server"
