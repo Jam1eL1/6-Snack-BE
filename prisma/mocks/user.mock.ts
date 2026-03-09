@@ -1,8 +1,8 @@
 export const userMockData = [
   {
     id: "user-1",
-    email: "alex.toporowski@sap.com",
-    name: "Alex Toporowski",
+    email: "emma.johnson@snackdemo.com",
+    name: "Emma Johnson",
     password: "1q2w3e4r!",
     role: "SUPER_ADMIN",
     createdAt: new Date("2024-01-01"),
@@ -11,8 +11,8 @@ export const userMockData = [
   },
   {
     id: "user-1-2",
-    email: "jamie.lee@rbc.com",
-    name: "Jamie Lee",
+    email: "noah.wilson@snackdemo.com",
+    name: "Noah Wilson",
     password: "1q2w3e4r!",
     role: "SUPER_ADMIN",
     createdAt: new Date("2024-01-01"),
@@ -21,8 +21,8 @@ export const userMockData = [
   },
   {
     id: "user-2",
-    email: "andrew.huberman@sap.com",
-    name: "Andrew Huberman",
+    email: "olivia.martin@snackdemo.com",
+    name: "Olivia Martin",
     password: "1q2w3e4r!",
     role: "ADMIN",
     createdAt: new Date("2024-02-01"),
@@ -31,8 +31,8 @@ export const userMockData = [
   },
   {
     id: "user-3",
-    email: "elizabeth.holmes@sap.com",
-    name: "Elizabeth Holmes",
+    email: "liam.anderson@snackdemo.com",
+    name: "Liam Anderson",
     password: "1q2w3e4r!",
     role: "USER",
     createdAt: new Date("2024-01-02"),
