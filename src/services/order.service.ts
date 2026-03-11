@@ -8,29 +8,29 @@ import prisma from "../config/prisma";
 import productRepository from "../repositories/product.repository";
 import userRepository from "../repositories/user.repository";
 
-// 구매내역 조회(대기 or 승인)
+// Get order history (pending or approved)
 const getOrders = async ({ page, limit, orderBy, status }: TGetOrdersQuery, companyId: number) => {
   const offset = (page - 1) * limit;
 
   const orders = await orderRepository.getOrders({ offset, limit, orderBy, status }, companyId);
 
   if (!orders) {
-    throw new NotFoundError("주문 내역을 찾을 수 없습니다.");
+    throw new NotFoundError("Order history not found.");
   }
 
   const totalCount = await orderRepository.getOrdersTotalCount({ status }, companyId);
 
   const formattedOrders = orders.map(({ user, receipts, ...rest }) => {
-    // 주문 상품이 1개 이상일 때
+    // When there are multiple products in one order
     if (receipts.length >= 2) {
       return {
         ...rest,
         requester: user.name,
-        productName: `${receipts[0].productName} 외 ${receipts.length - 1}건`,
+        productName: `${receipts[0].productName} and ${receipts.length - 1} more`,
       };
     }
 
-    // 주문 상품이 1개일 때
+    // When there is only one product in the order
     return { ...rest, requester: user.name, productName: receipts[0].productName };
   });
 
@@ -40,12 +40,12 @@ const getOrders = async ({ page, limit, orderBy, status }: TGetOrdersQuery, comp
   };
 };
 
-// 구매내역 상세 조회(대기 or 승인)
+// Get order details (pending or approved)
 const getOrder = async (orderId: Order["id"], status: "pending" | "approved", companyId: number) => {
   const order = await orderRepository.getOrderByIdAndStatus(orderId, status, companyId);
 
   if (!order) {
-    throw new NotFoundError("주문 내역을 찾을 수 없습니다.");
+    throw new NotFoundError("Order history not found.");
   }
 
   const { receipts, ...rest } = order;
@@ -63,7 +63,7 @@ const getOrder = async (orderId: Order["id"], status: "pending" | "approved", co
     const budget = await budgetRepository.getMonthlyBudget({ companyId, year, month });
 
     if (!budget) {
-      throw new NotFoundError("예산을 조회할 수 없습니다. 예산을 생성해주세요.");
+      throw new NotFoundError("Unable to retrieve budget. Please create a budget first.");
     }
 
     const { currentMonthBudget, currentMonthExpense } = budget;
@@ -77,7 +77,7 @@ const getOrder = async (orderId: Order["id"], status: "pending" | "approved", co
   return formattedOrder;
 };
 
-// 구매 승인 | 구매 반려
+// Approve or reject order
 const updateOrder = async (
   orderId: Order["id"],
   companyId: Company["id"],
@@ -85,45 +85,45 @@ const updateOrder = async (
 ) => {
   const { year, month } = getDateForBudget();
 
-  // 1. Order 조회
+  // 1. Fetch order
   const order = await orderRepository.getOrderById(orderId);
 
-  if (!order) throw new NotFoundError("주문을 찾을 수 없습니다.");
+  if (!order) throw new NotFoundError("Order not found.");
 
   return await prisma.$transaction(async (tx) => {
-    // 2. Order 상태 업데이트(승인 or 반려)
+    // 2. Update order status (approved or rejected)
     const updatedOrder = await orderRepository.updateOrder(orderId, body, tx);
     const { deliveryFee, productsPriceTotal } = updatedOrder;
 
-    // 2-1. 반려일 때 얼리 리턴
+    // 2-1. Early return for rejected orders
     if (body.status === "REJECTED") return updatedOrder;
 
-    // 3. 예산 조회
+    // 3. Retrieve budget
     const monthlyBudget = await budgetRepository.getMonthlyBudget({ companyId, year, month });
 
-    if (!monthlyBudget) throw new NotFoundError("예산이 존재하지 않습니다.");
+    if (!monthlyBudget) throw new NotFoundError("Budget not found.");
 
     const { currentMonthExpense } = monthlyBudget;
 
-    // 에러. 예산 부족할 경우 승인 실패
+    // Approval fails when the remaining budget is insufficient
     if (monthlyBudget.currentMonthBudget < currentMonthExpense + productsPriceTotal + deliveryFee)
-      throw new BadRequestError("예산이 부족합니다.");
+      throw new BadRequestError("Insufficient budget.");
 
     const totalCurrentMonthExpense = currentMonthExpense + productsPriceTotal + deliveryFee;
 
-    // 4. 지출액 증가
+    // 4. Increase current month expense
     await budgetRepository.updateCurrentMonthExpense({ companyId, year, month }, totalCurrentMonthExpense, tx);
 
     const productIds = order.receipts.map((receipt) => receipt.productId);
 
-    // 5. 상품 판매 횟수 증가
+    // 5. Increase product sales count
     await productRepository.updateCumulativeSales(productIds, tx);
 
     return updatedOrder;
   });
 };
 
-// OrderRequest 관련 기능들 추가
+// Order request features
 const createOrder = async (orderData: {
   userId: string;
   companyId: number;
@@ -131,24 +131,24 @@ const createOrder = async (orderData: {
   requestMessage?: string;
   cartItemIds: number[];
 }) => {
-  // 입력값 검증
+  // Validate input
   if (!orderData.userId) {
-    throw new ValidationError("사용자 ID는 필수입니다.");
+    throw new ValidationError("User ID is required.");
   }
 
   if (!orderData.cartItemIds || orderData.cartItemIds.length === 0) {
-    throw new ValidationError("카트 아이템이 필요합니다.");
+    throw new ValidationError("Cart items are required.");
   }
 
-  // 트랜잭션으로 주문 생성
+  // Create order in a transaction
   const order = await prisma.$transaction(async (tx) => {
     return await orderRepository.createOrder(orderData, tx);
   });
 
-  // 유저 역할 확인
+  // Verify user role
   const user = await userRepository.findActiveUserById(orderData.userId);
 
-  if (!user) throw new AuthenticationError("로그인이 필요합니다.");
+  if (!user) throw new AuthenticationError("Login required.");
 
   const formattedOrder = getOrder(order.id, user.role === "USER" ? "pending" : "approved", orderData.companyId);
 
@@ -159,11 +159,11 @@ const getOrderById = async (orderId: string, userId: string) => {
   const order = await orderRepository.getOrderById(orderId);
 
   if (!order) {
-    throw new NotFoundError("주문을 찾을 수 없습니다.");
+    throw new NotFoundError("Order not found.");
   }
 
   if (order.userId !== userId) {
-    throw new ForbiddenError("해당 주문에 접근할 권한이 없습니다.");
+    throw new ForbiddenError("You do not have permission to access this order.");
   }
 
   return order;
@@ -177,32 +177,32 @@ const cancelOrder = async (orderId: string, userId: string) => {
   const order = await orderRepository.getOrderById(orderId);
 
   if (!order) {
-    throw new NotFoundError("주문을 찾을 수 없습니다.");
+    throw new NotFoundError("Order not found.");
   }
 
   if (order.userId !== userId) {
-    throw new ForbiddenError("해당 주문에 접근할 권한이 없습니다.");
+    throw new ForbiddenError("You do not have permission to access this order.");
   }
 
   if (order.status !== "PENDING") {
-    throw new BadRequestError("대기 중인 주문만 취소할 수 있습니다.");
+    throw new BadRequestError("Only pending orders can be canceled.");
   }
 
   return await orderRepository.updateOrderStatus(orderId, "CANCELED");
 };
 
-// 즉시 구매
+// Instant purchase
 const createInstantOrder = async (orderData: { userId: string; cartItemIds: number[]; companyId: number }) => {
-  // 입력값 검증
+  // Validate input
   if (!orderData.userId) {
-    throw new ValidationError("사용자 ID는 필수입니다.");
+    throw new ValidationError("User ID is required.");
   }
 
   if (!orderData.cartItemIds || orderData.cartItemIds.length === 0) {
-    throw new ValidationError("카트 아이템이 필요합니다.");
+    throw new ValidationError("Cart items are required.");
   }
 
-  // 트랜잭션으로 즉시 구매 주문 생성
+  // Create instant purchase order in a transaction
   const result = await prisma.$transaction(async (tx) => {
     const instantOrderData = {
       ...orderData,
@@ -210,7 +210,7 @@ const createInstantOrder = async (orderData: { userId: string; cartItemIds: numb
       requestMessage: undefined,
     };
 
-    // 주문 생성
+    // Create order
     const order = await orderRepository.createOrder(instantOrderData, tx);
 
     return order;
@@ -223,7 +223,7 @@ export default {
   getOrders,
   getOrder,
   updateOrder,
-  // OrderRequest 관련 기능들
+  // Order request features
   createOrder,
   getOrderById,
   getOrdersByUserId,
