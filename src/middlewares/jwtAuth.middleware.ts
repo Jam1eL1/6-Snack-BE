@@ -18,15 +18,15 @@ declare global {
 }
 
 /**
- * 토큰 인증 미들웨어
- * 쿠키에서 accessToken을 추출하여 JWT를 검증하고,
- * 사용자 정보를 req.user에 설정합니다.
+ * Token authentication middleware.
+ * Extracts accessToken from cookies, verifies JWT,
+ * and sets user info on req.user.
  */
 const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
   const accessToken = req.cookies.accessToken;
 
   if (!accessToken) {
-    return next(new AuthenticationError("인증 토큰이 제공되지 않았습니다."));
+    return next(new AuthenticationError("Authentication token was not provided."));
   }
 
   try {
@@ -44,7 +44,7 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
     });
 
     if (!userWithCompany) {
-      return next(new NotFoundError("사용자 정보를 찾을 수 없습니다. 다시 로그인해 주세요."));
+      return next(new NotFoundError("User information was not found. Please log in again."));
     }
 
     req.user = userWithCompany;
@@ -52,12 +52,12 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      return next(new AuthenticationError("인증 토큰이 만료되었습니다."));
+      return next(new AuthenticationError("Authentication token has expired."));
     } else if (error instanceof jwt.JsonWebTokenError) {
-      return next(new AuthenticationError("유효하지 않은 인증 토큰입니다."));
+      return next(new AuthenticationError("Authentication token is invalid."));
     } else {
-      console.error("[인증 미들웨어 오류]", error);
-      return next(new ServerError("인증 중 알 수 없는 오류가 발생했습니다."));
+      console.error("[Auth middleware error]", error);
+      return next(new ServerError("An unknown error occurred during authentication."));
     }
   }
 };
