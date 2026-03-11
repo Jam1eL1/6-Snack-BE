@@ -40,13 +40,13 @@ model Company {
   Order   Order[]
 }
 
-// 월별 지출&예산
+// Monthly expense & budget
 model MonthlyBudget {
   id                  Int       @id @default(autoincrement())
   companyId           Int
-  currentMonthExpense Int       @default(0) // 이번 달 총 지출액
-  currentMonthBudget  Int       @default(0) // 이번 달 예산
-  monthlyBudget       Int       @default(0) // 매달 고정 예산
+  currentMonthExpense Int       @default(0) // Total expense for the current month
+  currentMonthBudget  Int       @default(0) // Budget for the current month
+  monthlyBudget       Int       @default(0) // Default monthly budget
   year                String
   month               String
   createdAt           DateTime  @default(now())

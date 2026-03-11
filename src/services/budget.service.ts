@@ -5,14 +5,14 @@ import { TUpdateMonthlyBudgetBody } from "../types/budget.type";
 import getDateForBudget from "../utils/getDateForBudget";
 import prisma from "../config/prisma";
 
-// 예산 및 지출 현황 조회(관리자, 최고 관리자)
+// Get budget and expense overview (ADMIN, SUPER_ADMIN)
 const getMonthlyBudget = async (companyId: MonthlyBudget["companyId"]) => {
   const { year, month, previousYear, previousMonth } = getDateForBudget();
 
   const currentMonthBudget = await budgetRepository.getMonthlyBudget({ companyId, year, month });
 
   if (!currentMonthBudget) {
-    throw new NotFoundError("예산이 존재하지 않습니다.");
+    throw new NotFoundError("Budget not found.");
   }
 
   const previousMonthBudget = await budgetRepository.getMonthlyBudget({ companyId, year, month: previousMonth });
@@ -31,7 +31,7 @@ const getMonthlyBudget = async (companyId: MonthlyBudget["companyId"]) => {
   return BudgetAndExpense;
 };
 
-// 예산 수정(최고 관리자)
+// Update budget (SUPER_ADMIN)
 const updateMonthlyBudget = async (companyId: MonthlyBudget["companyId"], body: TUpdateMonthlyBudgetBody) => {
   const { year, month } = getDateForBudget();
 

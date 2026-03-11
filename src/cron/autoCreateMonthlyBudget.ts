@@ -10,7 +10,7 @@ const autoCreateMonthlyBudget = cron.schedule(
       await createMonthlyBudget();
     } catch (e) {
       if (e instanceof Error) {
-        console.error("⚠️MonthlyBudget을 생성하는 중 에러가 발생했습니다.⚠️");
+        console.error("⚠️An error occurred while creating MonthlyBudget.⚠️");
         console.error(e.message);
       }
     }

@@ -6,11 +6,11 @@ const validateBudgetBody: RequestHandler<{}, {}, TUpdateMonthlyBudgetBody> = (re
   const { currentMonthBudget, monthlyBudget } = req.body;
 
   if (!Number.isFinite(currentMonthBudget) || !Number.isFinite(monthlyBudget)) {
-    throw new ValidationError("이번 달 예산 또는 매달 예산에는 숫자만 입력해주세요.");
+    throw new ValidationError("Current month budget and monthly budget must be numbers.");
   }
 
   if (currentMonthBudget < 0 || monthlyBudget < 0) {
-    throw new ValidationError("예산은 0원 이상으로 설정해주세요.");
+    throw new ValidationError("Budget values must be 0 or higher.");
   }
 
   next();

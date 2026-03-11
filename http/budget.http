@@ -4,10 +4,10 @@
 @accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImIwZDVkM2U4LTNiMTYtNDhmYS05ZTJlLTk4MzI5NDJiYzUxNSIsImVtYWlsIjoidGVzdHVzZXJAZXhhbXBsZS5jb20iLCJuYW1lIjoiVGVzdCBVc2VyIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NTE5NjMzMzIsImV4cCI6MTc1MTk2NDIzMn0.qtpZKSF6RsxaGqCogwPBvvFKVwVhAPanxPIqVNcV48k
 @refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU1ODE0OTZkLWQzNWEtNGI3Ny1iMmVkLTNhNGZiNGFlZWUwYyIsImlhdCI6MTc1MjAzOTcyNiwiZXhwIjoxNzUyNjQ0NTI2fQ.KVM4FvB5-pj60hKByYkYnhmXk0LO8T_RgT7C8I_FlBk
 
-### 예산 및 지출 현황 조회
+### Get budget and expense overview
 GET {{url}}/admin/{{companyId}}/budgets
 
-### 예산 수정(최고 관리자)
+### Update budget (super admin)
 PATCH {{url}}/super-admin/{{companyId}}/budgets
 Content-Type: application/json
 

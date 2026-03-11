@@ -10,7 +10,7 @@ const adminRouter = Router();
 
 adminRouter.use("/orders", adminOrderRouter);
 
-// 예산 조회
+// Get budget
 adminRouter.get(
   "/:companyId/budgets",
   authenticateToken,
@@ -18,7 +18,7 @@ adminRouter.get(
   budgetController.getMonthlyBudget,
 );
 
-// 상품 삭제
+// Delete product
 adminRouter.delete(
   "/products/:id",
   authenticateToken,
@@ -26,7 +26,7 @@ adminRouter.delete(
   productController.forceDeleteProduct,
 );
 
-// 상품 수정
+// Update product
 adminRouter.patch(
   "/products/:id",
   authenticateToken,

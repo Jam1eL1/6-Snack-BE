@@ -8,7 +8,7 @@ import validateBudgetBody from "../middlewares/validateBudgetBody.middleware";
 
 const superAdminRouter = Router();
 
-// 회원 탈퇴
+// Delete user account
 superAdminRouter.delete(
   "/users/:userId",
   authenticateToken,
@@ -16,7 +16,7 @@ superAdminRouter.delete(
   userController.deleteUser,
 );
 
-// 회원 권한 수정
+// Update user role
 superAdminRouter.patch(
   "/users/:userId/role",
   authenticateToken,
@@ -24,7 +24,7 @@ superAdminRouter.patch(
   userController.updateRole,
 );
 
-// 회사명, 최고관리자 비밀번호 수정
+// Update company name and super admin password
 superAdminRouter.patch(
   "/users/:userId/company",
   authenticateToken,
@@ -32,7 +32,7 @@ superAdminRouter.patch(
   companyController.updateCompanyInfo,
 );
 
-// 최고관리자의 회사 유저목록 조회
+// Get users in super admin's company
 superAdminRouter.get(
   "/users",
   authenticateToken,
@@ -40,7 +40,7 @@ superAdminRouter.get(
   userController.getUsersByCompany,
 );
 
-// 예산 수정(최고 관리자)
+// Update budget (SUPER_ADMIN)
 superAdminRouter.patch(
   "/:companyId/budgets",
   authenticateToken,
