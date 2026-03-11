@@ -7,15 +7,15 @@ import inviteService from "../services/invite.service";
  * @swagger
  * tags:
  *   - name: Invite
- *     description: 회원 초대 API
+ *     description: User invitation API
  */
 
 /**
  * @swagger
  * /invite:
  *   post:
- *     summary: 회원 초대 이메일 발송
- *     description: SUPER_ADMIN이 회사에 새 사용자를 초대하고 지정된 역할(SUPER_ADMIN 제외)을 부여합니다. 초대 이메일이 자동으로 발송됩니다.
+ *     summary: Send user invitation email
+ *     description: A SUPER_ADMIN invites a new user to the company and assigns a role (excluding SUPER_ADMIN). An invitation email is sent automatically.
  *     tags: [Invite]
  *     security:
  *       - bearerAuth: []
@@ -34,29 +34,29 @@ import inviteService from "../services/invite.service";
  *               email:
  *                 type: string
  *                 format: email
- *                 description: 초대할 사용자의 이메일 주소
+ *                 description: Email address of the user to invite
  *                 example: "user1@example.com"
  *               name:
  *                 type: string
- *                 description: 초대할 사용자의 이름
- *                 example: "박사용"
+ *                 description: Name of the user to invite
+ *                 example: "Alex Park"
  *               role:
  *                 type: string
  *                 enum: [USER, ADMIN]
- *                 description: 부여할 사용자 역할 (SUPER_ADMIN은 제외)
+ *                 description: Role to assign to the invited user (SUPER_ADMIN excluded)
  *                 example: "USER"
  *               companyId:
  *                 type: integer
- *                 description: 초대할 회사 ID
+ *                 description: Company ID
  *                 example: 1
  *               expiresInDays:
  *                 type: integer
- *                 description: 초대 링크 유효 기간 (일 단위, 기본값 7일)
+ *                 description: Invite link validity period in days (default: 7)
  *                 example: 7
  *                 default: 7
  *     responses:
  *       201:
- *         description: 초대 생성 및 이메일 발송 성공
+ *         description: Invite created and email sent successfully
  *         content:
  *           application/json:
  *             schema:
@@ -75,7 +75,7 @@ import inviteService from "../services/invite.service";
  *                       example: "user1@example.com"
  *                     name:
  *                       type: string
- *                       example: "박사용"
+ *                       example: "Alex Park"
  *                     companyId:
  *                       type: integer
  *                       example: 1
@@ -92,9 +92,9 @@ import inviteService from "../services/invite.service";
  *                       example: false
  *                 message:
  *                   type: string
- *                   example: "초대 이메일이 성공적으로 발송되었습니다."
+ *                   example: "Invitation email was sent successfully."
  *       400:
- *         description: 잘못된 요청 (필수값 누락, 잘못된 이메일 형식 등)
+ *         description: Invalid request (e.g., missing required fields, invalid email format)
  *         content:
  *           application/json:
  *             schema:
@@ -102,9 +102,9 @@ import inviteService from "../services/invite.service";
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "이미 존재하는 이메일입니다."
+ *                   example: "This email already exists."
  *       401:
- *         description: 인증 실패
+ *         description: Authentication failed
  *         content:
  *           application/json:
  *             schema:
@@ -112,9 +112,9 @@ import inviteService from "../services/invite.service";
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "유효하지 않은 토큰입니다."
+ *                   example: "Invalid token."
  *       403:
- *         description: 권한 없음 (SUPER_ADMIN 전용)
+ *         description: Forbidden (SUPER_ADMIN only)
  *         content:
  *           application/json:
  *             schema:
@@ -122,9 +122,9 @@ import inviteService from "../services/invite.service";
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "SUPER_ADMIN 권한이 필요합니다."
+ *                   example: "SUPER_ADMIN permission is required."
  *       404:
- *         description: 회사 또는 초대한 사용자 없음
+ *         description: Company or inviter not found
  *         content:
  *           application/json:
  *             schema:
@@ -132,9 +132,9 @@ import inviteService from "../services/invite.service";
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "회사를 찾을 수 없습니다."
+ *                   example: "Company not found."
  *       500:
- *         description: 서버 오류 (이메일 발송 실패 등)
+ *         description: Server error (e.g., email delivery failure)
  *         content:
  *           application/json:
  *             schema:
@@ -142,14 +142,14 @@ import inviteService from "../services/invite.service";
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "이메일 발송 중 오류가 발생했습니다."
+ *                   example: "An error occurred while sending the email."
  */
 const createInvite: RequestHandler<{}, any, TCreateInviteRequestDto> = async (req, res, next) => {
   try {
     const result = await inviteService.createInvite(req.body, req.protocol, process.env.SIGNUP_HOST);
     res.status(201).json(result);
   } catch (error) {
-    console.error("[초대 생성 오류]", error);
+    console.error("[Invite Creation Error]", error);
     next(error);
   }
 };
@@ -158,8 +158,8 @@ const createInvite: RequestHandler<{}, any, TCreateInviteRequestDto> = async (re
  * @swagger
  * /invite/{inviteId}:
  *   get:
- *     summary: 초대 정보 조회
- *     description: 초대 ID를 통해 초대 정보를 조회합니다. 초대 링크를 클릭했을 때 사용됩니다.
+ *     summary: Get invite information
+ *     description: Retrieves invitation details by invite ID. Used when someone opens an invite link.
  *     tags: [Invite]
  *     parameters:
  *       - in: path
@@ -168,11 +168,11 @@ const createInvite: RequestHandler<{}, any, TCreateInviteRequestDto> = async (re
  *         schema:
  *           type: string
  *           format: uuid
- *         description: 초대 고유 ID
+ *         description: Unique invite ID
  *         example: "550e8400-e29b-41d4-a716-446655440000"
  *     responses:
  *       200:
- *         description: 초대 정보 조회 성공
+ *         description: Invite information retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -191,7 +191,7 @@ const createInvite: RequestHandler<{}, any, TCreateInviteRequestDto> = async (re
  *                       example: "user1@example.com"
  *                     name:
  *                       type: string
- *                       example: "박사용"
+ *                       example: "Alex Park"
  *                     companyId:
  *                       type: integer
  *                       example: 1
@@ -214,15 +214,15 @@ const createInvite: RequestHandler<{}, any, TCreateInviteRequestDto> = async (re
  *                           example: 1
  *                         name:
  *                           type: string
- *                           example: "스낵컴퍼니"
+ *                           example: "Snack Company"
  *                         bizNumber:
  *                           type: string
  *                           example: "123-45-67890"
  *                 message:
  *                   type: string
- *                   example: "초대 정보를 성공적으로 조회했습니다."
+ *                   example: "Invite information retrieved successfully."
  *       404:
- *         description: 초대 정보 없음
+ *         description: Invite information not found
  *         content:
  *           application/json:
  *             schema:
@@ -230,9 +230,9 @@ const createInvite: RequestHandler<{}, any, TCreateInviteRequestDto> = async (re
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "유효하지 않은 초대 링크입니다."
+ *                   example: "This invite link is invalid."
  *       410:
- *         description: 초대 링크 만료
+ *         description: Invite link expired
  *         content:
  *           application/json:
  *             schema:
@@ -240,7 +240,7 @@ const createInvite: RequestHandler<{}, any, TCreateInviteRequestDto> = async (re
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "초대 링크가 만료되었습니다."
+ *                   example: "This invite link has expired."
  */
 const getInviteInfo: RequestHandler<TInviteIdParamsDto> = async (req, res, next) => {
   const inviteId = req.params.inviteId;
