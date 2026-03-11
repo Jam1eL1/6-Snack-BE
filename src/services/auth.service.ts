@@ -16,11 +16,11 @@ const signUpSuperAdmin = async (data: {
 }) => {
   const existingUser = await authRepository.findUserByEmailWithCompany(data.email);
   if (existingUser) {
-    throw new ValidationError('이미 등록된 이메일입니다.');
+    throw new ValidationError('This email is already registered.');
   }
   const existingCompany = await authRepository.findCompanyByBizNumber(data.bizNumber);
   if (existingCompany) {
-    throw new ValidationError('이미 등록된 사업자 등록 번호입니다.');
+    throw new ValidationError('This business registration number is already registered.');
   }
   const hashedPassword = await bcrypt.hash(data.password, 10);
   const transactionResult = await authRepository.runInTransaction(async (prismaTransaction) => {
@@ -49,17 +49,17 @@ const signUpSuperAdmin = async (data: {
 const signUpViaInvite = async (inviteId: string, password: string) => {
   const invite = await authRepository.findInviteById(inviteId);
   if (!invite) {
-    throw new NotFoundError('유효하지 않은 초대 링크입니다.');
+    throw new NotFoundError('The invite link is invalid.');
   }
   if (invite.isUsed) {
-    throw new ValidationError('이미 사용된 초대 링크입니다.');
+    throw new ValidationError('This invite link has already been used.');
   }
   if (isExpired(invite.expiresAt)) {
-    throw new ValidationError('만료된 초대 링크입니다.');
+    throw new ValidationError('This invite link has expired.');
   }
   const existingUser = await authRepository.findUserByEmailWithCompany(invite.email);
   if (existingUser) {
-    throw new ValidationError('이미 등록된 이메일입니다.');
+    throw new ValidationError('This email is already registered.');
   }
   const hashedPassword = await bcrypt.hash(password, 10);
   const newUser = await authRepository.runInTransaction(async (prismaTransaction) => {
@@ -79,14 +79,14 @@ const signUpViaInvite = async (inviteId: string, password: string) => {
 const login = async (email: string, password: string) => {
   const user = await authRepository.findUserByEmailWithCompany(email);
   if (!user) {
-    throw new AuthenticationError('이메일 또는 비밀번호가 일치하지 않습니다.');
+    throw new AuthenticationError('Email or password is incorrect.');
   }
   if (user.deletedAt) {
-    throw new AuthenticationError('회원탈퇴된 사용자입니다.');
+    throw new AuthenticationError('This account has been deleted.');
   }
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    throw new AuthenticationError('이메일 또는 비밀번호가 일치하지 않습니다.');
+    throw new AuthenticationError('Email or password is incorrect.');
   }
   const accessToken = jwt.sign(
     { userId: user.id, email: user.email, role: user.role },
@@ -108,11 +108,11 @@ const refreshAccessToken = async (refreshToken: string) => {
     const decoded = jwt.verify(refreshToken, JWT_SECRET) as { userId: string; email: string };
     const user = await authRepository.findUserById(decoded.userId);
     if (!user || !user.hashedRefreshToken) {
-      throw new AuthenticationError('유효하지 않은 리프레시 토큰입니다.');
+      throw new AuthenticationError('Refresh token is invalid.');
     }
     const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.hashedRefreshToken);
     if (!isRefreshTokenValid) {
-      throw new AuthenticationError('유효하지 않은 리프레시 토큰입니다.');
+      throw new AuthenticationError('Refresh token is invalid.');
     }
     const newAccessToken = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
@@ -129,9 +129,9 @@ const refreshAccessToken = async (refreshToken: string) => {
     return { newAccessToken, newRefreshToken, user };
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      throw new AuthenticationError('리프레시 토큰이 만료되었습니다.');
+      throw new AuthenticationError('Refresh token has expired.');
     }
-    throw new AuthenticationError('유효하지 않은 리프레시 토큰입니다.');
+    throw new AuthenticationError('Refresh token is invalid.');
   }
 };
 
