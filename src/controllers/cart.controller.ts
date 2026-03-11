@@ -3,10 +3,11 @@ import cartService from "../services/cart.service";
 import {
   TAddToCartDto,
   TDeleteCartItemsDto,
+  TGetMyCartQueryDto,
   TToggleCheckDto,
-  TToggleParamsDto,
   TToggleAllCheckDto,
   TUpdateQuantityDto,
+  TCartItemParamsDto,
 } from "../dtos/cart.dto";
 import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import budgetService from "../services/budget.service";
@@ -44,7 +45,7 @@ import { AuthenticationError } from "../types/error";
  *         description: Authentication failed
  */
 
-const getMyCart: RequestHandler = async (req, res, next) => {
+const getMyCart: RequestHandler<{}, {}, {}, TGetMyCartQueryDto> = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new AuthenticationError("User information could not be found.");
@@ -52,7 +53,7 @@ const getMyCart: RequestHandler = async (req, res, next) => {
     const { cartItemId, isChecked } = req.query;
 
     if (user.role === "USER" && cartItemId) {
-      const item = await cartService.getCartItemById(user.id, parseNumberOrThrow(cartItemId as string, "cartitemId"));
+      const item = await cartService.getCartItemById(user.id, parseNumberOrThrow(cartItemId, "cartitemId"));
       res.json({ cart: item });
       return;
     }
@@ -105,7 +106,7 @@ const getMyCart: RequestHandler = async (req, res, next) => {
  *         description: Invalid request
  */
 
-const addToCart: RequestHandler<{}, {}, TAddToCartDto> = async (req, res, next) => {
+const addToCart: RequestHandler<{}, {}, TAddToCartDto, {}> = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new AuthenticationError("User information could not be found.");
@@ -137,7 +138,7 @@ const addToCart: RequestHandler<{}, {}, TAddToCartDto> = async (req, res, next) 
  *         description: Invalid request
  */
 
-const deleteSelectedItems: RequestHandler<{}, {}, TDeleteCartItemsDto> = async (req, res, next) => {
+const deleteSelectedItems: RequestHandler<{}, {}, TDeleteCartItemsDto, {}> = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new AuthenticationError("User information could not be found.");
@@ -175,7 +176,7 @@ const deleteSelectedItems: RequestHandler<{}, {}, TDeleteCartItemsDto> = async (
  *         description: Invalid request
  */
 
-const deleteCartItem: RequestHandler<TToggleParamsDto> = async (req, res, next) => {
+const deleteCartItem: RequestHandler<TCartItemParamsDto, {}, {}, {}> = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new AuthenticationError("User information could not be found.");
@@ -219,7 +220,7 @@ const deleteCartItem: RequestHandler<TToggleParamsDto> = async (req, res, next) 
  *         description: Invalid request
  */
 
-const toggleCheckItem: RequestHandler<TToggleParamsDto, {}, TToggleCheckDto> = async (req, res, next) => {
+const toggleCheckItem: RequestHandler<TCartItemParamsDto, {}, TToggleCheckDto, {}> = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new AuthenticationError("User information could not be found.");
@@ -256,7 +257,7 @@ const toggleCheckItem: RequestHandler<TToggleParamsDto, {}, TToggleCheckDto> = a
  *         description: Invalid request
  */
 
-const toggleAllItems: RequestHandler<{}, {}, TToggleAllCheckDto> = async (req, res, next) => {
+const toggleAllItems: RequestHandler<{}, {}, TToggleAllCheckDto, {}> = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new AuthenticationError("User information could not be found.");
@@ -300,7 +301,7 @@ const toggleAllItems: RequestHandler<{}, {}, TToggleAllCheckDto> = async (req, r
  *         description: Invalid request
  */
 
-const updateQuantity: RequestHandler<{ item: string }, {}, TUpdateQuantityDto> = async (req, res, next) => {
+const updateQuantity: RequestHandler<TCartItemParamsDto, {}, TUpdateQuantityDto, {}> = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new AuthenticationError("User information could not be found.");

@@ -11,7 +11,7 @@ export type TToggleCheckDto = {
   isChecked: boolean;
 };
 
-export type TToggleParamsDto = {
+export type TCartItemParamsDto = {
   item: string;
 };
 
@@ -21,4 +21,9 @@ export type TToggleAllCheckDto = {
 
 export type TUpdateQuantityDto = {
   quantity: number;
+};
+
+export type TGetMyCartQueryDto = {
+  cartItemId?: string;
+  isChecked?: "true" | "false";
 };
