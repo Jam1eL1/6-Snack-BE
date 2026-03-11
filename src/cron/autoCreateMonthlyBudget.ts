@@ -15,7 +15,7 @@ const autoCreateMonthlyBudget = cron.schedule(
       }
     }
   },
-  { timezone: "Asia/Seoul" },
+  { timezone: "America/Vancouver" },
 );
 
 export default autoCreateMonthlyBudget;

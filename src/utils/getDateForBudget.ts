@@ -3,7 +3,7 @@ import { formatInTimeZone } from "date-fns-tz";
 
 const getDateForBudget = () => {
   const date = new Date();
-  const timeZone = "Asia/Seoul";
+  const timeZone = "America/Vancouver";
 
   const year = formatInTimeZone(date, timeZone, "yyyy");
   const month = formatInTimeZone(date, timeZone, "MM");
