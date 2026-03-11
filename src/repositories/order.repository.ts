@@ -1,4 +1,4 @@
-import { Company, Order, Prisma } from "@prisma/client";
+import { Company, Order, Prisma } from "../generated/prisma/client";
 import prisma from "../config/prisma";
 import { TGetOrdersQuery, TGetOrdersRepositoryQuery, TGetOrderStatus } from "../types/order.types";
 import { AuthenticationError } from "../types/error";

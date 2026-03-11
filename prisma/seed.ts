@@ -1,4 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcrypt";
 import { companyMockData } from "./mocks/company.mock";
 import { userMockData } from "./mocks/user.mock";
@@ -11,7 +12,8 @@ import { receiptMockData } from "./mocks/receipt.mock";
 import { inviteMockData } from "./mocks/invite.mock";
 import { favoriteMockData } from "./mocks/favorite.mock";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Starting database seeding...");

@@ -10,14 +10,12 @@ import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import { AuthenticationError, NotFoundError } from "../types/error";
 import orderRepository from "../repositories/order.repository";
 
-
 /**
  * @swagger
  * tags:
  *   - name: Order
  *     description: Order API
  */
-
 
 /**
  * @swagger
@@ -44,7 +42,7 @@ import orderRepository from "../repositories/order.repository";
  *           type: integer
  *           default: 1
  *         required: false
- *         description: Page number (default: 1)
+ *         description: Page number (default is 1)
  *         example: 1
  *       - in: query
  *         name: limit
@@ -52,7 +50,7 @@ import orderRepository from "../repositories/order.repository";
  *           type: integer
  *           default: 4
  *         required: false
- *         description: Number of items per page (default: 4)
+ *         description: Number of items per page (default is 4)
  *         example: 4
  *       - in: query
  *         name: orderBy

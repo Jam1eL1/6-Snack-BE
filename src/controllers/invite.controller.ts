@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { TInviteIdParamsDto, TCreateInviteRequestDto } from "../dtos/invite.dto";
-import { Role } from "@prisma/client";
+import { Role } from "../generated/prisma/client";
 import inviteService from "../services/invite.service";
 
 /**
@@ -51,7 +51,7 @@ import inviteService from "../services/invite.service";
  *                 example: 1
  *               expiresInDays:
  *                 type: integer
- *                 description: Invite link validity period in days (default: 7)
+ *                 description: Invite link validity period in days (default is 7)
  *                 example: 7
  *                 default: 7
  *     responses:

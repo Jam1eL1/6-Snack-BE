@@ -1,4 +1,4 @@
-import { MonthlyBudget } from "@prisma/client";
+import { MonthlyBudget } from "../generated/prisma/client";
 import budgetRepository from "../repositories/budget.repository";
 import { NotFoundError } from "../types/error";
 import { TUpdateMonthlyBudgetBody } from "../types/budget.type";

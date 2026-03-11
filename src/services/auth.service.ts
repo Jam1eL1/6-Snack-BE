@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { Role, Prisma } from '@prisma/client';
+import { Role, Prisma } from '../generated/prisma/client';
 import authRepository from '../repositories/auth.repository';
 import { BadRequestError, AuthenticationError, NotFoundError, ValidationError } from '../types/error';
 import { getCurrentYearAndMonth, isExpired } from '../utils/date.utils';

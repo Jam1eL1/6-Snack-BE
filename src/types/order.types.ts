@@ -1,4 +1,4 @@
-import { Order } from "@prisma/client";
+import { Order } from "../generated/prisma/client";
 
 export type TGetOrdersQuery = {
   page: number;

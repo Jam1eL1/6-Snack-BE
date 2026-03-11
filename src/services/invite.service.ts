@@ -1,7 +1,7 @@
 import { TGetInviteInfoResponseDto, TCreateInviteRequestDto, TCreateInviteResponseDto } from "../dtos/invite.dto";
 import inviteRepository from "../repositories/invite.repository";
 import { NotFoundError, BadRequestError, ValidationError } from "../types/error";
-import { Role } from "@prisma/client";
+import { Role } from "../generated/prisma/client";
 import emailService from "./email.service";
 
 const getInviteInfo = async (inviteId: string): Promise<TGetInviteInfoResponseDto> => {

@@ -1,4 +1,4 @@
-import { Prisma, Product, User } from "@prisma/client";
+import { Prisma, Product, User } from "../generated/prisma/client";
 import prisma from "../lib/prisma";
 
 const getCartItemsByUserId = async (userId: string) => {

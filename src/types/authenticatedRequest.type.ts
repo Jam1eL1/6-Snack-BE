@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma/client";
 
 export type TAuthenticatedRequest = Request & {
   user?: Prisma.UserGetPayload<{ include: { company: true } }>;

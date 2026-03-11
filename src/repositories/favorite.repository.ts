@@ -1,5 +1,5 @@
 import prisma from "../config/prisma";
-import { Product, User } from "@prisma/client";
+import { Product, User } from "../generated/prisma/client";
 import { TGetFavoritesQuery } from "../types/favorite.types";
 
 const getFavorites = async (userId: User["id"], params: TGetFavoritesQuery) => {

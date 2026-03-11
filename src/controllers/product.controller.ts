@@ -17,7 +17,7 @@ import {
   TProductIdParamsDto,
   TUpdateProductDto,
 } from "../dtos/product.dto";
-import { Role } from "@prisma/client";
+import { Role } from "../generated/prisma/client";
 
 /**
  * @swagger

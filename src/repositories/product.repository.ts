@@ -1,5 +1,5 @@
 import prisma from "../config/prisma";
-import { Prisma, Product } from "@prisma/client";
+import { Prisma, Product } from "../generated/prisma/client";
 import type {
   TProductQueryOptions,
   TCreatorQueryOptions,

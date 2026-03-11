@@ -1,5 +1,5 @@
 import prisma from "../config/prisma";
-import { Role } from "@prisma/client";
+import { Role } from "../generated/prisma/client";
 import { TCreateInviteRequestDto } from "../dtos/invite.dto";
 
 const findInviteById = async (inviteId: string) => {

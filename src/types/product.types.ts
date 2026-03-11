@@ -1,4 +1,4 @@
-import { Product } from "@prisma/client";
+import { Product } from "../generated/prisma/client";
 
 export type TSortOption = "latest" | "popular" | "low" | "high";
 

@@ -1,4 +1,4 @@
-import { MonthlyBudget } from "@prisma/client";
+import { MonthlyBudget } from "../generated/prisma/client";
 
 export type TMonthlyBudget = {
   companyId: MonthlyBudget["companyId"];

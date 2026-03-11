@@ -1,4 +1,4 @@
-import { Company, Order } from "@prisma/client";
+import { Company, Order } from "../generated/prisma/client";
 import orderRepository from "../repositories/order.repository";
 import { NotFoundError, ValidationError, ForbiddenError, BadRequestError, AuthenticationError } from "../types/error";
 import { TGetOrdersQuery, TOrderWithBudget } from "../types/order.types";
