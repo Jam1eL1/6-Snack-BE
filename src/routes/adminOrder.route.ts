@@ -7,7 +7,7 @@ import validateGetOrderQuery from "../middlewares/validateGetOrderQuery.middlewa
 
 const adminOrderRouter = Router();
 
-// 구매내역 조회(대기 or 승인)
+// Get order history (pending or approved)
 adminOrderRouter.get(
   "/",
   authenticateToken,
@@ -16,10 +16,10 @@ adminOrderRouter.get(
   orderController.getOrders,
 );
 
-// 구매내역 상세 조회(대기 or 승인)
+// Get order details (pending or approved)
 adminOrderRouter.get("/:orderId", authenticateToken, authorizeRoles("ADMIN", "SUPER_ADMIN"), orderController.getOrder);
 
-// 구매 승인 | 구매 반려
+// Approve or reject order
 adminOrderRouter.patch(
   "/:orderId",
   authenticateToken,
@@ -28,7 +28,7 @@ adminOrderRouter.patch(
   orderController.updateOrder,
 );
 
-// 즉시 구매 (어드민 전용)
+// Instant purchase (admin only)
 adminOrderRouter.post(
   "/instant",
   authenticateToken,

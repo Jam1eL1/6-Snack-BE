@@ -6,11 +6,11 @@ const validateGetOrderQuery: RequestHandler<{}, {}, {}, TGetOrdersQueryDto> = (r
   const status = req.query.status;
 
   if (!status) {
-    throw new BadRequestError("상태(pending, approved)를 입력해주세요.");
+    throw new BadRequestError("Please provide status (pending or approved).");
   }
 
   if (status !== "pending" && status !== "approved") {
-    throw new BadRequestError("올바른 상태를 입력해주세요.");
+    throw new BadRequestError("Please provide a valid status.");
   }
 
   next();

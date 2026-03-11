@@ -125,7 +125,7 @@ const createOrder = async (
 ) => {
   const client = tx || prisma;
 
-  // 1. 카트 아이템들을 가져와서 receipt 생성
+  // 1. Fetch cart items and create receipts
   const cartItems = await client.cartItem.findMany({
     where: {
       id: { in: orderData.cartItemIds },
