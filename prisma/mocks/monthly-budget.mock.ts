@@ -1,4 +1,19 @@
-export const monthlyBudgetMockData = [
+const getVancouverYearMonth = () => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Vancouver",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(new Date());
+
+  const year = parts.find((part) => part.type === "year")?.value ?? "2026";
+  const month = parts.find((part) => part.type === "month")?.value ?? "01";
+
+  return { year, month };
+};
+
+const { year: currentYear, month: currentMonth } = getVancouverYearMonth();
+
+const baseMonthlyBudgetMockData = [
   // SAP (Company 1)
   {
     companyId: 1,
@@ -155,4 +170,40 @@ export const monthlyBudgetMockData = [
     updatedAt: new Date("2025-10-01"),
     deletedAt: null,
   },
+];
+
+const currentMonthBudgetDefaults = [
+  {
+    companyId: 1,
+    currentMonthExpense: 0,
+    currentMonthBudget: 2000.0,
+    monthlyBudget: 2000.0,
+    year: currentYear,
+    month: currentMonth,
+    createdAt: new Date(`${currentYear}-${currentMonth}-01T00:00:00.000Z`),
+    updatedAt: new Date(`${currentYear}-${currentMonth}-01T00:00:00.000Z`),
+    deletedAt: null,
+  },
+  {
+    companyId: 2,
+    currentMonthExpense: 0,
+    currentMonthBudget: 1500.0,
+    monthlyBudget: 1500.0,
+    year: currentYear,
+    month: currentMonth,
+    createdAt: new Date(`${currentYear}-${currentMonth}-01T00:00:00.000Z`),
+    updatedAt: new Date(`${currentYear}-${currentMonth}-01T00:00:00.000Z`),
+    deletedAt: null,
+  },
+];
+
+export const monthlyBudgetMockData = [
+  ...baseMonthlyBudgetMockData,
+  ...currentMonthBudgetDefaults.filter(
+    (target) =>
+      !baseMonthlyBudgetMockData.some(
+        (existing) =>
+          existing.companyId === target.companyId && existing.year === target.year && existing.month === target.month,
+      ),
+  ),
 ];
