@@ -1,28 +1,17 @@
-import { Request, Response, NextFunction } from "express";
+import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import { Role } from "../generated/prisma/client";
 import { AuthenticationError, NotFoundError, ServerError } from "../types/error";
 import prisma from "../config/prisma";
-import { Prisma } from "../generated/prisma/client";
 
 const JWT_SECRET: string = process.env.JWT_SECRET ?? "your_very_strong_jwt_secret_key_please_change_this_in_production";
-
-declare global {
-  namespace Express {
-    interface Request {
-      user?: Prisma.UserGetPayload<{
-        include: { company: true };
-      }>;
-    }
-  }
-}
 
 /**
  * Token authentication middleware.
  * Extracts accessToken from cookies, verifies JWT,
  * and sets user info on req.user.
  */
-const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
+const authenticateToken: RequestHandler = async (req, res, next) => {
   const accessToken = req.cookies.accessToken;
 
   if (!accessToken) {

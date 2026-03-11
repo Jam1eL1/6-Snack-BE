@@ -175,7 +175,7 @@ const deleteSelectedItems: RequestHandler<{}, {}, TDeleteCartItemsDto> = async (
  *         description: Invalid request
  */
 
-const deleteCartItem: RequestHandler = async (req, res, next) => {
+const deleteCartItem: RequestHandler<TToggleParamsDto> = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new AuthenticationError("User information could not be found.");

@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from "express";
-import { Role } from "@prisma/client";
+import { RequestHandler } from "express";
+import { Role } from "../generated/prisma/client";
 import authService from "../services/auth.service";
 import { BadRequestError, ValidationError } from "../types/error";
+import { TInviteIdParamsDto } from "../dtos/invite.dto";
 
 /**
  * @swagger
@@ -81,7 +82,7 @@ import { BadRequestError, ValidationError } from "../types/error";
  *       422:
  *         description: Validation failed (e.g., password mismatch, duplicate email/business number)
  */
-const signUpSuperAdmin = async (req: Request, res: Response, next: NextFunction) => {
+const signUpSuperAdmin: RequestHandler = async (req, res, next) => {
   try {
     const { email, name, password, confirmPassword, passwordConfirm, role, companyName, bizNumber } = req.body;
     const passwordConfirmation = confirmPassword || passwordConfirm;
@@ -167,7 +168,7 @@ const signUpSuperAdmin = async (req: Request, res: Response, next: NextFunction)
  *       422:
  *         description: Validation failed (e.g., password mismatch, used/expired invite, duplicate email)
  */
-const signUpViaInvite = async (req: Request, res: Response, next: NextFunction) => {
+const signUpViaInvite: RequestHandler<TInviteIdParamsDto> = async (req, res, next) => {
   try {
     const { inviteId } = req.params;
     const { password, confirmPassword, passwordConfirm } = req.body;
@@ -242,7 +243,7 @@ const signUpViaInvite = async (req: Request, res: Response, next: NextFunction) 
  *       401:
  *         description: Authentication failed (email/password mismatch)
  */
-const login = async (req: Request, res: Response, next: NextFunction) => {
+const login: RequestHandler = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -315,7 +316,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
  *       401:
  *         description: Refresh token is invalid or expired
  */
-const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+const refreshToken: RequestHandler = async (req, res, next) => {
   try {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
@@ -369,7 +370,7 @@ const refreshToken = async (req: Request, res: Response, next: NextFunction) => 
  *       401:
  *         description: Authentication failed
  */
-const logout = async (req: Request, res: Response, next: NextFunction) => {
+const logout: RequestHandler = async (req, res, next) => {
   try {
     if (!req.user) {
       throw new BadRequestError("User is not authenticated.");
