@@ -7,13 +7,13 @@ import companyService from "../services/company.service";
  * @swagger
  * tags:
  *   - name: Company
- *     description: 회사 정보 API
+ *     description: Company information API
  */
 /**
  * @swagger
  * /super-admin/users/{userId}/company:
  *   patch:
- *     summary: 회사 정보 수정(최고관리자)
+ *     summary: Update company information (SUPER_ADMIN)
  *     tags: [Company]
  *     parameters:
  *       - in: path
@@ -21,7 +21,7 @@ import companyService from "../services/company.service";
  *         required: true
  *         schema:
  *           type: string
- *         description: 회사 정보를 수정할 유저 ID
+ *         description: User ID whose company information will be updated
  *     requestBody:
  *       required: true
  *       content:
@@ -35,18 +35,18 @@ import companyService from "../services/company.service";
  *             properties:
  *               companyName:
  *                 type: string
- *                 description: 새로운 회사명
+ *                 description: New company name
  *               newPassword:
  *                 type: string
- *                 description: 새로운 비밀번호
+ *                 description: New password
  *               newPasswordConfirm:
  *                 type: string
- *                 description: 새로운 비밀번호 확인
+ *                 description: Confirm new password
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: 회사 정보 수정 성공
+ *         description: Company information updated successfully
  *         content:
  *           application/json:
  *             schema:
@@ -54,13 +54,13 @@ import companyService from "../services/company.service";
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "회사 정보가 성공적으로 수정되었습니다."
+ *                   example: "Company information was updated successfully."
  *       400:
- *         description: 회사 아이디가 존재하지 않음
+ *         description: Company ID does not exist
  *       401:
- *         description: 인증 실패
+ *         description: Authentication failed
  *       403:
- *         description: 권한 없음 (SUPER_ADMIN만 가능)
+ *         description: Forbidden (SUPER_ADMIN only)
  */
 const updateCompanyInfo: RequestHandler<TUserIdParamsDto, any, TUpdateCompanyInfoDto> = async (req, res, next) => {
   try {
@@ -69,7 +69,7 @@ const updateCompanyInfo: RequestHandler<TUserIdParamsDto, any, TUpdateCompanyInf
     const currentUser = req.user!;
 
     if (!companyId) {
-      res.status(400).json({ message: "회사 아이디가 존재하지 않습니다." });
+      res.status(400).json({ message: "Company ID does not exist." });
       return;
     }
 

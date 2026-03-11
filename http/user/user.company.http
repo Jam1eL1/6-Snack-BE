@@ -1,4 +1,4 @@
-### SUPER_ADMIN 로그인 (쿠키 설정)
+### SUPER_ADMIN login (set cookie)
 POST http://localhost:8080/auth/login
 Content-Type: application/json
 
@@ -7,39 +7,39 @@ Content-Type: application/json
   "password": "1q2w3e4r!"
 }
 
-### 회사 정보 업데이트 (SUPER_ADMIN만 가능)
+### Update company information (SUPER_ADMIN only)
 PATCH http://localhost:8080/super-admin/users/user-1/company
 Content-Type: application/json
 
 {
-  "companyName": "코드다운",
+  "companyName": "CodeDown",
   "passwordData": {
     "newPassword": "newpassword123",
     "newPasswordConfirm": "newpassword123"
   }
 }
 
-### 회사 정보 업데이트 다시 목데이터 값으로 초기화
+### Reset company information to mock-data values
 PATCH http://localhost:8080/super-admin/users/user-1/company
 Content-Type: application/json
 
 {
-  "companyName": "코드잇",
+  "companyName": "Codeit",
   "passwordData": {
     "newPassword": "11111111",
     "newPasswordConfirm": "11111111"
   }
 }
 
-### 회사명만 업데이트
+### Update company name only
 PATCH http://localhost:8080/super-admin/users/user-1/company
 Content-Type: application/json
 
 {
-  "companyName": "업데이트된 회사명"
+  "companyName": "Updated Company Name"
 }
 
-### 비밀번호만 업데이트
+### Update password only
 PATCH http://localhost:8080/super-admin/users/user-1/company
 Content-Type: application/json
 
@@ -50,14 +50,14 @@ Content-Type: application/json
   }
 }
 
-### 에러 케이스: 회사명과 비밀번호 모두 없음
+### Error case: both company name and password are missing
 PATCH http://localhost:8080/super-admin/users/user-1/company
 Content-Type: application/json
 
 {
 }
 
-### 에러 케이스: 비밀번호 불일치
+### Error case: password confirmation mismatch
 PATCH http://localhost:8080/super-admin/users/user-1/company
 Content-Type: application/json
 
@@ -68,7 +68,7 @@ Content-Type: application/json
   }
 }
 
-### 에러 케이스: 비밀번호 8자 미만
+### Error case: password shorter than 8 characters
 PATCH http://localhost:8080/super-admin/users/user-1/company
 Content-Type: application/json
 
@@ -78,8 +78,8 @@ Content-Type: application/json
     "newPasswordConfirm": "123"
   }
 } 
-=== 회사 유저 목록조회 ====
-### SUPER_ADMIN 로그인 (쿠키 설정)
+=== Company user list ====
+### SUPER_ADMIN login (set cookie)
 POST http://localhost:8080/auth/login
 Content-Type: application/json
 
@@ -88,17 +88,17 @@ Content-Type: application/json
   "password": "1q2w3e4r!"
 }
 
-### 전체 회사 유저 목록 조회 (첫 페이지)
+### Get all company users (first page)
 GET http://localhost:8080/super-admin/users?limit=15
 
-### 다음 페이지 조회
+### Get next page
 GET http://localhost:8080/super-admin/users?cursor=user-1
 
-### 이름으로 검색
-GET http://localhost:8080/super-admin/users?name=관리자
+### Search by name
+GET http://localhost:8080/super-admin/users?name=admin
 
-### 이름 검색 + 페이지네이션
-GET http://localhost:8080/super-admin/users?name=유저&cursor=user-4
+### Search by name + pagination
+GET http://localhost:8080/super-admin/users?name=user&cursor=user-4
 
-### 개수 지정 (3개씩)
+### Set page size (3 items each)
 GET http://localhost:8080/super-admin/users?limit=3

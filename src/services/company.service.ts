@@ -10,22 +10,22 @@ const updateCompanyInfo = async (
   currentUser: TCurrentUser,
   companyId: number,
 ): Promise<TUpdateCompanyInfoResponseDto> => {
-  // updateData를 봐서 updateData.companyName 있으면 회사명 변경 실행
+  // Update company name if present in updateData.companyName.
   const newCompanyName = updateData.companyName;
   let newPasswordData = updateData.passwordData;
   let updatedCompany = null;
 
-  // 새로운 회사이름 혹은 비밀번호 둘중하나는 있어야 변경 가능
+  // At least one field (company name or password) must be provided.
   if (!newCompanyName && !newPasswordData) {
-    throw new BadRequestError("최소 하나의 필드는 변경되어야 합니다.");
+    throw new BadRequestError("At least one field must be updated.");
   }
 
-  // 새로운 회사이름 적용
+  // Apply new company name.
   if (newCompanyName) {
     updatedCompany = await companyRepository.updateCompanyName(companyId, newCompanyName);
   }
 
-  // 새로운 비밀번호 적용
+  // Apply new password.
   if (newPasswordData) {
     await userService.updatePassword(
       userId,
@@ -37,15 +37,15 @@ const updateCompanyInfo = async (
     );
   }
 
-  // 응답 데이터 구성
+  // Build response payload.
   const company = updatedCompany || (await companyRepository.findCompanyById(companyId));
 
   if (!company) {
-    throw new BadRequestError("회사 정보가 존재하지 않습니다.");
+    throw new BadRequestError("Company information does not exist.");
   }
 
   return {
-    message: "회사 정보가 업데이트 되었습니다",
+    message: "Company information has been updated.",
     company: {
       id: company.id,
       name: company.name,
