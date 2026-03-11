@@ -33,7 +33,7 @@ const addCartItem = async (userId: string, productId: number, quantity: number) 
 
   if (existing) {
     if (existing.deletedAt) {
-      // 복구 + 수량 업데이트
+      // Restore the item and update quantity
       return await prisma.cartItem.update({
         where: { id: existing.id },
         data: {
@@ -44,7 +44,7 @@ const addCartItem = async (userId: string, productId: number, quantity: number) 
       });
     }
 
-    // 기존 항목에 수량 누적
+    // Increment quantity for existing item
     return await prisma.cartItem.update({
       where: { id: existing.id },
       data: {
@@ -55,7 +55,7 @@ const addCartItem = async (userId: string, productId: number, quantity: number) 
     });
   }
 
-  // 없으면 새로 생성
+  // Create a new item when it does not exist
   return await prisma.cartItem.create({
     data: {
       userId,

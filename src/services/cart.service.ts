@@ -14,7 +14,7 @@ const getMyCart = async (userId: string, isChecked: boolean) => {
       product: true,
     },
     orderBy: {
-      createdAt: "desc", // 최신순 정렬
+      createdAt: "desc", // Sort by newest first
     },
   });
 };
@@ -22,21 +22,21 @@ const getMyCart = async (userId: string, isChecked: boolean) => {
 const getCartItemById = async (userId: string, cartItemId: number) => {
   const item = await cartRepository.findCartItemById(userId, cartItemId);
   if (!item) {
-    throw new NotFoundError("장바구니 항목을 찾을 수 없습니다.");
+    throw new NotFoundError("Cart item not found.");
   }
   return [item];
 };
 
 const addToCart = async (userId: string, dto: TAddToCartDto) => {
   if (dto.quantity <= 0) {
-    throw new BadRequestError("수량은 1 이상이어야 합니다.");
+    throw new BadRequestError("Quantity must be at least 1.");
   }
   return await cartRepository.addCartItem(userId, dto.productId, dto.quantity);
 };
 
 const deleteSelectedItems = async (userId: string, dto: TDeleteCartItemsDto) => {
   if (!dto.itemIds || dto.itemIds.length === 0) {
-    throw new BadRequestError("삭제할 항목이 없습니다.");
+    throw new BadRequestError("No items were provided to delete.");
   }
   return await cartRepository.deleteCartItems(userId, dto.itemIds);
 };
@@ -44,14 +44,14 @@ const deleteSelectedItems = async (userId: string, dto: TDeleteCartItemsDto) => 
 const deleteCartItem = async (userId: string, itemId: number) => {
   const deleted = await cartRepository.deleteCartItemById(userId, itemId);
   if (deleted.count === 0) {
-    throw new NotFoundError("장바구니 항목을 찾을 수 없습니다.");
+    throw new NotFoundError("Cart item not found.");
   }
 };
 
 const toggleCheckCartItem = async (userId: string, itemId: number, dto: TToggleCheckDto) => {
   const updated = await cartRepository.updateCartItemChecked(userId, itemId, dto.isChecked);
   if (updated.count === 0) {
-    throw new NotFoundError("장바구니 항목을 찾을 수 없습니다.");
+    throw new NotFoundError("Cart item not found.");
   }
 };
 
@@ -61,13 +61,13 @@ const toggleAllCheck = async (userId: string, isChecked: boolean) => {
 
 const updateQuantity = async (userId: string, itemId: number, quantity: number) => {
   if (quantity <= 0) {
-    throw new BadRequestError("수량은 1 이상이어야 합니다.");
+    throw new BadRequestError("Quantity must be at least 1.");
   }
 
   const updated = await cartRepository.updateCartItemQuantity(userId, itemId, quantity);
 
   if (updated.count === 0) {
-    throw new NotFoundError("장바구니 항목을 찾을 수 없습니다.");
+    throw new NotFoundError("Cart item not found.");
   }
 };
 

@@ -16,38 +16,38 @@ import { AuthenticationError } from "../types/error";
  * @swagger
  * tags:
  *   - name: Cart
- *     description: 장바구니 API
+ *     description: Cart API
  */
 
 /**
  * @swagger
  * /cart:
  *   get:
- *     summary: 장바구니 조회
+ *     summary: Get cart items
  *     tags: [Cart]
  *     parameters:
  *       - in: query
  *         name: cartItemId
  *         schema:
  *           type: string
- *         description: 특정 장바구니 항목 ID
+ *         description: Specific cart item ID
  *       - in: query
  *         name: isChecked
  *         schema:
  *           type: string
  *           enum: [true, false]
- *         description: 체크된 항목만 조회할지 여부
+ *         description: Whether to return only checked items
  *     responses:
  *       200:
- *         description: 장바구니 조회 성공
+ *         description: Cart items retrieved successfully
  *       401:
- *         description: 인증 실패
+ *         description: Authentication failed
  */
 
 const getMyCart: RequestHandler = async (req, res, next) => {
   try {
     const user = req.user;
-    if (!user) throw new AuthenticationError("유저 정보를 찾을 수 없습니다.");
+    if (!user) throw new AuthenticationError("User information could not be found.");
 
     const { cartItemId, isChecked } = req.query;
 
@@ -82,7 +82,7 @@ const getMyCart: RequestHandler = async (req, res, next) => {
  * @swagger
  * /cart:
  *   post:
- *     summary: 장바구니에 상품 추가
+ *     summary: Add product to cart
  *     tags: [Cart]
  *     requestBody:
  *       required: true
@@ -100,15 +100,15 @@ const getMyCart: RequestHandler = async (req, res, next) => {
  *                 type: number
  *     responses:
  *       201:
- *         description: 장바구니 추가 성공
+ *         description: Product added to cart successfully
  *       400:
- *         description: 잘못된 요청
+ *         description: Invalid request
  */
 
 const addToCart: RequestHandler<{}, {}, TAddToCartDto> = async (req, res, next) => {
   try {
     const user = req.user;
-    if (!user) throw new AuthenticationError("유저 정보를 찾을 수 없습니다.");
+    if (!user) throw new AuthenticationError("User information could not be found.");
 
     const result = await cartService.addToCart(user.id, req.body);
     res.status(201).json(result);
@@ -121,7 +121,7 @@ const addToCart: RequestHandler<{}, {}, TAddToCartDto> = async (req, res, next) 
  * @swagger
  * /cart/{item}:
  *   delete:
- *     summary: 장바구니 항목 삭제(단일)
+ *     summary: Delete a cart item
  *     tags: [Cart]
  *     parameters:
  *       - in: path
@@ -129,18 +129,18 @@ const addToCart: RequestHandler<{}, {}, TAddToCartDto> = async (req, res, next) 
  *         required: true
  *         schema:
  *           type: string
- *         description: 장바구니 항목 ID
+ *         description: Cart item ID
  *     responses:
  *       204:
- *         description: 삭제 성공
+ *         description: Deleted successfully
  *       400:
- *         description: 잘못된 요청
+ *         description: Invalid request
  */
 
 const deleteSelectedItems: RequestHandler<{}, {}, TDeleteCartItemsDto> = async (req, res, next) => {
   try {
     const user = req.user;
-    if (!user) throw new AuthenticationError("유저 정보를 찾을 수 없습니다.");
+    if (!user) throw new AuthenticationError("User information could not be found.");
 
     await cartService.deleteSelectedItems(user.id, req.body);
     res.status(204).send();
@@ -153,7 +153,7 @@ const deleteSelectedItems: RequestHandler<{}, {}, TDeleteCartItemsDto> = async (
  * @swagger
  * /cart/delete:
  *   post:
- *     summary: 장바구니 항목 삭제(선택)
+ *     summary: Delete selected cart items
  *     tags: [Cart]
  *     requestBody:
  *       required: true
@@ -170,15 +170,15 @@ const deleteSelectedItems: RequestHandler<{}, {}, TDeleteCartItemsDto> = async (
  *                   type: number
  *     responses:
  *       204:
- *         description: 삭제 성공
+ *         description: Deleted successfully
  *       400:
- *         description: 잘못된 요청
+ *         description: Invalid request
  */
 
 const deleteCartItem: RequestHandler = async (req, res, next) => {
   try {
     const user = req.user;
-    if (!user) throw new AuthenticationError("유저 정보를 찾을 수 없습니다.");
+    if (!user) throw new AuthenticationError("User information could not be found.");
 
     const itemId = parseNumberOrThrow(req.params.item, "itemId");
     await cartService.deleteCartItem(user.id, itemId);
@@ -192,7 +192,7 @@ const deleteCartItem: RequestHandler = async (req, res, next) => {
  * @swagger
  * /cart/{item}/check:
  *   patch:
- *     summary: 장바구니 항목 선택/해제(특정)
+ *     summary: Check or uncheck a cart item
  *     tags: [Cart]
  *     parameters:
  *       - in: path
@@ -200,7 +200,7 @@ const deleteCartItem: RequestHandler = async (req, res, next) => {
  *         required: true
  *         schema:
  *           type: string
- *         description: 장바구니 항목 ID
+ *         description: Cart item ID
  *     requestBody:
  *       required: true
  *       content:
@@ -214,15 +214,15 @@ const deleteCartItem: RequestHandler = async (req, res, next) => {
  *                 type: boolean
  *     responses:
  *       204:
- *         description: 체크 상태 변경 성공
+ *         description: Checked status updated successfully
  *       400:
- *         description: 잘못된 요청
+ *         description: Invalid request
  */
 
 const toggleCheckItem: RequestHandler<TToggleParamsDto, {}, TToggleCheckDto> = async (req, res, next) => {
   try {
     const user = req.user;
-    if (!user) throw new AuthenticationError("유저 정보를 찾을 수 없습니다.");
+    if (!user) throw new AuthenticationError("User information could not be found.");
 
     const itemId = parseNumberOrThrow(req.params.item, "itemId");
     await cartService.toggleCheckCartItem(user.id, itemId, req.body);
@@ -236,7 +236,7 @@ const toggleCheckItem: RequestHandler<TToggleParamsDto, {}, TToggleCheckDto> = a
  * @swagger
  * /cart/check/all:
  *   patch:
- *     summary: 장바구니 항목 선택/해제(전체)
+ *     summary: Check or uncheck all cart items
  *     tags: [Cart]
  *     requestBody:
  *       required: true
@@ -251,15 +251,15 @@ const toggleCheckItem: RequestHandler<TToggleParamsDto, {}, TToggleCheckDto> = a
  *                 type: boolean
  *     responses:
  *       204:
- *         description: 전체 체크 상태 변경 성공
+ *         description: All checked states updated successfully
  *       400:
- *         description: 잘못된 요청
+ *         description: Invalid request
  */
 
 const toggleAllItems: RequestHandler<{}, {}, TToggleAllCheckDto> = async (req, res, next) => {
   try {
     const user = req.user;
-    if (!user) throw new AuthenticationError("유저 정보를 찾을 수 없습니다.");
+    if (!user) throw new AuthenticationError("User information could not be found.");
 
     await cartService.toggleAllCheck(user.id, req.body.isChecked);
     res.status(204).send();
@@ -272,7 +272,7 @@ const toggleAllItems: RequestHandler<{}, {}, TToggleAllCheckDto> = async (req, r
  * @swagger
  * /cart/{item}/quantity:
  *   patch:
- *     summary: 장바구니 항목 수량 변경
+ *     summary: Update cart item quantity
  *     tags: [Cart]
  *     parameters:
  *       - in: path
@@ -280,7 +280,7 @@ const toggleAllItems: RequestHandler<{}, {}, TToggleAllCheckDto> = async (req, r
  *         required: true
  *         schema:
  *           type: string
- *         description: 장바구니 항목 ID
+ *         description: Cart item ID
  *     requestBody:
  *       required: true
  *       content:
@@ -295,15 +295,15 @@ const toggleAllItems: RequestHandler<{}, {}, TToggleAllCheckDto> = async (req, r
  *                 minimum: 1
  *     responses:
  *       204:
- *         description: 수량 변경 성공
+ *         description: Quantity updated successfully
  *       400:
- *         description: 잘못된 요청
+ *         description: Invalid request
  */
 
 const updateQuantity: RequestHandler<{ item: string }, {}, TUpdateQuantityDto> = async (req, res, next) => {
   try {
     const user = req.user;
-    if (!user) throw new AuthenticationError("유저 정보를 찾을 수 없습니다.");
+    if (!user) throw new AuthenticationError("User information could not be found.");
 
     const itemId = parseNumberOrThrow(req.params.item, "itemId");
     await cartService.updateQuantity(user.id, itemId, req.body.quantity);
