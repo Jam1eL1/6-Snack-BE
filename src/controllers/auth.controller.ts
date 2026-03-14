@@ -3,6 +3,7 @@ import { Role } from "../generated/prisma/client";
 import authService from "../services/auth.service";
 import { BadRequestError, ValidationError } from "../types/error";
 import { TInviteIdParamsDto } from "../dtos/invite.dto";
+import { ACCESS_TOKEN_COOKIE_MAX_AGE_MS, REFRESH_TOKEN_COOKIE_MAX_AGE_MS } from "../constants/auth.constants";
 
 /**
  * @swagger
@@ -250,8 +251,6 @@ const login: RequestHandler = async (req, res, next) => {
       throw new BadRequestError("Email and password are both required.");
     }
     const { user, accessToken, refreshToken } = await authService.login(email, password);
-    const accessTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
-    const refreshTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     const isProduction = process.env.NODE_ENV === "production";
     const cookieDomain = isProduction ? ".5nack.site" : undefined;
     res.cookie("accessToken", accessToken, {
@@ -259,7 +258,7 @@ const login: RequestHandler = async (req, res, next) => {
       domain: cookieDomain,
       secure: isProduction,
       sameSite: "lax",
-      expires: accessTokenExpires,
+      maxAge: ACCESS_TOKEN_COOKIE_MAX_AGE_MS,
       path: "/",
     });
     res.cookie("refreshToken", refreshToken, {
@@ -267,7 +266,7 @@ const login: RequestHandler = async (req, res, next) => {
       domain: cookieDomain,
       secure: isProduction,
       sameSite: "lax",
-      expires: refreshTokenExpires,
+      maxAge: REFRESH_TOKEN_COOKIE_MAX_AGE_MS,
       path: "/",
     });
     console.log(`[Login success] User: ${user.email} (${user.role}), company: ${user.company.name})`);
@@ -323,8 +322,6 @@ const refreshToken: RequestHandler = async (req, res, next) => {
       throw new BadRequestError("Refresh token was not provided. Please log in again.");
     }
     const { newAccessToken, newRefreshToken, user } = await authService.refreshAccessToken(refreshToken);
-    const newAccessTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
-    const newRefreshTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     const isProduction = process.env.NODE_ENV === "production";
     const cookieDomain = isProduction ? ".5nack.site" : undefined;
     res.cookie("accessToken", newAccessToken, {
@@ -332,7 +329,7 @@ const refreshToken: RequestHandler = async (req, res, next) => {
       domain: cookieDomain,
       secure: isProduction,
       sameSite: "lax",
-      expires: newAccessTokenExpires,
+      maxAge: ACCESS_TOKEN_COOKIE_MAX_AGE_MS,
       path: "/",
     });
     res.cookie("refreshToken", newRefreshToken, {
@@ -340,7 +337,7 @@ const refreshToken: RequestHandler = async (req, res, next) => {
       domain: cookieDomain,
       secure: isProduction,
       sameSite: "lax",
-      expires: newRefreshTokenExpires,
+      maxAge: REFRESH_TOKEN_COOKIE_MAX_AGE_MS,
       path: "/",
     });
     console.log(`[Token refresh success] User: ${user.email}`);

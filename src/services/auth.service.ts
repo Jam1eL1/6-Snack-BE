@@ -4,6 +4,7 @@ import { Role, Prisma } from '../generated/prisma/client';
 import authRepository from '../repositories/auth.repository';
 import { BadRequestError, AuthenticationError, NotFoundError, ValidationError } from '../types/error';
 import { getCurrentYearAndMonth, isExpired } from '../utils/date.utils';
+import { ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN } from '../constants/auth.constants';
 
 const JWT_SECRET: string = process.env.JWT_SECRET || 'your_very_strong_and_secret_jwt_key_please_change_this_in_production';
 
@@ -91,12 +92,12 @@ const login = async (email: string, password: string) => {
   const accessToken = jwt.sign(
     { userId: user.id, email: user.email, role: user.role },
     JWT_SECRET,
-    { expiresIn: '15m' }
+    { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
   );
   const refreshToken = jwt.sign(
     { userId: user.id, email: user.email },
     JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
   );
   const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
   await authRepository.updateUserRefreshToken(user.id, hashedRefreshToken);
@@ -117,12 +118,12 @@ const refreshAccessToken = async (refreshToken: string) => {
     const newAccessToken = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       JWT_SECRET,
-      { expiresIn: '15m' }
+      { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
     );
     const newRefreshToken = jwt.sign(
       { userId: user.id, email: user.email },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
     );
     const newHashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
     await authRepository.updateUserRefreshToken(user.id, newHashedRefreshToken);
