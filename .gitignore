@@ -33,3 +33,4 @@ jspm_packages/
 /src/generated/prisma
 
 Convention.md
+doc/
