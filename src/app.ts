@@ -11,7 +11,7 @@ import autoCreateMonthlyBudget from "./cron/autoCreateMonthlyBudget";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import "./instrument";
+import { isSentryEnabled } from "./instrument";
 import * as Sentry from "@sentry/node";
 
 const app: Application = express();
@@ -47,7 +47,9 @@ app.use("/", indexRouter);
 
 autoCreateMonthlyBudget.start();
 
-Sentry.setupExpressErrorHandler(app);
+if (isSentryEnabled) {
+  Sentry.setupExpressErrorHandler(app);
+}
 
 app.use(errorHandler);
 
