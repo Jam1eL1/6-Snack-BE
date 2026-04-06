@@ -7,8 +7,7 @@ import {
   TUpdateStatusOrderBodyDto,
 } from "../dtos/order.dto";
 import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
-import { AuthenticationError, NotFoundError } from "../types/error";
-import orderRepository from "../repositories/order.repository";
+import { AuthenticationError } from "../types/error";
 
 /**
  * @swagger
@@ -364,19 +363,7 @@ const getOrder: RequestHandler<TGetOrderParamsDto, {}, {}, TGetOrderQueryDto> = 
   if (!user) throw new AuthenticationError("Invalid user.");
 
   const { status } = req.query;
-
-  if (!status) {
-    const order = await orderRepository.getOrderById(orderId);
-
-    if (!order) throw new NotFoundError("Order information not found.");
-
-    res.status(200).json(order);
-    return;
-  }
-
-  const companyId = user.companyId;
-
-  const order = await orderService.getOrder(orderId, status, companyId);
+  const order = await orderService.getCompanyOrderDetailForAdmin(orderId, status, user.companyId);
 
   res.status(200).json(order);
 };

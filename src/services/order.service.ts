@@ -40,20 +40,26 @@ const getOrders = async ({ page, limit, orderBy, status }: TGetOrdersQuery, comp
   };
 };
 
-// Get order details (pending or approved)
-const getOrder = async (orderId: Order["id"], status: "pending" | "approved", companyId: number) => {
-  const order = await orderRepository.getOrderByIdAndStatus(orderId, status, companyId);
+// Get company order details for admin users (pending, approved, or without status filter)
+const getCompanyOrderDetailForAdmin = async (
+  orderId: Order["id"],
+  status: "pending" | "approved" | undefined,
+  companyId: number,
+) => {
+  const order = status
+    ? await orderRepository.getOrderByIdAndStatus(orderId, status, companyId)
+    : await orderRepository.getOrderById(orderId);
 
-  if (!order) {
-    throw new NotFoundError("Order history not found.");
+  if (!order || order.companyId !== companyId) {
+    throw new NotFoundError(status ? "Order history not found." : "Order information not found.");
   }
 
-  const { receipts, ...rest } = order;
+  const { receipts, user, ...rest } = order;
 
   let formattedOrder: TOrderWithBudget = {
     ...rest,
-    requester: order.user.name,
-    products: order.receipts,
+    requester: user.name,
+    products: receipts,
     budget: { currentMonthBudget: null, currentMonthExpense: null },
   };
 
@@ -150,7 +156,11 @@ const createOrder = async (orderData: {
 
   if (!user) throw new AuthenticationError("Login required.");
 
-  const formattedOrder = getOrder(order.id, user.role === "USER" ? "pending" : "approved", orderData.companyId);
+  const formattedOrder = getCompanyOrderDetailForAdmin(
+    order.id,
+    user.role === "USER" ? "pending" : "approved",
+    orderData.companyId,
+  );
 
   return formattedOrder;
 };
@@ -221,7 +231,7 @@ const createInstantOrder = async (orderData: { userId: string; cartItemIds: numb
 
 export default {
   getOrders,
-  getOrder,
+  getCompanyOrderDetailForAdmin,
   updateOrder,
   // Order request features
   createOrder,
