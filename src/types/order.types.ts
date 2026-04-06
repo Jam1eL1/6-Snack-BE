@@ -18,18 +18,3 @@ export type TGetOrderStatus = {
   pending: "PENDING";
   approved: ["APPROVED", "INSTANT_APPROVED"];
 };
-
-export type TOrderWithBudget = Order & {
-  requester: string;
-  products: {
-    id: number;
-    quantity: number;
-    price: number;
-    imageUrl: string;
-    productName: string;
-  }[];
-  budget: {
-    currentMonthBudget: number | null;
-    currentMonthExpense: number | null;
-  };
-};

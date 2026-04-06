@@ -1,12 +1,13 @@
 import { Company, Order } from "../generated/prisma/client";
 import orderRepository from "../repositories/order.repository";
 import { NotFoundError, ValidationError, ForbiddenError, BadRequestError, AuthenticationError } from "../types/error";
-import { TGetOrdersQuery, TOrderWithBudget } from "../types/order.types";
+import { TGetOrdersQuery } from "../types/order.types";
 import budgetRepository from "../repositories/budget.repository";
 import getDateForBudget from "../utils/getDateForBudget";
 import prisma from "../config/prisma";
 import productRepository from "../repositories/product.repository";
 import userRepository from "../repositories/user.repository";
+import { TCompanyOrderDetailForAdminResponseDto } from "../dtos/order.dto";
 
 // Get order history (pending or approved)
 const getOrders = async ({ page, limit, orderBy, status }: TGetOrdersQuery, companyId: number) => {
@@ -45,7 +46,7 @@ const getCompanyOrderDetailForAdmin = async (
   orderId: Order["id"],
   status: "pending" | "approved" | undefined,
   companyId: number,
-) => {
+): Promise<TCompanyOrderDetailForAdminResponseDto> => {
   const order = status
     ? await orderRepository.getOrderByIdAndStatus(orderId, status, companyId)
     : await orderRepository.getOrderById(orderId);
@@ -56,7 +57,7 @@ const getCompanyOrderDetailForAdmin = async (
 
   const { receipts, user, ...rest } = order;
 
-  let formattedOrder: TOrderWithBudget = {
+  const formattedOrder: TCompanyOrderDetailForAdminResponseDto = {
     ...rest,
     requester: user.name,
     products: receipts,
@@ -74,10 +75,10 @@ const getCompanyOrderDetailForAdmin = async (
 
     const { currentMonthBudget, currentMonthExpense } = budget;
 
-    return (formattedOrder = {
+    return {
       ...formattedOrder,
       budget: { currentMonthBudget, currentMonthExpense },
-    });
+    };
   }
 
   return formattedOrder;
