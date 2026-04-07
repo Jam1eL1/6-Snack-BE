@@ -7,7 +7,7 @@ import getDateForBudget from "../utils/getDateForBudget";
 import prisma from "../config/prisma";
 import productRepository from "../repositories/product.repository";
 import userRepository from "../repositories/user.repository";
-import { TCompanyOrderDetailForAdminResponseDto } from "../dtos/order.dto";
+import { TCompanyOrderDetailForAdminResponseDto, TUpdateOrderResponseDto } from "../dtos/order.dto";
 
 // Get order history (pending or approved)
 const getOrders = async ({ page, limit, orderBy, status }: TGetOrdersQuery, companyId: number) => {
@@ -89,7 +89,7 @@ const updateOrder = async (
   orderId: Order["id"],
   companyId: Company["id"],
   body: Pick<Order, "approver" | "adminMessage" | "status">,
-) => {
+): Promise<TUpdateOrderResponseDto> => {
   const { year, month } = getDateForBudget();
 
   // 1. Fetch order

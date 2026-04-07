@@ -53,3 +53,17 @@ export type TCompanyOrderDetailForAdminResponseDto = {
   products: TOrderProductResponseDto[];
   budget: TOrderBudgetResponseDto;
 };
+
+export type TUpdateOrderResponseDto = {
+  id: string;
+  companyId: number;
+  userId: string;
+  approver: string | null;
+  adminMessage: string | null;
+  requestMessage: string | null;
+  deliveryFee: number;
+  productsPriceTotal: number;
+  createdAt: Date;
+  updatedAt: Date;
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELED" | "INSTANT_APPROVED";
+};
