@@ -1,6 +1,7 @@
 export const receiptMockData = [
   // Order 1 Receipts (user-1: Chips Ahoy 2x + Hershey's 3x)
   {
+    orderIndex: 1,
     productId: 3,
     productName: "Chips Ahoy! Original Cookies",
     price: 3.49,
@@ -9,6 +10,7 @@ export const receiptMockData = [
     createdAt: new Date("2025-06-15T10:30:00Z"),
   },
   {
+    orderIndex: 1,
     productId: 5,
     productName: "Hershey's Milk Chocolate Bar",
     price: 1.49,
@@ -19,6 +21,7 @@ export const receiptMockData = [
 
   // Order 2 Receipts (user-2: Coca-Cola 2x + Tropicana 1x)
   {
+    orderIndex: 2,
     productId: 9,
     productName: "Coca-Cola Classic 500ml",
     price: 1.99,
@@ -27,6 +30,7 @@ export const receiptMockData = [
     createdAt: new Date("2025-07-01T14:15:00Z"),
   },
   {
+    orderIndex: 2,
     productId: 11,
     productName: "Tropicana Orange Juice 500ml",
     price: 2.79,
@@ -37,6 +41,7 @@ export const receiptMockData = [
 
   // Order 3 Receipts (user-3: Red Bull 2x + Ramen 3x)
   {
+    orderIndex: 3,
     productId: 14,
     productName: "Red Bull Energy Drink",
     price: 3.79,
@@ -45,6 +50,7 @@ export const receiptMockData = [
     createdAt: new Date("2025-07-07T09:45:00Z"),
   },
   {
+    orderIndex: 3,
     productId: 21,
     productName: "Maruchan Chicken Ramen",
     price: 1.29,
@@ -55,6 +61,7 @@ export const receiptMockData = [
 
   // Order 4 Receipts (user-3: Post-it 2x + Pens 5x) - PENDING status
   {
+    orderIndex: 4,
     productId: 25,
     productName: "Post-it Super Sticky Notes",
     price: 3.49,
@@ -63,6 +70,7 @@ export const receiptMockData = [
     createdAt: new Date("2025-07-12T11:20:00Z"),
   },
   {
+    orderIndex: 4,
     productId: 24,
     productName: "BIC Round Stic Ballpoint Pen",
     price: 0.99,
@@ -73,6 +81,7 @@ export const receiptMockData = [
 
   // Order 5 Receipts (user-1-2: Chips Ahoy 3x + Hershey's 2x)
   {
+    orderIndex: 5,
     productId: 3,
     productName: "Chips Ahoy! Original Cookies",
     price: 3.49,
@@ -81,6 +90,7 @@ export const receiptMockData = [
     createdAt: new Date("2025-07-20T13:10:00Z"),
   },
   {
+    orderIndex: 5,
     productId: 5,
     productName: "Hershey's Milk Chocolate Bar",
     price: 1.49,

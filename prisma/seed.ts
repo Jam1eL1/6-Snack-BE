@@ -11,6 +11,7 @@ import { orderMockData } from "./mocks/order.mock";
 import { receiptMockData } from "./mocks/receipt.mock";
 import { inviteMockData } from "./mocks/invite.mock";
 import { favoriteMockData } from "./mocks/favorite.mock";
+import "dotenv/config";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -200,122 +201,12 @@ async function main() {
 
   // 8. Insert Receipt data
   console.log("🧾 Seeding receipts...");
-
-  // Dynamically create Receipt data corresponding to each Order
-  const receiptDataToInsert: any[] = [];
-
-  // Order 1: Chips Ahoy x 2 + Hershey's x 3
-  receiptDataToInsert.push(
-    {
-      productId: productIdMap.get(3),
-      orderId: orderIdMap.get(1),
-      productName: "Chips Ahoy! Original Cookies",
-      price: 3.49,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/chips_ahoy.png",
-      quantity: 2,
-      createdAt: new Date("2025-06-15T10:30:00Z"),
-    },
-    {
-      productId: productIdMap.get(5),
-      orderId: orderIdMap.get(1),
-      productName: "Hershey's Milk Chocolate Bar",
-      price: 1.49,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/hersheys_milk_chocolate.png",
-      quantity: 3,
-      createdAt: new Date("2025-06-15T10:30:00Z"),
-    },
-  );
-
-  // Order 2: Coca-Cola x 2 + Tropicana x 1
-  receiptDataToInsert.push(
-    {
-      productId: productIdMap.get(9),
-      orderId: orderIdMap.get(2),
-      productName: "Coca-Cola Classic 500ml",
-      price: 1.99,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/coca_cola_500ml.png",
-      quantity: 2,
-      createdAt: new Date("2025-07-01T14:15:00Z"),
-    },
-    {
-      productId: productIdMap.get(11),
-      orderId: orderIdMap.get(2),
-      productName: "Tropicana Orange Juice 500ml",
-      price: 2.79,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/tropicana_orange_juice.png",
-      quantity: 1,
-      createdAt: new Date("2025-07-01T14:15:00Z"),
-    },
-  );
-
-  // Order 3: Red Bull x 2 + Ramen x 3
-  receiptDataToInsert.push(
-    {
-      productId: productIdMap.get(14),
-      orderId: orderIdMap.get(3),
-      productName: "Red Bull Energy Drink",
-      price: 3.79,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/red_bull.png",
-      quantity: 2,
-      createdAt: new Date("2025-07-07T09:45:00Z"),
-    },
-    {
-      productId: productIdMap.get(21),
-      orderId: orderIdMap.get(3),
-      productName: "Maruchan Chicken Ramen",
-      price: 1.29,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/maruchan_chicken.png",
-      quantity: 3,
-      createdAt: new Date("2025-07-07T09:45:00Z"),
-    },
-  );
-
-  // Order 4: Post-it x 2 + Pens x 5 (PENDING status but Receipt is created)
-  receiptDataToInsert.push(
-    {
-      productId: productIdMap.get(25),
-      orderId: orderIdMap.get(4),
-      productName: "Post-it Super Sticky Notes",
-      price: 3.49,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/post_it_notes.png",
-      quantity: 2,
-      createdAt: new Date("2025-07-12T11:20:00Z"),
-    },
-    {
-      productId: productIdMap.get(24),
-      orderId: orderIdMap.get(4),
-      productName: "BIC Round Stic Ballpoint Pen",
-      price: 0.99,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/bic_pen.png",
-      quantity: 5,
-      createdAt: new Date("2025-07-12T11:20:00Z"),
-    },
-  );
-
-  // Order 5: Chips Ahoy x 3 + Hershey's x 2 (ordered by user-1-2)
-  receiptDataToInsert.push(
-    {
-      productId: productIdMap.get(3),
-      orderId: orderIdMap.get(5),
-      productName: "Chips Ahoy! Original Cookies",
-      price: 3.49,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/chips_ahoy.png",
-      quantity: 3,
-      createdAt: new Date("2025-07-20T13:10:00Z"),
-    },
-    {
-      productId: productIdMap.get(5),
-      orderId: orderIdMap.get(5),
-      productName: "Hershey's Milk Chocolate Bar",
-      price: 1.49,
-      imageUrl: "https://snack-s3-bucket-2025.s3.us-west-2.amazonaws.com/products/hersheys_milk_chocolate.png",
-      quantity: 2,
-      createdAt: new Date("2025-07-20T13:10:00Z"),
-    },
-  );
-
   await prisma.receipt.createMany({
-    data: receiptDataToInsert,
+    data: receiptMockData.map(({ orderIndex, productId, ...receipt }) => ({
+      ...receipt,
+      productId: productIdMap.get(productId),
+      orderId: orderIdMap.get(orderIndex),
+    })),
     skipDuplicates: true,
   });
 

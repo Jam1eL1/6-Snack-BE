@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "dist/server.js",
   "scripts": {
-    "seed": "ts-node prisma/seed.ts",
+    "seed": "dotenv -e .env -- ts-node prisma/seed.ts",
     "start": "node --enable-source-maps dist/server.js",
     "dev": "ts-node-dev --respawn src/server.ts",
     "build": "tsc",
