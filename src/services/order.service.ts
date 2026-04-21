@@ -7,7 +7,11 @@ import getDateForBudget from "../utils/getDateForBudget";
 import prisma from "../config/prisma";
 import productRepository from "../repositories/product.repository";
 import userRepository from "../repositories/user.repository";
-import { TCompanyOrderDetailForAdminResponseDto, TUpdateOrderResponseDto } from "../dtos/order.dto";
+import {
+  TCancelOrderResponseDto,
+  TCompanyOrderDetailForAdminResponseDto,
+  TUpdateOrderResponseDto,
+} from "../dtos/order.dto";
 
 // Get order history (pending or approved)
 const getOrders = async ({ page, limit, orderBy, status }: TGetOrdersQuery, companyId: number) => {
@@ -184,7 +188,7 @@ const getOrdersByUserId = async (userId: string) => {
   return await orderRepository.getOrdersByUserId(userId);
 };
 
-const cancelOrder = async (orderId: string, userId: string) => {
+const cancelOrder = async (orderId: string, userId: string): Promise<TCancelOrderResponseDto> => {
   const order = await orderRepository.getOrderById(orderId);
 
   if (!order) {
@@ -199,7 +203,15 @@ const cancelOrder = async (orderId: string, userId: string) => {
     throw new BadRequestError("Only pending orders can be canceled.");
   }
 
-  return await orderRepository.updateOrderStatus(orderId, "CANCELED");
+  const canceledOrder = await orderRepository.updateOrderStatus(orderId, "CANCELED");
+
+  return {
+    message: "Purchase request canceled successfully.",
+    data: {
+      ...canceledOrder,
+      status: "CANCELED",
+    },
+  };
 };
 
 // Instant purchase

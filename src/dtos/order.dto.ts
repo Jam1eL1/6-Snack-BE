@@ -21,6 +21,10 @@ export type TUpdateStatusOrderBodyDto = {
   status: "APPROVED" | "REJECTED";
 };
 
+export type TCancelOrderBodyDto = {
+  status: "CANCELED";
+};
+
 export type TOrderProductResponseDto = {
   id: number;
   productId: number;
@@ -66,4 +70,32 @@ export type TUpdateOrderResponseDto = {
   createdAt: Date;
   updatedAt: Date;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELED" | "INSTANT_APPROVED";
+};
+
+export type TCancelOrderReceiptResponseDto = {
+  id: number;
+  productName: string;
+  price: number;
+  imageUrl: string;
+  quantity: number;
+};
+
+export type TCancelOrderDataResponseDto = {
+  id: string;
+  companyId: number;
+  userId: string;
+  approver: string | null;
+  adminMessage: string | null;
+  requestMessage: string | null;
+  deliveryFee: number;
+  productsPriceTotal: number;
+  createdAt: Date;
+  updatedAt: Date;
+  status: "CANCELED";
+  receipts: TCancelOrderReceiptResponseDto[];
+};
+
+export type TCancelOrderResponseDto = {
+  message: string;
+  data: TCancelOrderDataResponseDto;
 };

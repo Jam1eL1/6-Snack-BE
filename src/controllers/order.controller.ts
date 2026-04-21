@@ -1,6 +1,8 @@
 import { RequestHandler } from "express";
 import orderService from "../services/order.service";
 import {
+  TCancelOrderBodyDto,
+  TCancelOrderResponseDto,
   TGetOrderParamsDto,
   TGetOrderQueryDto,
   TGetOrdersQueryDto,
@@ -893,7 +895,11 @@ const getOrdersByUserId: RequestHandler = async (req, res, next) => {
  *                   type: string
  *                   example: "Order not found."
  */
-const cancelOrder: RequestHandler<{ orderId: string }, {}, { status: "CANCELED" }> = async (req, res, next) => {
+const cancelOrder: RequestHandler<TGetOrderParamsDto, TCancelOrderResponseDto, TCancelOrderBodyDto> = async (
+  req,
+  res,
+  next,
+) => {
   try {
     const orderId = req.params.orderId;
 
@@ -903,10 +909,7 @@ const cancelOrder: RequestHandler<{ orderId: string }, {}, { status: "CANCELED" 
 
     const result = await orderService.cancelOrder(orderId, req.user.id);
 
-    res.status(200).json({
-      message: "Purchase request canceled successfully.",
-      data: result,
-    });
+    res.status(200).json(result);
   } catch (error) {
     next(error);
   }
