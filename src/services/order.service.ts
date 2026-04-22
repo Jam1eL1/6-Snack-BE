@@ -9,12 +9,19 @@ import productRepository from "../repositories/product.repository";
 import userRepository from "../repositories/user.repository";
 import {
   TCancelOrderResponseDto,
+  TCreateInstantOrderResponseDto,
   TCompanyOrderDetailForAdminResponseDto,
+  TGetOrderByIdResponseDto,
+  TGetOrdersByUserIdResponseDto,
+  TGetOrdersResponseDto,
   TUpdateOrderResponseDto,
 } from "../dtos/order.dto";
 
 // Get order history (pending or approved)
-const getOrders = async ({ page, limit, orderBy, status }: TGetOrdersQuery, companyId: number) => {
+const getOrders = async (
+  { page, limit, orderBy, status }: TGetOrdersQuery,
+  companyId: number,
+): Promise<TGetOrdersResponseDto> => {
   const offset = (page - 1) * limit;
 
   const orders = await orderRepository.getOrders({ offset, limit, orderBy, status }, companyId);
@@ -141,7 +148,7 @@ const createOrder = async (orderData: {
   adminMessage?: string;
   requestMessage?: string;
   cartItemIds: number[];
-}) => {
+}): Promise<TCompanyOrderDetailForAdminResponseDto> => {
   // Validate input
   if (!orderData.userId) {
     throw new ValidationError("User ID is required.");
@@ -161,7 +168,7 @@ const createOrder = async (orderData: {
 
   if (!user) throw new AuthenticationError("Login required.");
 
-  const formattedOrder = getCompanyOrderDetailForAdmin(
+  const formattedOrder = await getCompanyOrderDetailForAdmin(
     order.id,
     user.role === "USER" ? "pending" : "approved",
     orderData.companyId,
@@ -170,7 +177,7 @@ const createOrder = async (orderData: {
   return formattedOrder;
 };
 
-const getOrderById = async (orderId: string, userId: string) => {
+const getOrderById = async (orderId: string, userId: string): Promise<TGetOrderByIdResponseDto> => {
   const order = await orderRepository.getOrderById(orderId);
 
   if (!order) {
@@ -181,11 +188,19 @@ const getOrderById = async (orderId: string, userId: string) => {
     throw new ForbiddenError("You do not have permission to access this order.");
   }
 
-  return order;
+  return {
+    message: "Purchase request retrieved successfully.",
+    data: order,
+  };
 };
 
-const getOrdersByUserId = async (userId: string) => {
-  return await orderRepository.getOrdersByUserId(userId);
+const getOrdersByUserId = async (userId: string): Promise<TGetOrdersByUserIdResponseDto> => {
+  const orders = await orderRepository.getOrdersByUserId(userId);
+
+  return {
+    message: "My purchase request list retrieved successfully.",
+    data: orders,
+  };
 };
 
 const cancelOrder = async (orderId: string, userId: string): Promise<TCancelOrderResponseDto> => {
@@ -215,7 +230,9 @@ const cancelOrder = async (orderId: string, userId: string): Promise<TCancelOrde
 };
 
 // Instant purchase
-const createInstantOrder = async (orderData: { userId: string; cartItemIds: number[]; companyId: number }) => {
+const createInstantOrder = async (
+  orderData: { userId: string; cartItemIds: number[]; companyId: number; approverName: string },
+): Promise<TCreateInstantOrderResponseDto> => {
   // Validate input
   if (!orderData.userId) {
     throw new ValidationError("User ID is required.");
@@ -239,7 +256,16 @@ const createInstantOrder = async (orderData: { userId: string; cartItemIds: numb
     return order;
   });
 
-  return result;
+  const approvedOrder = await updateOrder(result.id, orderData.companyId, {
+    approver: orderData.approverName,
+    adminMessage: "Auto-approved via instant purchase",
+    status: "APPROVED",
+  });
+
+  return {
+    message: "Instant purchase completed successfully.",
+    data: approvedOrder,
+  };
 };
 
 export default {
