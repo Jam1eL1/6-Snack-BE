@@ -5,84 +5,7 @@ import { BadRequestError, ValidationError } from "../types/error";
 import { TInviteIdParamsDto } from "../dtos/invite.dto";
 import { ACCESS_TOKEN_COOKIE_MAX_AGE_MS, REFRESH_TOKEN_COOKIE_MAX_AGE_MS } from "../constants/auth.constants";
 
-/**
- * @swagger
- * tags:
- *   - name: Auth
- *     description: Authentication and Authorization API
- */
 
-/**
- * @swagger
- * /auth/signup:
- *   post:
- *     summary: Sign up (Super Admin)
- *     description: Creates a new company and registers the user as its SUPER_ADMIN.
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [email, name, password, confirmPassword, companyName, bizNumber]
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: admin@example.com
- *               name:
- *                 type: string
- *                 example: Admin Kim
- *               password:
- *                 type: string
- *                 example: StrongP@ssw0rd!
- *               confirmPassword:
- *                 type: string
- *                 description: passwordConfirm is also allowed (either one)
- *                 example: StrongP@ssw0rd!
- *               companyName:
- *                 type: string
- *                 example: Oho Snack Inc.
- *               bizNumber:
- *                 type: string
- *                 description: Business registration number (unique)
- *                 example: 123-45-67890
- *     responses:
- *       201:
- *         description: Sign-up successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 user:
- *                   type: object
- *                   properties:
- *                     id: { type: string }
- *                     email: { type: string }
- *                     role: { type: string, enum: [SUPER_ADMIN] }
- *                 company:
- *                   type: object
- *                   properties:
- *                     id: { type: string }
- *                     name: { type: string }
- *                 monthlyBudget:
- *                   type: object
- *                   properties:
- *                     id: { type: string }
- *                     year: { type: string }
- *                     month: { type: string }
- *                     currentMonthExpense: { type: number }
- *                     currentMonthBudget: { type: number }
- *                     monthlyBudget: { type: number }
- *       400:
- *         description: Missing required fields
- *       422:
- *         description: Validation failed (e.g., password mismatch, duplicate email/business number)
- */
 const signUpSuperAdmin: RequestHandler = async (req, res, next) => {
   try {
     const { email, name, password, confirmPassword, passwordConfirm, role, companyName, bizNumber } = req.body;
@@ -131,44 +54,6 @@ const signUpSuperAdmin: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- * @swagger
- * /auth/signup/{inviteId}:
- *   post:
- *     summary: Sign up (Invite)
- *     tags: [Auth]
- *     parameters:
- *       - in: path
- *         name: inviteId
- *         required: true
- *         schema:
- *           type: string
- *         description: Unique invite ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [password, confirmPassword]
- *             properties:
- *               password:
- *                 type: string
- *                 example: StrongP@ssw0rd!
- *               confirmPassword:
- *                 type: string
- *                 description: passwordConfirm is also allowed
- *                 example: StrongP@ssw0rd!
- *     responses:
- *       201:
- *         description: Sign-up completed
- *       400:
- *         description: Missing required fields
- *       404:
- *         description: Invite not found
- *       422:
- *         description: Validation failed (e.g., password mismatch, used/expired invite, duplicate email)
- */
 const signUpViaInvite: RequestHandler<TInviteIdParamsDto> = async (req, res, next) => {
   try {
     const { inviteId } = req.params;
@@ -197,53 +82,6 @@ const signUpViaInvite: RequestHandler<TInviteIdParamsDto> = async (req, res, nex
   }
 };
 
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: Login
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [email, password]
- *             properties:
- *               email: { type: string, format: email, example: user@example.com }
- *               password: { type: string, example: StrongP@ssw0rd! }
- *     responses:
- *       200:
- *         description: Login successful (issues JWT cookies)
- *         headers:
- *           Set-Cookie:
- *             schema:
- *               type: string
- *             description: accessToken JWT (15 min) and refreshToken JWT (7 days) are issued as httpOnly cookies
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string }
- *                 user:
- *                   type: object
- *                   properties:
- *                     id: { type: string }
- *                     email: { type: string }
- *                     name: { type: string }
- *                     role: { type: string }
- *                     company:
- *                       type: object
- *                       properties:
- *                         id: { type: string }
- *                         name: { type: string }
- *       400:
- *         description: Missing required fields
- *       401:
- *         description: Authentication failed (email/password mismatch)
- */
 const login: RequestHandler = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -289,32 +127,6 @@ const login: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- * @swagger
- * /auth/refresh-token:
- *   post:
- *     summary: Reissue access token
- *     tags: [Auth]
- *     description: Reissues new accessToken and refreshToken if refreshToken httpOnly cookie is valid.
- *     responses:
- *       200:
- *         description: Token reissued successfully (delivered via cookies)
- *         headers:
- *           Set-Cookie:
- *             schema:
- *               type: string
- *             description: New accessToken / refreshToken cookies
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: "A new access token has been issued." }
- *       400:
- *         description: Refresh token is missing
- *       401:
- *         description: Refresh token is invalid or expired
- */
 const refreshToken: RequestHandler = async (req, res, next) => {
   try {
     const refreshToken = req.cookies.refreshToken;
@@ -348,25 +160,6 @@ const refreshToken: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- * @swagger
- * /auth/logout:
- *   post:
- *     summary: Logout
- *     tags: [Auth]
- *     description: Logs out the currently authenticated user by clearing auth cookies. Requires a valid accessToken cookie.
- *     responses:
- *       200:
- *         description: Logout successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: "Logged out successfully." }
- *       401:
- *         description: Authentication failed
- */
 const logout: RequestHandler = async (req, res, next) => {
   try {
     if (!req.user) {

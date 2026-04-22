@@ -17,7 +17,6 @@
 
 - **Team Documentation:** [Notion Link](https://www.notion.so/3-Snack-2156e9d243fd81cd90e7e05503fe930b)
 - **Frontend Repository:** [GitHub - Snack FE](https://github.com/De-cal/6-Snack-FE)
-- **API Documentation:** [Swagger UI](https://api.5nack.site/api-docs)
 
 ---
 

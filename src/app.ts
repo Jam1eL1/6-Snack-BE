@@ -2,8 +2,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express, { Application, Request, Response } from "express";
-import swaggerUi from "swagger-ui-express";
-import swaggerSpec from "./config/swagger";
 import indexRouter from "./routes/index.route";
 import errorHandler from "./middlewares/errorHandler.middleware";
 import cookieParser from "cookie-parser";
@@ -42,7 +40,6 @@ app.get("/health", (req: Request, res: Response) => {
   res.send("Health Check Success");
 });
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/", indexRouter);
 
 autoCreateMonthlyBudget.start();
@@ -52,7 +49,5 @@ if (isSentryEnabled) {
 }
 
 app.use(errorHandler);
-
-
 
 export default app;

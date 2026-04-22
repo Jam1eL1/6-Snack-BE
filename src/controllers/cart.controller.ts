@@ -13,37 +13,7 @@ import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import budgetService from "../services/budget.service";
 import { AuthenticationError } from "../types/error";
 
-/**
- * @swagger
- * tags:
- *   - name: Cart
- *     description: Cart API
- */
 
-/**
- * @swagger
- * /cart:
- *   get:
- *     summary: Get cart items
- *     tags: [Cart]
- *     parameters:
- *       - in: query
- *         name: cartItemId
- *         schema:
- *           type: string
- *         description: Specific cart item ID
- *       - in: query
- *         name: isChecked
- *         schema:
- *           type: string
- *           enum: [true, false]
- *         description: Whether to return only checked items
- *     responses:
- *       200:
- *         description: Cart items retrieved successfully
- *       401:
- *         description: Authentication failed
- */
 
 const getMyCart: RequestHandler<{}, {}, {}, TGetMyCartQueryDto> = async (req, res, next) => {
   try {
@@ -79,32 +49,6 @@ const getMyCart: RequestHandler<{}, {}, {}, TGetMyCartQueryDto> = async (req, re
   }
 };
 
-/**
- * @swagger
- * /cart:
- *   post:
- *     summary: Add product to cart
- *     tags: [Cart]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - productId
- *               - quantity
- *             properties:
- *               productId:
- *                 type: number
- *               quantity:
- *                 type: number
- *     responses:
- *       201:
- *         description: Product added to cart successfully
- *       400:
- *         description: Invalid request
- */
 
 const addToCart: RequestHandler<{}, {}, TAddToCartDto, {}> = async (req, res, next) => {
   try {
@@ -118,25 +62,6 @@ const addToCart: RequestHandler<{}, {}, TAddToCartDto, {}> = async (req, res, ne
   }
 };
 
-/**
- * @swagger
- * /cart/{item}:
- *   delete:
- *     summary: Delete a cart item
- *     tags: [Cart]
- *     parameters:
- *       - in: path
- *         name: item
- *         required: true
- *         schema:
- *           type: string
- *         description: Cart item ID
- *     responses:
- *       204:
- *         description: Deleted successfully
- *       400:
- *         description: Invalid request
- */
 
 const deleteSelectedItems: RequestHandler<{}, {}, TDeleteCartItemsDto, {}> = async (req, res, next) => {
   try {
@@ -150,31 +75,6 @@ const deleteSelectedItems: RequestHandler<{}, {}, TDeleteCartItemsDto, {}> = asy
   }
 };
 
-/**
- * @swagger
- * /cart/delete:
- *   post:
- *     summary: Delete selected cart items
- *     tags: [Cart]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - cartItemIds
- *             properties:
- *               cartItemIds:
- *                 type: array
- *                 items:
- *                   type: number
- *     responses:
- *       204:
- *         description: Deleted successfully
- *       400:
- *         description: Invalid request
- */
 
 const deleteCartItem: RequestHandler<TCartItemParamsDto, {}, {}, {}> = async (req, res, next) => {
   try {
@@ -189,36 +89,6 @@ const deleteCartItem: RequestHandler<TCartItemParamsDto, {}, {}, {}> = async (re
   }
 };
 
-/**
- * @swagger
- * /cart/{item}/check:
- *   patch:
- *     summary: Check or uncheck a cart item
- *     tags: [Cart]
- *     parameters:
- *       - in: path
- *         name: item
- *         required: true
- *         schema:
- *           type: string
- *         description: Cart item ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - isChecked
- *             properties:
- *               isChecked:
- *                 type: boolean
- *     responses:
- *       204:
- *         description: Checked status updated successfully
- *       400:
- *         description: Invalid request
- */
 
 const toggleCheckItem: RequestHandler<TCartItemParamsDto, {}, TToggleCheckDto, {}> = async (req, res, next) => {
   try {
@@ -233,29 +103,6 @@ const toggleCheckItem: RequestHandler<TCartItemParamsDto, {}, TToggleCheckDto, {
   }
 };
 
-/**
- * @swagger
- * /cart/check/all:
- *   patch:
- *     summary: Check or uncheck all cart items
- *     tags: [Cart]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - isChecked
- *             properties:
- *               isChecked:
- *                 type: boolean
- *     responses:
- *       204:
- *         description: All checked states updated successfully
- *       400:
- *         description: Invalid request
- */
 
 const toggleAllItems: RequestHandler<{}, {}, TToggleAllCheckDto, {}> = async (req, res, next) => {
   try {
@@ -269,37 +116,6 @@ const toggleAllItems: RequestHandler<{}, {}, TToggleAllCheckDto, {}> = async (re
   }
 };
 
-/**
- * @swagger
- * /cart/{item}/quantity:
- *   patch:
- *     summary: Update cart item quantity
- *     tags: [Cart]
- *     parameters:
- *       - in: path
- *         name: item
- *         required: true
- *         schema:
- *           type: string
- *         description: Cart item ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - quantity
- *             properties:
- *               quantity:
- *                 type: number
- *                 minimum: 1
- *     responses:
- *       204:
- *         description: Quantity updated successfully
- *       400:
- *         description: Invalid request
- */
 
 const updateQuantity: RequestHandler<TCartItemParamsDto, {}, TUpdateQuantityDto, {}> = async (req, res, next) => {
   try {

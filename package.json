@@ -35,9 +35,7 @@
     "node-cron": "^4.2.0",
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.5",
-    "pg": "^8.20.0",
-    "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "pg": "^8.20.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -53,8 +51,6 @@
     "@types/node": "^24.0.12",
     "@types/nodemailer": "^6.4.17",
     "@types/supertest": "^6.0.3",
-    "@types/swagger-jsdoc": "^6.0.4",
-    "@types/swagger-ui-express": "^4.1.8",
     "cookie-parser": "^1.4.7",
     "dotenv-cli": "^8.0.0",
     "jest": "^30.0.5",

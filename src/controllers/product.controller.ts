@@ -19,95 +19,7 @@ import {
 } from "../dtos/product.dto";
 import { Role } from "../generated/prisma/client";
 
-/**
- * @swagger
- * tags:
- *   - name: Product
- *     description: Product API
- */
 
-/**
- * @swagger
- * /product:
- *   post:
- *     summary: Product Registration
- *     description: "Register a new product. Also supports image file upload."
- *     tags: [Product]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - price
- *               - categoryId
- *             properties:
- *               name:
- *                 type: string
- *                 description: "Product name (1-15 characters)"
- *                 example: "Test Product"
- *               price:
- *                 type: string
- *                 description: "Price (0 or higher)"
- *                 example: "10000"
- *               linkUrl:
- *                 type: string
- *                 description: "Product link URL"
- *                 example: "https://example.com"
- *               categoryId:
- *                 type: string
- *                 description: "Category ID"
- *                 example: "1"
- *               file:
- *                 type: string
- *                 format: binary
- *                 description: "Product image file (optional)"
- *     responses:
- *       201:
- *         description: "Product successfully created"
- *         headers:
- *           Location:
- *             description: "URL of the created product"
- *             schema:
- *               type: string
- *               example: "/products/1"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: integer
- *                   example: 1
- *                 name:
- *                   type: string
- *                   example: "테스트 상품"
- *                 price:
- *                   type: integer
- *                   example: 10000
- *                 linkUrl:
- *                   type: string
- *                   example: "https://example.com"
- *                 imageUrl:
- *                   type: string
- *                   example: "https://s3.amazonaws.com/image.jpg"
- *                 categoryId:
- *                   type: integer
- *                   example: 1
- *                 creatorId:
- *                   type: string
- *                   example: "user123"
- *       401:
- *         description: "Login required"
- *       400:
- *         description: "Invalid request data"
- *       500:
- *         description: "Server error"
- */
 //상품등록
 const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res) => {
   try {
@@ -159,76 +71,6 @@ const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res
   }
 };
 
-/**
- * @swagger
- * /products:
- *   get:
- *     summary: Product Search
- *     description: "Search product list. Supports sorting, category filtering, and pagination."
- *     tags: [Product]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: sort
- *         schema:
- *           type: string
- *           enum: [latest, popular, low, high]
- *         description: "Sort criteria"
- *         example: "latest"
- *       - in: query
- *         name: category
- *         schema:
- *           type: string
- *         description: "Filter by category ID"
- *         example: "1"
- *       - in: query
- *         name: limit
- *         schema:
- *           type: string
- *         description: "Number of products to fetch at once (max 50)"
- *         example: "9"
- *       - in: query
- *         name: cursor
- *         schema:
- *           type: string
- *         description: "Product ID for cursor-based pagination"
- *         example: "10"
- *     responses:
- *       200:
- *         description: "Product list search successful"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 items:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: integer
- *                         example: 1
- *                       name:
- *                         type: string
- *                         example: "테스트 상품"
- *                       price:
- *                         type: integer
- *                         example: 10000
- *                       imageUrl:
- *                         type: string
- *                         example: "https://s3.amazonaws.com/image.jpg"
- *                 nextCursor:
- *                   type: integer
- *                   nullable: true
- *                   description: "Cursor for next page"
- *                   example: 15
- *       400:
- *         description: "Invalid request data"
- *       500:
- *         description: "Server error"
- */
 //상품 조회
 const getProducts: RequestHandler<{}, {}, {}, TGetProductsQueryDto> = async (req, res, next) => {
   try {
@@ -261,84 +103,6 @@ const getProducts: RequestHandler<{}, {}, {}, TGetProductsQueryDto> = async (req
   }
 };
 
-/**
- * @swagger
- * /products/my:
- *   get:
- *     summary: "My Registered Products Search"
- *     description: Search the list of products registered by the currently logged-in user.
- *     tags: [Product]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: string
- *         description: "Page number (default: 1)"
- *         example: "1"
- *       - in: query
- *         name: limit
- *         schema:
- *           type: string
- *         description: "Number of products per page (default: 10)"
- *         example: "10"
- *       - in: query
- *         name: orderBy
- *         schema:
- *           type: string
- *           enum: [latest, oldest, priceLow, priceHigh]
- *         description: "Sort criteria (default: latest)"
- *         example: "latest"
- *     responses:
- *       200:
- *         description: "My product list search successful"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 items:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: integer
- *                         example: 1
- *                       name:
- *                         type: string
- *                         example: "My Product 1"
- *                       price:
- *                         type: integer
- *                         example: 10000
- *                       imageUrl:
- *                         type: string
- *                         example: "https://s3.amazonaws.com/image.jpg"
- *                       createdAt:
- *                         type: string
- *                         format: date-time
- *                         example: "2024-01-01T00:00:00Z"
- *                 meta:
- *                   type: object
- *                   properties:
- *                     totalCount:
- *                       type: integer
- *                       example: 25
- *                     currentPage:
- *                       type: integer
- *                       example: 1
- *                     itemsPerPage:
- *                       type: integer
- *                       example: 10
- *                     totalPages:
- *                       type: integer
- *                       example: 3
- *       401:
- *         description: "Login required"
- *       500:
- *         description: "Server error"
- */
 // 유저가 등록한 상품 목록
 const getMyProducts: RequestHandler<{}, {}, {}, TGetMyProductsQueryDto> = async (req, res, next) => {
   try {
@@ -391,83 +155,6 @@ const getMyProducts: RequestHandler<{}, {}, {}, TGetMyProductsQueryDto> = async 
 };
 
 //상품 상세 페이지
-/**
- * @swagger
- * /products/{id}:
- *   get:
- *     summary: Product Detail Search
- *     description: "Search detailed information of a specific product."
- *     tags: [Product]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: "Product ID"
- *         example: "1"
- *     responses:
- *       200:
- *         description: "Product detail information search successful"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: integer
- *                   example: 1
- *                 name:
- *                   type: string
- *                   example: "테스트 상품"
- *                 price:
- *                   type: integer
- *                   example: 10000
- *                 linkUrl:
- *                   type: string
- *                   example: "https://example.com"
- *                 imageUrl:
- *                   type: string
- *                   example: "https://s3.amazonaws.com/image.jpg"
- *                 categoryId:
- *                   type: integer
- *                   example: 1
- *                 creatorId:
- *                   type: string
- *                   example: "user123"
- *                 createdAt:
- *                   type: string
- *                   format: date-time
- *                   example: "2024-01-01T00:00:00Z"
- *                 updatedAt:
- *                   type: string
- *                   format: date-time
- *                   example: "2024-01-01T00:00:00Z"
- *                 category:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 1
- *                     name:
- *                       type: string
- *                       example: "Beverages"
- *                 creator:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       example: "user123"
- *                     name:
- *                       type: string
- *                       example: "Test User"
- *       404:
- *         description: "Product not found"
- *       500:
- *         description: "Server error"
- */
 export const getProductDetail: RequestHandler<TProductIdParamsDto> = async (req, res, next) => {
   try {
     const id = parseNumberOrThrow(req.params.id, "Product ID");
@@ -576,33 +263,6 @@ export const forceUpdateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdate
 };
 
 //상품 삭제
-/**
- * @swagger
- * /products/{id}:
- *   delete:
- *     summary: Product Delete
- *     description: "Delete products you registered (soft delete)."
- *     tags: [Product]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: "Product ID to delete"
- *         example: "1"
- *     responses:
- *       204:
- *         description: "Product deletion successful"
- *       401:
- *         description: "Login required or no permission"
- *       404:
- *         description: Product not found
- *       500:
- *         description: Server error
- */
 export const deleteProduct: RequestHandler<{ id: string }> = async (req, res, next) => {
   try {
     const productId = parseNumberOrThrow(req.params.id, "상품 ID");
@@ -626,35 +286,6 @@ export const deleteProduct: RequestHandler<{ id: string }> = async (req, res, ne
 };
 
 //상품 삭제 어드민
-/**
- * @swagger
- * /admin/products/{id}:
- *   delete:
- *     summary: Product Delete (Admin)
- *     description: "Administrator forcibly deletes all products (soft delete)."
- *     tags: [Product]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: "Product ID to delete"
- *         example: "1"
- *     responses:
- *       204:
- *         description: "Product forced deletion successful"
- *       401:
- *         description: "Login required"
- *       403:
- *         description: "Administrator permission required"
- *       404:
- *         description: "Product not found"
- *       500:
- *         description: "Server error"
- */
 export const forceDeleteProduct: RequestHandler<{ id: string }> = async (req, res, next) => {
   try {
     const productId = parseNumberOrThrow(req.params.id, "상품 ID");
@@ -677,59 +308,6 @@ export const forceDeleteProduct: RequestHandler<{ id: string }> = async (req, re
   }
 };
 
-/**
- * @swagger
- * /categories:
- *   get:
- *     summary: Product Category Search
- *     description: "Search the hierarchical structure of product categories."
- *     tags: [Product]
- *     responses:
- *       200:
- *         description: "Category tree search successful"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 parentCategory:
- *                   type: array
- *                   description: "Parent category list"
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: integer
- *                         example: 1
- *                       name:
- *                         type: string
- *                         example: "음료"
- *                 childrenCategory:
- *                   type: object
- *                   description: "Child category list (using parent category name as key)"
- *                   additionalProperties:
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         id:
- *                           type: integer
- *                           example: 3
- *                         name:
- *                           type: string
- *                           example: "콜라"
- *                   example:
- *                     음료:
- *                       - id: 3
- *                         name: "콜라"
- *                       - id: 4
- *                         name: "사이다"
- *                     과자:
- *                       - id: 5
- *                         name: "초코파이"
- *       500:
- *         description: "Server error"
- */
 const getCategoryTree: RequestHandler = async (req, res, next) => {
   try {
     const categories = await productService.getCategory();
