@@ -102,7 +102,7 @@ async function main() {
       ...user,
       password: await bcrypt.hash(user.password, 10),
       role: user.role as any, // Cast to Role enum
-      companyId: index === 1 ? secondCompanyId : firstCompanyId, // user-1-2 to the second company, the rest to the first
+      companyId: user.companyId === 2 ? secondCompanyId : firstCompanyId,
     })),
   );
 
