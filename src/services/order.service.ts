@@ -229,10 +229,13 @@ const cancelOrder = async (orderId: string, userId: string): Promise<TCancelOrde
   };
 };
 
-// Instant purchase
-const createInstantOrder = async (
-  orderData: { userId: string; cartItemIds: number[]; companyId: number; approverName: string },
-): Promise<TCreateInstantOrderResponseDto> => {
+// Instant purchase - admins only
+const createInstantOrder = async (orderData: {
+  userId: string;
+  cartItemIds: number[];
+  companyId: number;
+  approverName: string;
+}): Promise<TCreateInstantOrderResponseDto> => {
   // Validate input
   if (!orderData.userId) {
     throw new ValidationError("User ID is required.");
