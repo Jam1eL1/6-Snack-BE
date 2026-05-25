@@ -15,3 +15,12 @@ export type TUpdateMonthlyBudgetBody = {
   currentMonthBudget: MonthlyBudget["currentMonthBudget"];
   monthlyBudget: MonthlyBudget["monthlyBudget"];
 };
+
+export type TCreateMonthlyBudgetData = {
+  companyId: MonthlyBudget["companyId"];
+  year: MonthlyBudget["year"];
+  month: MonthlyBudget["month"];
+  currentMonthExpense?: MonthlyBudget["currentMonthExpense"];
+  currentMonthBudget?: MonthlyBudget["currentMonthBudget"];
+  monthlyBudget?: MonthlyBudget["monthlyBudget"];
+};

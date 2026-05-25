@@ -1,6 +1,11 @@
 import { MonthlyBudget, Prisma } from "../generated/prisma/client";
 import prisma from "../config/prisma";
-import { TMonthlyBudget, TTotalExpense, TUpdateMonthlyBudgetBody } from "../types/budget.type";
+import {
+  TCreateMonthlyBudgetData,
+  TMonthlyBudget,
+  TTotalExpense,
+  TUpdateMonthlyBudgetBody,
+} from "../types/budget.type";
 
 const getMonthlyBudget = async ({ companyId, year, month }: TMonthlyBudget) => {
   return await prisma.monthlyBudget.findUnique({
@@ -17,10 +22,7 @@ const getTotalExpense = async ({ companyId, year }: TTotalExpense) => {
   });
 };
 
-const createMonthlyBudget = async (
-  data: { companyId: number; year: string; month: string },
-  tx?: Prisma.TransactionClient,
-) => {
+const createMonthlyBudget = async (data: TCreateMonthlyBudgetData, tx?: Prisma.TransactionClient) => {
   const client = tx || prisma;
 
   return client.monthlyBudget.create({
@@ -28,9 +30,9 @@ const createMonthlyBudget = async (
       companyId: data.companyId,
       year: data.year,
       month: data.month,
-      currentMonthExpense: 0,
-      currentMonthBudget: 0,
-      monthlyBudget: 0,
+      currentMonthExpense: data.currentMonthExpense ?? 0,
+      currentMonthBudget: data.currentMonthBudget ?? 0,
+      monthlyBudget: data.monthlyBudget ?? 0,
     },
   });
 };
@@ -46,6 +48,29 @@ const updateMonthlyBudget = async (
   return await client.monthlyBudget.update({
     where: { companyId_year_month: { companyId, year, month } },
     data: { currentMonthBudget, monthlyBudget },
+  });
+};
+
+const upsertMonthlyBudget = async (data: TCreateMonthlyBudgetData, tx?: Prisma.TransactionClient) => {
+  const client = tx || prisma;
+
+  return client.monthlyBudget.upsert({
+    where: {
+      companyId_year_month: {
+        companyId: data.companyId,
+        year: data.year,
+        month: data.month,
+      },
+    },
+    update: {},
+    create: {
+      companyId: data.companyId,
+      year: data.year,
+      month: data.month,
+      currentMonthExpense: data.currentMonthExpense ?? 0,
+      currentMonthBudget: data.currentMonthBudget ?? 0,
+      monthlyBudget: data.monthlyBudget ?? 0,
+    },
   });
 };
 
@@ -68,4 +93,5 @@ export default {
   createMonthlyBudget,
   updateMonthlyBudget,
   updateCurrentMonthExpense,
+  upsertMonthlyBudget,
 };

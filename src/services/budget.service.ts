@@ -1,6 +1,5 @@
 import { MonthlyBudget } from "../generated/prisma/client";
 import budgetRepository from "../repositories/budget.repository";
-import { NotFoundError } from "../types/error";
 import { TUpdateMonthlyBudgetBody } from "../types/budget.type";
 import getDateForBudget from "../utils/getDateForBudget";
 import prisma from "../config/prisma";
@@ -9,22 +8,28 @@ import prisma from "../config/prisma";
 const getMonthlyBudget = async (companyId: MonthlyBudget["companyId"]) => {
   const { year, month, previousYear, previousMonth } = getDateForBudget();
 
-  const currentMonthBudget = await budgetRepository.getMonthlyBudget({ companyId, year, month });
-
-  if (!currentMonthBudget) {
-    throw new NotFoundError("Budget not found.");
+  let currentBudget = await budgetRepository.getMonthlyBudget({ companyId, year, month });
+  const previousBudget = await budgetRepository.getMonthlyBudget({ companyId, year, month: previousMonth });
+  if (!currentBudget) {
+    const defaultBudgetAmount = previousBudget?.monthlyBudget ?? 0;
+    currentBudget = await budgetRepository.upsertMonthlyBudget({
+      companyId,
+      year,
+      month,
+      currentMonthExpense: 0,
+      currentMonthBudget: defaultBudgetAmount,
+      monthlyBudget: defaultBudgetAmount,
+    });
   }
-
-  const previousMonthBudget = await budgetRepository.getMonthlyBudget({ companyId, year, month: previousMonth });
 
   const currentYearTotalExpense = await budgetRepository.getTotalExpense({ companyId, year });
   const previousYearTotalExpense = await budgetRepository.getTotalExpense({ companyId, year: previousYear });
 
   const BudgetAndExpense = {
-    ...currentMonthBudget,
+    ...currentBudget,
     currentYearTotalExpense: currentYearTotalExpense?._sum.currentMonthExpense ?? 0,
-    previousMonthBudget: previousMonthBudget?.currentMonthBudget ?? 0,
-    previousMonthExpense: previousMonthBudget?.currentMonthExpense ?? 0,
+    previousMonthBudget: previousBudget?.currentMonthBudget ?? 0,
+    previousMonthExpense: previousBudget?.currentMonthExpense ?? 0,
     previousYearTotalExpense: previousYearTotalExpense?._sum.currentMonthExpense ?? 0,
   };
 
