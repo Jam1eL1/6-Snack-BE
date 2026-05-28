@@ -19,6 +19,17 @@ import {
 } from "../dtos/product.dto";
 import { Role } from "../generated/prisma/client";
 
+const uploadProductImageAndGetUrl = async (file: Express.Multer.File) => {
+  try {
+    const s3Key = await uploadImageToS3(file);
+    return getS3URL(s3Key);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new BadRequestError(error.message);
+    }
+    throw new BadRequestError("Image upload failed.");
+  }
+};
 
 //상품등록
 const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res) => {
@@ -35,15 +46,7 @@ const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res
 
     let imageUrl = "";
     if (req.file) {
-      try {
-        const s3Key = await uploadImageToS3(req.file);
-        imageUrl = getS3URL(s3Key);
-      } catch (error) {
-        if (error instanceof Error) {
-          throw new BadRequestError(error.message);
-        }
-        throw new BadRequestError("Image upload failed.");
-      }
+      imageUrl = await uploadProductImageAndGetUrl(req.file);
     }
 
     const input = {
@@ -188,7 +191,7 @@ export const updateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdateProdu
 
     let imageUrl: string | undefined;
     if (req.file) {
-      imageUrl = await uploadImageToS3(req.file);
+      imageUrl = await uploadProductImageAndGetUrl(req.file);
     }
 
     const input = {
@@ -240,7 +243,7 @@ export const forceUpdateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdate
 
     let imageUrl: string | undefined;
     if (req.file) {
-      imageUrl = await uploadImageToS3(req.file);
+      imageUrl = await uploadProductImageAndGetUrl(req.file);
     }
 
     const input = {
