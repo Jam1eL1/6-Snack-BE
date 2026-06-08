@@ -10,6 +10,7 @@ import userRepository from "../repositories/user.repository";
 import {
   TCancelOrderResponseDto,
   TCreateInstantOrderResponseDto,
+  TCreateOrderResponseDto,
   TCompanyOrderDetailForAdminResponseDto,
   TGetOrderByIdResponseDto,
   TGetOrdersByUserIdResponseDto,
@@ -119,6 +120,27 @@ const formatCompanyUserOrderDetail = (order: TCompanyUserOrderDetailRecord): TCo
     budget: { currentMonthBudget: null, currentMonthExpense: null },
   };
 };
+
+const formatCreatedCompanyUserOrder = async (
+  orderId: Order["id"],
+  companyId: Company["id"],
+  status: TCompanyUserOrderDetailStatus,
+): Promise<TCreateOrderResponseDto> => {
+  const order = await orderRepository.getOrderById(orderId);
+
+  if (!order || order.companyId !== companyId) {
+    throw new NotFoundError("Created order not found.");
+  }
+
+  const formattedOrder = formatCompanyUserOrderDetail(order);
+
+  if (status === "pending") {
+    return await addCurrentBudgetToCompanyUserOrderDetail(formattedOrder, companyId);
+  }
+
+  return formattedOrder;
+};
+
 // Approve or reject order
 const updateOrder = async (
   orderId: Order["id"],
@@ -171,7 +193,7 @@ const createOrder = async (orderData: {
   adminMessage?: string;
   requestMessage?: string;
   cartItemIds: number[];
-}): Promise<TCompanyOrderDetailForAdminResponseDto> => {
+}): Promise<TCreateOrderResponseDto> => {
   // Validate input
   if (!orderData.userId) {
     throw new ValidationError("User ID is required.");
@@ -191,13 +213,13 @@ const createOrder = async (orderData: {
 
   if (!user) throw new AuthenticationError("Login required.");
 
-  const formattedOrder = await getCompanyUserOrderDetailByStatus(
-    order.id,
-    user.role === "USER" ? "pending" : "approved",
-    orderData.companyId,
-  );
+  const createdOrderStatus: TCompanyUserOrderDetailStatus = user.role === "USER" ? "pending" : "approved";
 
-  return formattedOrder;
+  return await formatCreatedCompanyUserOrder(
+    order.id,
+    orderData.companyId,
+    createdOrderStatus,
+  );
 };
 
 const getOrderById = async (orderId: string, userId: string): Promise<TGetOrderByIdResponseDto> => {
