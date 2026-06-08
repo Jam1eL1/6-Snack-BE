@@ -1,17 +1,19 @@
 import { Order } from "../generated/prisma/client";
 
+export type TCompanyUserOrderDetailStatus = "pending" | "approved";
+
 export type TGetOrdersQuery = {
   page: number;
   limit: number;
   orderBy: "latest" | "priceLow" | "priceHigh";
-  status: "pending" | "approved";
+  status: TCompanyUserOrderDetailStatus;
 };
 
 export type TGetOrdersRepositoryQuery = {
   offset: number;
   limit: number;
   orderBy: "latest" | "priceLow" | "priceHigh";
-  status: "pending" | "approved";
+  status: TCompanyUserOrderDetailStatus;
 };
 
 export type TGetOrderStatus = {

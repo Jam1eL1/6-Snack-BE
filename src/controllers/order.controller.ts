@@ -12,8 +12,6 @@ import {
 import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import { AuthenticationError } from "../types/error";
 
-
-
 // Get order history (pending or approved)
 const getOrders: RequestHandler<{}, {}, {}, TGetOrdersQueryDto> = async (req, res, next) => {
   const page = parseNumberOrThrow(req.query.page ?? "1", "page");
@@ -30,7 +28,6 @@ const getOrders: RequestHandler<{}, {}, {}, TGetOrdersQueryDto> = async (req, re
   res.status(200).json(orderList);
 };
 
-
 // Get order details (pending or approved)
 const getOrder: RequestHandler<TGetOrderParamsDto, {}, {}, TGetOrderQueryDto> = async (req, res, next) => {
   const orderId = req.params.orderId;
@@ -39,11 +36,13 @@ const getOrder: RequestHandler<TGetOrderParamsDto, {}, {}, TGetOrderQueryDto> = 
   if (!user) throw new AuthenticationError("Invalid user.");
 
   const { status } = req.query;
-  const order = await orderService.getCompanyOrderDetailForAdmin(orderId, status, user.companyId);
+
+  const order = status
+    ? await orderService.getCompanyUserOrderDetailByStatus(orderId, status, user.companyId)
+    : await orderService.getCompanyUserOrderDetailById(orderId, user.companyId);
 
   res.status(200).json(order);
 };
-
 
 // Approve or reject order
 const updateOrder: RequestHandler<TGetOrderParamsDto, {}, TUpdateStatusOrderBodyDto> = async (req, res, next) => {

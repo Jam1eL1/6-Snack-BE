@@ -1,7 +1,7 @@
 import { Company, Order } from "../generated/prisma/client";
 import orderRepository from "../repositories/order.repository";
 import { NotFoundError, ValidationError, ForbiddenError, BadRequestError, AuthenticationError } from "../types/error";
-import { TGetOrdersQuery } from "../types/order.types";
+import { TCompanyUserOrderDetailStatus, TGetOrdersQuery } from "../types/order.types";
 import budgetRepository from "../repositories/budget.repository";
 import getDateForBudget from "../utils/getDateForBudget";
 import prisma from "../config/prisma";
@@ -18,6 +18,33 @@ import {
 } from "../dtos/order.dto";
 
 // Get order history (pending or approved)
+
+type TCompanyUserOrderDetailRecord = NonNullable<Awaited<ReturnType<typeof orderRepository.getOrderById>>>;
+
+// helpers
+const addCurrentBudgetToCompanyUserOrderDetail = async (
+  formattedOrder: TCompanyOrderDetailForAdminResponseDto,
+  companyId: number,
+): Promise<TCompanyOrderDetailForAdminResponseDto> => {
+  const { year, month } = getDateForBudget();
+  const budget = await budgetRepository.getMonthlyBudget({
+    companyId,
+    year,
+    month,
+  });
+  if (!budget) {
+    throw new NotFoundError("Unable to retrieve budget. Please create a budget first.");
+  }
+  return {
+    ...formattedOrder,
+    budget: {
+      currentMonthBudget: budget.currentMonthBudget,
+      currentMonthExpense: budget.currentMonthExpense,
+    },
+  };
+};
+
+// main functions
 const getOrders = async (
   { page, limit, orderBy, status }: TGetOrdersQuery,
   companyId: number,
@@ -52,49 +79,46 @@ const getOrders = async (
   };
 };
 
-// Get company order details for admin users (pending, approved, or without status filter)
-const getCompanyOrderDetailForAdmin = async (
+const getCompanyUserOrderDetailByStatus = async (
   orderId: Order["id"],
-  status: "pending" | "approved" | undefined,
-  companyId: number,
+  status: TCompanyUserOrderDetailStatus,
+  companyId: Company["id"],
 ): Promise<TCompanyOrderDetailForAdminResponseDto> => {
-  const order = status
-    ? await orderRepository.getOrderByIdAndStatus(orderId, status, companyId)
-    : await orderRepository.getOrderById(orderId);
-
-  if (!order || order.companyId !== companyId) {
-    throw new NotFoundError(status ? "Order history not found." : "Order information not found.");
+  const order = await orderRepository.getOrderByIdAndStatus(orderId, status, companyId);
+  if (!order) {
+    throw new NotFoundError("Order history not found");
   }
 
-  const { receipts, user, ...rest } = order;
+  const formattedOrder = formatCompanyUserOrderDetail(order);
 
-  const formattedOrder: TCompanyOrderDetailForAdminResponseDto = {
+  if (status === "pending") {
+    return await addCurrentBudgetToCompanyUserOrderDetail(formattedOrder, companyId);
+  }
+  return formattedOrder;
+};
+
+//
+const getCompanyUserOrderDetailById = async (
+  orderId: Order["id"],
+  companyId: Company["id"],
+): Promise<TCompanyOrderDetailForAdminResponseDto> => {
+  const order = await orderRepository.getOrderById(orderId);
+  if (!order || order.companyId !== companyId) {
+    throw new NotFoundError("Order information not found.");
+  }
+
+  return formatCompanyUserOrderDetail(order);
+};
+
+const formatCompanyUserOrderDetail = (order: TCompanyUserOrderDetailRecord): TCompanyOrderDetailForAdminResponseDto => {
+  const { receipts, user, ...rest } = order;
+  return {
     ...rest,
     requester: user.name,
     products: receipts,
     budget: { currentMonthBudget: null, currentMonthExpense: null },
   };
-
-  if (status === "pending") {
-    const { year, month } = getDateForBudget();
-
-    const budget = await budgetRepository.getMonthlyBudget({ companyId, year, month });
-
-    if (!budget) {
-      throw new NotFoundError("Unable to retrieve budget. Please create a budget first.");
-    }
-
-    const { currentMonthBudget, currentMonthExpense } = budget;
-
-    return {
-      ...formattedOrder,
-      budget: { currentMonthBudget, currentMonthExpense },
-    };
-  }
-
-  return formattedOrder;
 };
-
 // Approve or reject order
 const updateOrder = async (
   orderId: Order["id"],
@@ -141,7 +165,6 @@ const updateOrder = async (
   });
 };
 
-// Order request features
 const createOrder = async (orderData: {
   userId: string;
   companyId: number;
@@ -168,7 +191,7 @@ const createOrder = async (orderData: {
 
   if (!user) throw new AuthenticationError("Login required.");
 
-  const formattedOrder = await getCompanyOrderDetailForAdmin(
+  const formattedOrder = await getCompanyUserOrderDetailByStatus(
     order.id,
     user.role === "USER" ? "pending" : "approved",
     orderData.companyId,
@@ -273,9 +296,9 @@ const createInstantOrder = async (orderData: {
 
 export default {
   getOrders,
-  getCompanyOrderDetailForAdmin,
   updateOrder,
-  // Order request features
+  getCompanyUserOrderDetailById,
+  getCompanyUserOrderDetailByStatus,
   createOrder,
   getOrderById,
   getOrdersByUserId,
