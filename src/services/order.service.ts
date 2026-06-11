@@ -17,6 +17,7 @@ import {
   TGetOrdersResponseDto,
   TUpdateOrderResponseDto,
 } from "../dtos/order.dto";
+import budgetService from "./budget.service";
 
 // Get order history (pending or approved)
 
@@ -162,10 +163,8 @@ const updateOrder = async (
     // 2-1. Early return for rejected orders
     if (body.status === "REJECTED") return updatedOrder;
 
-    // 3. Retrieve budget
-    const monthlyBudget = await budgetRepository.getMonthlyBudget({ companyId, year, month });
-
-    if (!monthlyBudget) throw new NotFoundError("Budget not found.");
+    // 3. Retrieve budget through service so missing current-month budget is backfilled
+    const monthlyBudget = await budgetService.getMonthlyBudget(companyId);
 
     const { currentMonthExpense } = monthlyBudget;
 
@@ -215,11 +214,7 @@ const createOrder = async (orderData: {
 
   const createdOrderStatus: TCompanyUserOrderDetailStatus = user.role === "USER" ? "pending" : "approved";
 
-  return await formatCreatedCompanyUserOrder(
-    order.id,
-    orderData.companyId,
-    createdOrderStatus,
-  );
+  return await formatCreatedCompanyUserOrder(order.id, orderData.companyId, createdOrderStatus);
 };
 
 const getOrderById = async (orderId: string, userId: string): Promise<TGetOrderByIdResponseDto> => {
