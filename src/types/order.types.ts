@@ -20,3 +20,9 @@ export type TGetOrderStatus = {
   pending: "PENDING";
   approved: ["APPROVED", "INSTANT_APPROVED"];
 };
+
+export type TUpdateOrderStatusCommand = {
+  approver: string;
+  adminMessage: string;
+  status: "APPROVED" | "REJECTED";
+};

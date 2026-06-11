@@ -1,7 +1,7 @@
 import { Company, Order } from "../generated/prisma/client";
 import orderRepository from "../repositories/order.repository";
 import { NotFoundError, ValidationError, ForbiddenError, BadRequestError, AuthenticationError } from "../types/error";
-import { TCompanyUserOrderDetailStatus, TGetOrdersQuery } from "../types/order.types";
+import { TCompanyUserOrderDetailStatus, TGetOrdersQuery, TUpdateOrderStatusCommand } from "../types/order.types";
 import budgetRepository from "../repositories/budget.repository";
 import getDateForBudget from "../utils/getDateForBudget";
 import prisma from "../config/prisma";
@@ -146,7 +146,7 @@ const formatCreatedCompanyUserOrder = async (
 const updateOrder = async (
   orderId: Order["id"],
   companyId: Company["id"],
-  body: Pick<Order, "approver" | "adminMessage" | "status">,
+  body: TUpdateOrderStatusCommand,
 ): Promise<TUpdateOrderResponseDto> => {
   const { year, month } = getDateForBudget();
 
