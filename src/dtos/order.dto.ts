@@ -68,6 +68,8 @@ export type TCompanyOrderDetailForAdminResponseDto = {
   budget: TOrderBudgetResponseDto;
 };
 
+export type TCreateOrderResponseDto = TCompanyOrderDetailForAdminResponseDto;
+
 export type TUpdateOrderResponseDto = {
   id: string;
   companyId: number;

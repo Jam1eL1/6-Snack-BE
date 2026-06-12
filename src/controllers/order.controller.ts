@@ -12,53 +12,64 @@ import {
 import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import { AuthenticationError } from "../types/error";
 
-
-
 // Get order history (pending or approved)
 const getOrders: RequestHandler<{}, {}, {}, TGetOrdersQueryDto> = async (req, res, next) => {
-  const page = parseNumberOrThrow(req.query.page ?? "1", "page");
-  const limit = parseNumberOrThrow(req.query.limit ?? "4", "limit");
-  const { orderBy, status } = req.query;
-  const user = req.user;
+  try {
+    const page = parseNumberOrThrow(req.query.page ?? "1", "page");
+    const limit = parseNumberOrThrow(req.query.limit ?? "4", "limit");
+    const { orderBy, status } = req.query;
+    const user = req.user;
 
-  if (!user) throw new AuthenticationError("Invalid user.");
+    if (!user) throw new AuthenticationError("Invalid user.");
 
-  const companyId = user.companyId;
+    const companyId = user.companyId;
 
-  const orderList = await orderService.getOrders({ page, limit, orderBy, status }, companyId);
+    const orderList = await orderService.getOrders({ page, limit, orderBy, status }, companyId);
 
-  res.status(200).json(orderList);
+    res.status(200).json(orderList);
+  } catch (error) {
+    next(error);
+  }
 };
-
 
 // Get order details (pending or approved)
 const getOrder: RequestHandler<TGetOrderParamsDto, {}, {}, TGetOrderQueryDto> = async (req, res, next) => {
-  const orderId = req.params.orderId;
-  const user = req.user;
+  try {
+    const orderId = req.params.orderId;
+    const user = req.user;
 
-  if (!user) throw new AuthenticationError("Invalid user.");
+    if (!user) throw new AuthenticationError("Invalid user.");
 
-  const { status } = req.query;
-  const order = await orderService.getCompanyOrderDetailForAdmin(orderId, status, user.companyId);
+    const { status } = req.query;
 
-  res.status(200).json(order);
+    const order = status
+      ? await orderService.getCompanyUserOrderDetailByStatus(orderId, status, user.companyId)
+      : await orderService.getCompanyUserOrderDetailById(orderId, user.companyId);
+
+    res.status(200).json(order);
+  } catch (error) {
+    next(error);
+  }
 };
-
 
 // Approve or reject order
 const updateOrder: RequestHandler<TGetOrderParamsDto, {}, TUpdateStatusOrderBodyDto> = async (req, res, next) => {
-  const user = req.user;
+  try {
+    const user = req.user;
 
-  if (!user) throw new AuthenticationError("Invalid user.");
+    if (!user) throw new AuthenticationError("Invalid user.");
 
-  const approver = user.name;
-  const companyId = user.companyId;
-  const orderId = req.params.orderId;
-  const { adminMessage = "", status } = req.body;
+    const approver = user.name;
+    const companyId = user.companyId;
+    const orderId = req.params.orderId;
+    const { adminMessage = "", status } = req.body;
 
-  const updatedOrder = await orderService.updateOrder(orderId, companyId, { approver, adminMessage, status });
+    const updatedOrder = await orderService.updateOrder(orderId, companyId, { approver, adminMessage, status });
 
-  res.status(200).json(updatedOrder);
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    next(error);
+  }
 };
 
 const getOrderById: RequestHandler<TGetOrderParamsDto> = async (req, res, next) => {
@@ -157,7 +168,6 @@ export default {
   getOrders,
   getOrder,
   updateOrder,
-  // Order request features
   createOrder,
   getOrderById,
   getOrdersByUserId,

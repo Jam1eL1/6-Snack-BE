@@ -1,6 +1,11 @@
 import { Company, Order, Prisma } from "../generated/prisma/client";
 import prisma from "../config/prisma";
-import { TGetOrdersQuery, TGetOrdersRepositoryQuery, TGetOrderStatus } from "../types/order.types";
+import {
+  TCompanyUserOrderDetailStatus,
+  TGetOrdersQuery,
+  TGetOrdersRepositoryQuery,
+  TGetOrderStatus,
+} from "../types/order.types";
 import { AuthenticationError } from "../types/error";
 
 const SORT_OPTIONS: Record<"latest" | "priceLow" | "priceHigh", Prisma.OrderOrderByWithRelationInput> = {
@@ -45,7 +50,11 @@ const getOrdersTotalCount = async ({ status }: Pick<TGetOrdersQuery, "status">, 
 };
 
 // Order search (pending or approved)
-const getOrderByIdAndStatus = async (id: Order["id"], status: "pending" | "approved", companyId: Company["id"]) => {
+const getOrderByIdAndStatus = async (
+  id: Order["id"],
+  status: TCompanyUserOrderDetailStatus,
+  companyId: Company["id"],
+) => {
   const statusOptions = getStatusCondition(status);
 
   return await prisma.order.findFirst({
