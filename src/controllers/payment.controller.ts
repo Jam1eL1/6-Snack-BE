@@ -52,11 +52,18 @@ const confirmPayment: RequestHandler<{}, {}, TConfirmPaymentBodyDto> = async (re
       if (!order) throw new NotFoundError("주문 정보를 찾을 수 없습니다.");
 
       // 2. Order 상태 업데이트 및 예산 차감
-      await orderService.updateOrder(orderId, companyId, {
-        approver,
-        adminMessage: order.status === "INSTANT_APPROVED" ? "즉시 구매" : order.adminMessage,
-        status: order.status === "INSTANT_APPROVED" ? "INSTANT_APPROVED" : "APPROVED",
-      });
+      if (order.status === "INSTANT_APPROVED") {
+        await orderService.completeInstantOrderApproval(orderId, companyId, {
+          approver,
+          adminMessage: "즉시 구매",
+        });
+      } else {
+        await orderService.updateOrder(orderId, companyId, {
+          approver,
+          adminMessage: order.adminMessage,
+          status: "APPROVED",
+        });
+      }
     });
 
     res.status(response.status).json(response.data);

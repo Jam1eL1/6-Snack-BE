@@ -23,6 +23,6 @@ export type TGetOrderStatus = {
 
 export type TUpdateOrderStatusCommand = {
   approver: string;
-  adminMessage: string;
+  adminMessage: string | null;
   status: "APPROVED" | "REJECTED";
 };

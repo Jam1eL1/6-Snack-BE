@@ -142,28 +142,26 @@ const formatCreatedCompanyUserOrder = async (
   return formattedOrder;
 };
 
-// Approve or reject order
-const updateOrder = async (
+type TCompleteOrderApprovalCommand = Omit<TUpdateOrderStatusCommand, "status"> & {
+  status: "APPROVED" | "INSTANT_APPROVED";
+};
+
+const completeOrderApproval = async (
   orderId: Order["id"],
   companyId: Company["id"],
-  body: TUpdateOrderStatusCommand,
+  body: TCompleteOrderApprovalCommand,
 ): Promise<TUpdateOrderResponseDto> => {
   const { year, month } = getDateForBudget();
 
-  // 1. Fetch order
   const order = await orderRepository.getOrderById(orderId);
 
   if (!order) throw new NotFoundError("Order not found.");
 
   return await prisma.$transaction(async (tx) => {
-    // 2. Update order status (approved or rejected)
     const updatedOrder = await orderRepository.updateOrder(orderId, body, tx);
     const { deliveryFee, productsPriceTotal } = updatedOrder;
 
-    // 2-1. Early return for rejected orders
-    if (body.status === "REJECTED") return updatedOrder;
-
-    // 3. Retrieve budget through service so missing current-month budget is backfilled
+    // Retrieve budget through service so missing current-month budget is backfilled
     const monthlyBudget = await budgetService.getMonthlyBudget(companyId);
 
     const { currentMonthExpense } = monthlyBudget;
@@ -174,16 +172,40 @@ const updateOrder = async (
 
     const totalCurrentMonthExpense = currentMonthExpense + productsPriceTotal + deliveryFee;
 
-    // 4. Increase current month expense
+    // Increase current month expense
     await budgetRepository.updateCurrentMonthExpense({ companyId, year, month }, totalCurrentMonthExpense, tx);
 
     const productIds = order.receipts.map((receipt) => receipt.productId);
 
-    // 5. Increase product sales count
+    // Increase product sales count
     await productRepository.updateCumulativeSales(productIds, tx);
 
     return updatedOrder;
   });
+};
+
+// Approve or reject order
+const updateOrder = async (
+  orderId: Order["id"],
+  companyId: Company["id"],
+  body: TUpdateOrderStatusCommand,
+): Promise<TUpdateOrderResponseDto> => {
+  if (body.status === "APPROVED") {
+    return await completeOrderApproval(orderId, companyId, { ...body, status: "APPROVED" });
+  }
+
+  const order = await orderRepository.getOrderById(orderId);
+  if (!order) throw new NotFoundError("Order not found.");
+
+  return await orderRepository.updateOrder(orderId, body);
+};
+
+const completeInstantOrderApproval = async (
+  orderId: Order["id"],
+  companyId: Company["id"],
+  body: Omit<TCompleteOrderApprovalCommand, "status">,
+): Promise<TUpdateOrderResponseDto> => {
+  return await completeOrderApproval(orderId, companyId, { ...body, status: "INSTANT_APPROVED" });
 };
 
 const createOrder = async (orderData: {
@@ -299,10 +321,9 @@ const createInstantOrder = async (orderData: {
     return order;
   });
 
-  const approvedOrder = await updateOrder(result.id, orderData.companyId, {
+  const approvedOrder = await completeInstantOrderApproval(result.id, orderData.companyId, {
     approver: orderData.approverName,
     adminMessage: "Auto-approved via instant purchase",
-    status: "APPROVED",
   });
 
   return {
@@ -314,6 +335,7 @@ const createInstantOrder = async (orderData: {
 export default {
   getOrders,
   updateOrder,
+  completeInstantOrderApproval,
   getCompanyUserOrderDetailById,
   getCompanyUserOrderDetailByStatus,
   createOrder,
