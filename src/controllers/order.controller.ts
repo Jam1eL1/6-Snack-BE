@@ -2,7 +2,9 @@ import { RequestHandler } from "express";
 import orderService from "../services/order.service";
 import {
   TCreateInstantOrderBodyDto,
+  TCreateInstantOrderResponseDto,
   TCreateOrderBodyDto,
+  TCreateOrderResponseDto,
   TCancelOrderBodyDto,
   TGetOrderParamsDto,
   TGetOrderQueryDto,
@@ -11,6 +13,7 @@ import {
 } from "../dtos/order.dto";
 import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import { AuthenticationError } from "../types/error";
+import { TCreateInstantOrderCommand, TCreateOrderCommand } from "../types/order.types";
 
 // Get order history (pending or approved)
 const getOrders: RequestHandler<{}, {}, {}, TGetOrdersQueryDto> = async (req, res, next) => {
@@ -120,21 +123,24 @@ const cancelOrder: RequestHandler<TGetOrderParamsDto, {}, TCancelOrderBodyDto> =
 
 const createOrder: RequestHandler<{}, {}, TCreateOrderBodyDto> = async (req, res, next) => {
   try {
-    const orderData = req.body;
+    const user = req.user;
 
-    if (!req.user?.id) {
+    if (!user?.id) {
       throw new AuthenticationError("Login required.");
     }
 
-    const authenticatedOrderData = {
-      ...orderData,
-      userId: req.user.id,
-      companyId: req.user.companyId,
+    const command: TCreateOrderCommand = {
+      userId: user.id,
+      companyId: user.companyId,
+      adminMessage: req.body.adminMessage,
+      requestMessage: req.body.requestMessage,
+      cartItemIds: req.body.cartItemIds,
     };
 
-    const order = await orderService.createOrder(authenticatedOrderData);
+    const order = await orderService.createOrder(command);
+    const response: TCreateOrderResponseDto = order;
 
-    res.status(201).json(order);
+    res.status(201).json(response);
   } catch (error) {
     next(error);
   }
@@ -142,23 +148,26 @@ const createOrder: RequestHandler<{}, {}, TCreateOrderBodyDto> = async (req, res
 
 const createInstantOrder: RequestHandler<{}, {}, TCreateInstantOrderBodyDto> = async (req, res, next) => {
   try {
-    const orderData = req.body;
+    const user = req.user;
 
-    if (!req.user?.id) {
+    if (!user?.id) {
       throw new AuthenticationError("Login required.");
     }
 
-    // Use authenticated user ID (without message fields)
-    const authenticatedOrderData = {
-      cartItemIds: orderData.cartItemIds,
-      userId: req.user.id,
-      companyId: req.user.companyId,
-      approverName: req.user.name || "System",
+    const command: TCreateInstantOrderCommand = {
+      userId: user.id,
+      companyId: user.companyId,
+      cartItemIds: req.body.cartItemIds,
+      approverName: user.name,
     };
 
-    const result = await orderService.createInstantOrder(authenticatedOrderData);
+    const instantOrder = await orderService.createInstantOrder(command);
+    const response: TCreateInstantOrderResponseDto = {
+      message: "Instant purchase completed successfully.",
+      data: instantOrder,
+    };
 
-    res.status(201).json(result);
+    res.status(201).json(response);
   } catch (error) {
     next(error);
   }

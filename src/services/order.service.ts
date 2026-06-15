@@ -1,7 +1,15 @@
 import { Company, Order } from "../generated/prisma/client";
 import orderRepository from "../repositories/order.repository";
 import { NotFoundError, ValidationError, ForbiddenError, BadRequestError, AuthenticationError } from "../types/error";
-import { TCompanyUserOrderDetailStatus, TGetOrdersQuery, TUpdateOrderStatusCommand } from "../types/order.types";
+import {
+  TCompanyUserOrderDetailStatus,
+  TCreateInstantOrderCommand,
+  TCreateInstantOrderResult,
+  TCreateOrderCommand,
+  TCreateOrderResult,
+  TGetOrdersQuery,
+  TUpdateOrderStatusCommand,
+} from "../types/order.types";
 import budgetRepository from "../repositories/budget.repository";
 import getDateForBudget from "../utils/getDateForBudget";
 import prisma from "../config/prisma";
@@ -9,8 +17,6 @@ import productRepository from "../repositories/product.repository";
 import userRepository from "../repositories/user.repository";
 import {
   TCancelOrderResponseDto,
-  TCreateInstantOrderResponseDto,
-  TCreateOrderResponseDto,
   TCompanyOrderDetailForAdminResponseDto,
   TGetOrderByIdResponseDto,
   TGetOrdersByUserIdResponseDto,
@@ -126,7 +132,7 @@ const formatCreatedCompanyUserOrder = async (
   orderId: Order["id"],
   companyId: Company["id"],
   status: TCompanyUserOrderDetailStatus,
-): Promise<TCreateOrderResponseDto> => {
+): Promise<TCreateOrderResult> => {
   const order = await orderRepository.getOrderById(orderId);
 
   if (!order || order.companyId !== companyId) {
@@ -208,35 +214,24 @@ const completeInstantOrderApproval = async (
   return await completeOrderApproval(orderId, companyId, { ...body, status: "INSTANT_APPROVED" });
 };
 
-const createOrder = async (orderData: {
-  userId: string;
-  companyId: number;
-  adminMessage?: string;
-  requestMessage?: string;
-  cartItemIds: number[];
-}): Promise<TCreateOrderResponseDto> => {
-  // Validate input
-  if (!orderData.userId) {
-    throw new ValidationError("User ID is required.");
-  }
-
-  if (!orderData.cartItemIds || orderData.cartItemIds.length === 0) {
+const createOrder = async (command: TCreateOrderCommand): Promise<TCreateOrderResult> => {
+  if (!command.cartItemIds || command.cartItemIds.length === 0) {
     throw new ValidationError("Cart items are required.");
   }
 
   // Create order in a transaction
   const order = await prisma.$transaction(async (tx) => {
-    return await orderRepository.createOrder(orderData, tx);
+    return await orderRepository.createOrder(command, tx);
   });
 
   // Verify user role
-  const user = await userRepository.findActiveUserById(orderData.userId);
+  const user = await userRepository.findActiveUserById(command.userId);
 
   if (!user) throw new AuthenticationError("Login required.");
 
   const createdOrderStatus: TCompanyUserOrderDetailStatus = user.role === "USER" ? "pending" : "approved";
 
-  return await formatCreatedCompanyUserOrder(order.id, orderData.companyId, createdOrderStatus);
+  return await formatCreatedCompanyUserOrder(order.id, command.companyId, createdOrderStatus);
 };
 
 const getOrderById = async (orderId: string, userId: string): Promise<TGetOrderByIdResponseDto> => {
@@ -292,25 +287,15 @@ const cancelOrder = async (orderId: string, userId: string): Promise<TCancelOrde
 };
 
 // Instant purchase - admins only
-const createInstantOrder = async (orderData: {
-  userId: string;
-  cartItemIds: number[];
-  companyId: number;
-  approverName: string;
-}): Promise<TCreateInstantOrderResponseDto> => {
-  // Validate input
-  if (!orderData.userId) {
-    throw new ValidationError("User ID is required.");
-  }
-
-  if (!orderData.cartItemIds || orderData.cartItemIds.length === 0) {
+const createInstantOrder = async (command: TCreateInstantOrderCommand): Promise<TCreateInstantOrderResult> => {
+  if (!command.cartItemIds || command.cartItemIds.length === 0) {
     throw new ValidationError("Cart items are required.");
   }
 
   // Create instant purchase order in a transaction
   const result = await prisma.$transaction(async (tx) => {
     const instantOrderData = {
-      ...orderData,
+      ...command,
       adminMessage: undefined,
       requestMessage: undefined,
     };
@@ -321,15 +306,12 @@ const createInstantOrder = async (orderData: {
     return order;
   });
 
-  const approvedOrder = await completeInstantOrderApproval(result.id, orderData.companyId, {
-    approver: orderData.approverName,
+  const approvedOrder = await completeInstantOrderApproval(result.id, command.companyId, {
+    approver: command.approverName,
     adminMessage: "Auto-approved via instant purchase",
   });
 
-  return {
-    message: "Instant purchase completed successfully.",
-    data: approvedOrder,
-  };
+  return approvedOrder;
 };
 
 export default {

@@ -1,3 +1,9 @@
+import type {
+  TCompanyOrderDetailForAdminResult,
+  TCreateInstantOrderResult,
+  TCreateOrderResult,
+} from "../types/order.types";
+
 export type TGetOrdersQueryDto = {
   page: string;
   limit: string;
@@ -51,24 +57,9 @@ export type TOrderBudgetResponseDto = {
   currentMonthExpense: number | null;
 };
 
-export type TCompanyOrderDetailForAdminResponseDto = {
-  id: string;
-  companyId: number;
-  userId: string;
-  approver: string | null;
-  adminMessage: string | null;
-  requestMessage: string | null;
-  deliveryFee: number;
-  productsPriceTotal: number;
-  createdAt: Date;
-  updatedAt: Date;
-  status: string;
-  requester: string;
-  products: TOrderProductResponseDto[];
-  budget: TOrderBudgetResponseDto;
-};
+export type TCompanyOrderDetailForAdminResponseDto = TCompanyOrderDetailForAdminResult;
 
-export type TCreateOrderResponseDto = TCompanyOrderDetailForAdminResponseDto;
+export type TCreateOrderResponseDto = TCreateOrderResult;
 
 export type TUpdateOrderResponseDto = {
   id: string;
@@ -205,5 +196,5 @@ export type TCancelOrderResponseDto = {
 
 export type TCreateInstantOrderResponseDto = {
   message: string;
-  data: TUpdateOrderResponseDto;
+  data: TCreateInstantOrderResult;
 };
