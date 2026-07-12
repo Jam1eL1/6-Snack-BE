@@ -8,6 +8,7 @@ import {
   TCreateOrderCommand,
   TCreateOrderResult,
   TGetOrdersQuery,
+  TGetOrdersResult,
   TUpdateOrderStatusCommand,
 } from "../types/order.types";
 import budgetRepository from "../repositories/budget.repository";
@@ -20,7 +21,6 @@ import {
   TCompanyOrderDetailForAdminResponseDto,
   TGetOrderByIdResponseDto,
   TGetOrdersByUserIdResponseDto,
-  TGetOrdersResponseDto,
   TUpdateOrderResponseDto,
 } from "../dtos/order.dto";
 import budgetService from "./budget.service";
@@ -56,7 +56,7 @@ const addCurrentBudgetToCompanyUserOrderDetail = async (
 const getOrders = async (
   { page, limit, orderBy, status }: TGetOrdersQuery,
   companyId: number,
-): Promise<TGetOrdersResponseDto> => {
+): Promise<TGetOrdersResult> => {
   const offset = (page - 1) * limit;
 
   const orders = await orderRepository.getOrders({ offset, limit, orderBy, status }, companyId);

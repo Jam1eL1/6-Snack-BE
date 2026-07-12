@@ -10,13 +10,20 @@ import {
   TGetOrderQueryDto,
   TGetOrdersQueryDto,
   TUpdateStatusOrderBodyDto,
+  TUpdateOrderResponseDto,
+  TGetOrdersResponseDto,
 } from "../dtos/order.dto";
 import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import { AuthenticationError } from "../types/error";
-import { TCreateInstantOrderCommand, TCreateOrderCommand } from "../types/order.types";
+import {
+  TCreateInstantOrderCommand,
+  TCreateOrderCommand,
+  TGetOrdersQuery,
+  TUpdateOrderStatusCommand,
+} from "../types/order.types";
 
 // Get order history (pending or approved)
-const getOrders: RequestHandler<{}, {}, {}, TGetOrdersQueryDto> = async (req, res, next) => {
+const getOrders: RequestHandler<{}, TGetOrdersResponseDto, {}, TGetOrdersQueryDto> = async (req, res, next) => {
   try {
     const page = parseNumberOrThrow(req.query.page ?? "1", "page");
     const limit = parseNumberOrThrow(req.query.limit ?? "4", "limit");
@@ -25,11 +32,20 @@ const getOrders: RequestHandler<{}, {}, {}, TGetOrdersQueryDto> = async (req, re
 
     if (!user) throw new AuthenticationError("Invalid user.");
 
-    const companyId = user.companyId;
+    const query: TGetOrdersQuery = {
+      page,
+      limit,
+      orderBy,
+      status,
+    };
 
-    const orderList = await orderService.getOrders({ page, limit, orderBy, status }, companyId);
+    const result = await orderService.getOrders(query, user.companyId);
+    const response: TGetOrdersResponseDto = {
+      message: "Orders retrieved successfully.",
+      data: result,
+    };
 
-    res.status(200).json(orderList);
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -56,20 +72,27 @@ const getOrder: RequestHandler<TGetOrderParamsDto, {}, {}, TGetOrderQueryDto> = 
 };
 
 // Approve or reject order
-const updateOrder: RequestHandler<TGetOrderParamsDto, {}, TUpdateStatusOrderBodyDto> = async (req, res, next) => {
+const updateOrder: RequestHandler<TGetOrderParamsDto, TUpdateOrderResponseDto, TUpdateStatusOrderBodyDto> = async (
+  req,
+  res,
+  next,
+) => {
   try {
     const user = req.user;
 
     if (!user) throw new AuthenticationError("Invalid user.");
 
-    const approver = user.name;
-    const companyId = user.companyId;
     const orderId = req.params.orderId;
-    const { adminMessage = "", status } = req.body;
+    const command: TUpdateOrderStatusCommand = {
+      approver: user.name,
+      adminMessage: req.body.adminMessage ?? null,
+      status: req.body.status,
+    };
 
-    const updatedOrder = await orderService.updateOrder(orderId, companyId, { approver, adminMessage, status });
+    const updatedOrder = await orderService.updateOrder(orderId, user.companyId, command);
 
-    res.status(200).json(updatedOrder);
+    const response: TUpdateOrderResponseDto = updatedOrder;
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }

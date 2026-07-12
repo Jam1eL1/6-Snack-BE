@@ -1,5 +1,30 @@
 import { CartItem, Company, Order, User } from "../generated/prisma/client";
 
+export type TGetOrdersItemResult = {
+  id: string;
+  companyId: number;
+  userId: string;
+  approver: string | null;
+  adminMessage: string | null;
+  requestMessage: string | null;
+  deliveryFee: number;
+  productsPriceTotal: number;
+  createdAt: Date;
+  updatedAt: Date;
+  status: string;
+  requester: string;
+  productName: string;
+};
+
+export type TGetOrdersResult = {
+  orders: TGetOrdersItemResult[];
+  meta: {
+    totalCount: number;
+    itemsPerPage: number;
+    totalPages: number;
+    currentPage: number;
+  };
+};
 export type TCompanyUserOrderDetailStatus = "pending" | "approved";
 
 export type TOrderStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELED" | "INSTANT_APPROVED";

@@ -2,6 +2,7 @@ import type {
   TCompanyOrderDetailForAdminResult,
   TCreateInstantOrderResult,
   TCreateOrderResult,
+  TGetOrdersResult,
 } from "../types/order.types";
 
 export type TGetOrdersQueryDto = {
@@ -99,8 +100,8 @@ export type TGetOrdersItemResponseDto = {
 };
 
 export type TGetOrdersResponseDto = {
-  orders: TGetOrdersItemResponseDto[];
-  meta: TGetOrdersMetaResponseDto;
+  message: string;
+  data: TGetOrdersResult;
 };
 
 export type TOrderUserSummaryResponseDto = {
