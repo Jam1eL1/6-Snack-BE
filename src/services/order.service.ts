@@ -2,6 +2,7 @@ import { Company, Order } from "../generated/prisma/client";
 import orderRepository from "../repositories/order.repository";
 import { NotFoundError, ValidationError, ForbiddenError, BadRequestError, AuthenticationError } from "../types/error";
 import {
+  TCompanyOrderDetailForAdminResult,
   TCompanyUserOrderDetailStatus,
   TCreateInstantOrderCommand,
   TCreateInstantOrderResult,
@@ -18,7 +19,6 @@ import productRepository from "../repositories/product.repository";
 import userRepository from "../repositories/user.repository";
 import {
   TCancelOrderResponseDto,
-  TCompanyOrderDetailForAdminResponseDto,
   TGetOrderByIdResponseDto,
   TGetOrdersByUserIdResponseDto,
   TUpdateOrderResponseDto,
@@ -31,9 +31,9 @@ type TCompanyUserOrderDetailRecord = NonNullable<Awaited<ReturnType<typeof order
 
 // helpers
 const addCurrentBudgetToCompanyUserOrderDetail = async (
-  formattedOrder: TCompanyOrderDetailForAdminResponseDto,
+  formattedOrder: TCompanyOrderDetailForAdminResult,
   companyId: number,
-): Promise<TCompanyOrderDetailForAdminResponseDto> => {
+): Promise<TCompanyOrderDetailForAdminResult> => {
   const { year, month } = getDateForBudget();
   const budget = await budgetRepository.getMonthlyBudget({
     companyId,
@@ -91,7 +91,7 @@ const getCompanyUserOrderDetailByStatus = async (
   orderId: Order["id"],
   status: TCompanyUserOrderDetailStatus,
   companyId: Company["id"],
-): Promise<TCompanyOrderDetailForAdminResponseDto> => {
+): Promise<TCompanyOrderDetailForAdminResult> => {
   const order = await orderRepository.getOrderByIdAndStatus(orderId, status, companyId);
   if (!order) {
     throw new NotFoundError("Order history not found");
@@ -109,7 +109,7 @@ const getCompanyUserOrderDetailByStatus = async (
 const getCompanyUserOrderDetailById = async (
   orderId: Order["id"],
   companyId: Company["id"],
-): Promise<TCompanyOrderDetailForAdminResponseDto> => {
+): Promise<TCompanyOrderDetailForAdminResult> => {
   const order = await orderRepository.getOrderById(orderId);
   if (!order || order.companyId !== companyId) {
     throw new NotFoundError("Order information not found.");
@@ -118,7 +118,7 @@ const getCompanyUserOrderDetailById = async (
   return formatCompanyUserOrderDetail(order);
 };
 
-const formatCompanyUserOrderDetail = (order: TCompanyUserOrderDetailRecord): TCompanyOrderDetailForAdminResponseDto => {
+const formatCompanyUserOrderDetail = (order: TCompanyUserOrderDetailRecord): TCompanyOrderDetailForAdminResult => {
   const { receipts, user, ...rest } = order;
   return {
     ...rest,

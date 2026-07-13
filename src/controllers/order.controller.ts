@@ -12,6 +12,7 @@ import {
   TUpdateStatusOrderBodyDto,
   TUpdateOrderResponseDto,
   TGetOrdersResponseDto,
+  TGetOrderResponseDto,
 } from "../dtos/order.dto";
 import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import { AuthenticationError } from "../types/error";
@@ -52,7 +53,11 @@ const getOrders: RequestHandler<{}, TGetOrdersResponseDto, {}, TGetOrdersQueryDt
 };
 
 // Get order details (pending or approved)
-const getOrder: RequestHandler<TGetOrderParamsDto, {}, {}, TGetOrderQueryDto> = async (req, res, next) => {
+const getOrder: RequestHandler<TGetOrderParamsDto, TGetOrderResponseDto, {}, TGetOrderQueryDto> = async (
+  req,
+  res,
+  next,
+) => {
   try {
     const orderId = req.params.orderId;
     const user = req.user;
@@ -61,11 +66,14 @@ const getOrder: RequestHandler<TGetOrderParamsDto, {}, {}, TGetOrderQueryDto> = 
 
     const { status } = req.query;
 
-    const order = status
+    const result = status
       ? await orderService.getCompanyUserOrderDetailByStatus(orderId, status, user.companyId)
       : await orderService.getCompanyUserOrderDetailById(orderId, user.companyId);
-
-    res.status(200).json(order);
+    const response: TGetOrderResponseDto = {
+      message: "Order details retrieved successfully.",
+      data: result,
+    };
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }

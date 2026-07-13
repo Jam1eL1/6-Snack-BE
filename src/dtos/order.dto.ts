@@ -13,9 +13,6 @@ export type TGetOrdersQueryDto = {
 };
 
 export type TGetOrderQueryDto = {
-  page: string;
-  limit: string;
-  orderBy: "latest" | "priceLow" | "priceHigh";
   status?: "pending" | "approved";
 };
 
@@ -42,6 +39,11 @@ export type TCancelOrderBodyDto = {
   status: "CANCELED";
 };
 
+export type TGetOrderResponseDto = {
+  message: string;
+  data: TCompanyOrderDetailForAdminResult;
+};
+
 export type TOrderProductResponseDto = {
   id: number;
   productId: number;
@@ -57,8 +59,6 @@ export type TOrderBudgetResponseDto = {
   currentMonthBudget: number | null;
   currentMonthExpense: number | null;
 };
-
-export type TCompanyOrderDetailForAdminResponseDto = TCompanyOrderDetailForAdminResult;
 
 export type TCreateOrderResponseDto = TCreateOrderResult;
 
