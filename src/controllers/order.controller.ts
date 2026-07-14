@@ -10,7 +10,7 @@ import {
   TGetOrderQueryDto,
   TGetOrdersQueryDto,
   TUpdateStatusOrderBodyDto,
-  TUpdateOrderResponseDto,
+  TUpdateOrderStatusResponseDto,
   TGetOrdersResponseDto,
   TGetOrderResponseDto,
 } from "../dtos/order.dto";
@@ -80,11 +80,11 @@ const getOrder: RequestHandler<TGetOrderParamsDto, TGetOrderResponseDto, {}, TGe
 };
 
 // Approve or reject order
-const updateOrder: RequestHandler<TGetOrderParamsDto, TUpdateOrderResponseDto, TUpdateStatusOrderBodyDto> = async (
-  req,
-  res,
-  next,
-) => {
+const updateOrder: RequestHandler<
+  TGetOrderParamsDto,
+  TUpdateOrderStatusResponseDto,
+  TUpdateStatusOrderBodyDto
+> = async (req, res, next) => {
   try {
     const user = req.user;
 
@@ -97,9 +97,12 @@ const updateOrder: RequestHandler<TGetOrderParamsDto, TUpdateOrderResponseDto, T
       status: req.body.status,
     };
 
-    const updatedOrder = await orderService.updateOrder(orderId, user.companyId, command);
+    const result = await orderService.updateOrder(orderId, user.companyId, command);
 
-    const response: TUpdateOrderResponseDto = updatedOrder;
+    const response: TUpdateOrderStatusResponseDto = {
+      message: "Order status updated",
+      data: result,
+    };
     res.status(200).json(response);
   } catch (error) {
     next(error);

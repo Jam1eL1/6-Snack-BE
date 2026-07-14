@@ -3,6 +3,7 @@ import type {
   TCreateInstantOrderResult,
   TCreateOrderResult,
   TGetOrdersResult,
+  TUpdateOrderStatusResult,
 } from "../types/order.types";
 
 export type TGetOrdersQueryDto = {
@@ -62,18 +63,9 @@ export type TOrderBudgetResponseDto = {
 
 export type TCreateOrderResponseDto = TCreateOrderResult;
 
-export type TUpdateOrderResponseDto = {
-  id: string;
-  companyId: number;
-  userId: string;
-  approver: string | null;
-  adminMessage: string | null;
-  requestMessage: string | null;
-  deliveryFee: number;
-  productsPriceTotal: number;
-  createdAt: Date;
-  updatedAt: Date;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELED" | "INSTANT_APPROVED";
+export type TUpdateOrderStatusResponseDto = {
+  message: string;
+  data: TUpdateOrderStatusResult;
 };
 
 export type TGetOrdersMetaResponseDto = {

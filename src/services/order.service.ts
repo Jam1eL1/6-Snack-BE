@@ -11,18 +11,14 @@ import {
   TGetOrdersQuery,
   TGetOrdersResult,
   TUpdateOrderStatusCommand,
+  TUpdateOrderStatusResult,
 } from "../types/order.types";
 import budgetRepository from "../repositories/budget.repository";
 import getDateForBudget from "../utils/getDateForBudget";
 import prisma from "../config/prisma";
 import productRepository from "../repositories/product.repository";
 import userRepository from "../repositories/user.repository";
-import {
-  TCancelOrderResponseDto,
-  TGetOrderByIdResponseDto,
-  TGetOrdersByUserIdResponseDto,
-  TUpdateOrderResponseDto,
-} from "../dtos/order.dto";
+import { TCancelOrderResponseDto, TGetOrderByIdResponseDto, TGetOrdersByUserIdResponseDto } from "../dtos/order.dto";
 import budgetService from "./budget.service";
 
 // Get order history (pending or approved)
@@ -156,7 +152,7 @@ const completeOrderApproval = async (
   orderId: Order["id"],
   companyId: Company["id"],
   body: TCompleteOrderApprovalCommand,
-): Promise<TUpdateOrderResponseDto> => {
+): Promise<TUpdateOrderStatusResult> => {
   const { year, month } = getDateForBudget();
 
   const order = await orderRepository.getOrderById(orderId);
@@ -190,28 +186,45 @@ const completeOrderApproval = async (
   });
 };
 
+const getCompanyOrderOrThrow = async (
+  orderId: Order["id"],
+  companyId: Company["id"],
+): Promise<TCompanyUserOrderDetailRecord> => {
+  const order = await orderRepository.getOrderById(orderId);
+
+  if (!order || order.companyId !== companyId) {
+    throw new NotFoundError("Order not found.");
+  }
+
+  return order;
+};
 // Approve or reject order
 const updateOrder = async (
   orderId: Order["id"],
   companyId: Company["id"],
-  body: TUpdateOrderStatusCommand,
-): Promise<TUpdateOrderResponseDto> => {
-  if (body.status === "APPROVED") {
-    return await completeOrderApproval(orderId, companyId, { ...body, status: "APPROVED" });
+  command: TUpdateOrderStatusCommand,
+): Promise<TUpdateOrderStatusResult> => {
+  const order = await getCompanyOrderOrThrow(orderId, companyId);
+  if (order.status !== "PENDING") {
+    throw new BadRequestError("Only pending orders can be approved or rejected.");
   }
 
-  const order = await orderRepository.getOrderById(orderId);
-  if (!order) throw new NotFoundError("Order not found.");
-
-  return await orderRepository.updateOrder(orderId, body);
+  if (command.status === "APPROVED") {
+    return completeOrderApproval(orderId, companyId, {
+      ...command,
+      status: "APPROVED",
+    });
+  }
+  return orderRepository.updateOrder(orderId, command);
 };
 
 const completeInstantOrderApproval = async (
   orderId: Order["id"],
   companyId: Company["id"],
-  body: Omit<TCompleteOrderApprovalCommand, "status">,
-): Promise<TUpdateOrderResponseDto> => {
-  return await completeOrderApproval(orderId, companyId, { ...body, status: "INSTANT_APPROVED" });
+  command: Omit<TCompleteOrderApprovalCommand, "status">,
+): Promise<TUpdateOrderStatusResult> => {
+  const order = await getCompanyOrderOrThrow(orderId, companyId);
+  return await completeOrderApproval(orderId, companyId, { ...command, status: "INSTANT_APPROVED" });
 };
 
 const createOrder = async (command: TCreateOrderCommand): Promise<TCreateOrderResult> => {
