@@ -1,14 +1,17 @@
-import { Company, Order } from "../generated/prisma/client";
+import { Company, Order, User } from "../generated/prisma/client";
 import orderRepository from "../repositories/order.repository";
 import { NotFoundError, ValidationError, ForbiddenError, BadRequestError, AuthenticationError } from "../types/error";
 import {
   TCompanyOrderDetailForAdminResult,
+  TCancelOrderResult,
   TCompanyUserOrderDetailStatus,
   TCreateInstantOrderCommand,
   TCreateInstantOrderResult,
   TCreateOrderCommand,
   TCreateOrderResult,
   TGetOrdersQuery,
+  TGetOrderByIdResult,
+  TGetOrdersByUserIdResult,
   TGetOrdersResult,
   TUpdateOrderStatusCommand,
   TUpdateOrderStatusResult,
@@ -18,7 +21,6 @@ import getDateForBudget from "../utils/getDateForBudget";
 import prisma from "../config/prisma";
 import productRepository from "../repositories/product.repository";
 import userRepository from "../repositories/user.repository";
-import { TCancelOrderResponseDto, TGetOrderByIdResponseDto, TGetOrdersByUserIdResponseDto } from "../dtos/order.dto";
 import budgetService from "./budget.service";
 
 // Get order history (pending or approved)
@@ -247,7 +249,7 @@ const createOrder = async (command: TCreateOrderCommand): Promise<TCreateOrderRe
   return await formatCreatedCompanyUserOrder(order.id, command.companyId, createdOrderStatus);
 };
 
-const getOrderById = async (orderId: string, userId: string): Promise<TGetOrderByIdResponseDto> => {
+const getOrderById = async (orderId: Order["id"], userId: User["id"]): Promise<TGetOrderByIdResult> => {
   const order = await orderRepository.getOrderById(orderId);
 
   if (!order) {
@@ -258,22 +260,14 @@ const getOrderById = async (orderId: string, userId: string): Promise<TGetOrderB
     throw new ForbiddenError("You do not have permission to access this order.");
   }
 
-  return {
-    message: "Purchase request retrieved successfully.",
-    data: order,
-  };
+  return order;
 };
 
-const getOrdersByUserId = async (userId: string): Promise<TGetOrdersByUserIdResponseDto> => {
-  const orders = await orderRepository.getOrdersByUserId(userId);
-
-  return {
-    message: "My purchase request list retrieved successfully.",
-    data: orders,
-  };
+const getOrdersByUserId = async (userId: User["id"]): Promise<TGetOrdersByUserIdResult> => {
+  return await orderRepository.getOrdersByUserId(userId);
 };
 
-const cancelOrder = async (orderId: string, userId: string): Promise<TCancelOrderResponseDto> => {
+const cancelOrder = async (orderId: Order["id"], userId: User["id"]): Promise<TCancelOrderResult> => {
   const order = await orderRepository.getOrderById(orderId);
 
   if (!order) {
@@ -291,11 +285,8 @@ const cancelOrder = async (orderId: string, userId: string): Promise<TCancelOrde
   const canceledOrder = await orderRepository.updateOrderStatus(orderId, "CANCELED");
 
   return {
-    message: "Purchase request canceled successfully.",
-    data: {
-      ...canceledOrder,
-      status: "CANCELED",
-    },
+    ...canceledOrder,
+    status: "CANCELED",
   };
 };
 

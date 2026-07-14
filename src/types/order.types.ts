@@ -119,3 +119,59 @@ export type TUpdateOrderStatusResult = {
 };
 
 export type TCreateInstantOrderResult = TUpdateOrderStatusResult;
+
+export type TOrderUserSummaryResult = {
+  id: User["id"];
+  email: User["email"];
+  name: User["name"];
+  companyId: Company["id"];
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  role: User["role"];
+};
+
+export type TGetOrderByIdResult = {
+  id: Order["id"];
+  companyId: Company["id"];
+  userId: User["id"];
+  approver: string | null;
+  adminMessage: string | null;
+  requestMessage: string | null;
+  productsPriceTotal: number;
+  deliveryFee: number;
+  createdAt: Date;
+  updatedAt: Date;
+  status: TOrderStatus;
+  user: TOrderUserSummaryResult;
+  receipts: TOrderProductResult[];
+};
+
+export type TOrderReceiptSummaryResult = {
+  id: number;
+  productName: string;
+  price: number;
+  imageUrl: string;
+  quantity: number;
+};
+
+export type TGetOrdersByUserIdItemResult = {
+  id: Order["id"];
+  companyId: Company["id"];
+  userId: User["id"];
+  approver: string | null;
+  adminMessage: string | null;
+  requestMessage: string | null;
+  deliveryFee: number;
+  productsPriceTotal: number;
+  createdAt: Date;
+  updatedAt: Date;
+  status: TOrderStatus;
+  receipts: TOrderReceiptSummaryResult[];
+};
+
+export type TGetOrdersByUserIdResult = TGetOrdersByUserIdItemResult[];
+
+export type TCancelOrderResult = Omit<TGetOrdersByUserIdItemResult, "status"> & {
+  status: "CANCELED";
+};

@@ -5,9 +5,11 @@ import {
   TCreateInstantOrderResponseDto,
   TCreateOrderBodyDto,
   TCreateOrderResponseDto,
-  TCancelOrderBodyDto,
+  TCancelOrderResponseDto,
+  TGetOrderByIdResponseDto,
   TGetOrderParamsDto,
   TGetOrderQueryDto,
+  TGetOrdersByUserIdResponseDto,
   TGetOrdersQueryDto,
   TUpdateStatusOrderBodyDto,
   TUpdateOrderStatusResponseDto,
@@ -109,7 +111,7 @@ const updateOrder: RequestHandler<
   }
 };
 
-const getOrderById: RequestHandler<TGetOrderParamsDto> = async (req, res, next) => {
+const getOrderById: RequestHandler<TGetOrderParamsDto, TGetOrderByIdResponseDto> = async (req, res, next) => {
   try {
     const orderId = req.params.orderId;
 
@@ -118,28 +120,36 @@ const getOrderById: RequestHandler<TGetOrderParamsDto> = async (req, res, next) 
     }
 
     const result = await orderService.getOrderById(orderId, req.user.id);
+    const response: TGetOrderByIdResponseDto = {
+      message: "Purchase request retrieved successfully.",
+      data: result,
+    };
 
-    res.status(200).json(result);
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
 };
 
-const getOrdersByUserId: RequestHandler = async (req, res, next) => {
+const getOrdersByUserId: RequestHandler<{}, TGetOrdersByUserIdResponseDto> = async (req, res, next) => {
   try {
     if (!req.user?.id) {
       throw new AuthenticationError("Login required.");
     }
 
     const result = await orderService.getOrdersByUserId(req.user.id);
+    const response: TGetOrdersByUserIdResponseDto = {
+      message: "My purchase request list retrieved successfully.",
+      data: result,
+    };
 
-    res.status(200).json(result);
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
 };
 
-const cancelOrder: RequestHandler<TGetOrderParamsDto, {}, TCancelOrderBodyDto> = async (req, res, next) => {
+const cancelOrder: RequestHandler<TGetOrderParamsDto, TCancelOrderResponseDto, {}> = async (req, res, next) => {
   try {
     const orderId = req.params.orderId;
 
@@ -148,8 +158,12 @@ const cancelOrder: RequestHandler<TGetOrderParamsDto, {}, TCancelOrderBodyDto> =
     }
 
     const result = await orderService.cancelOrder(orderId, req.user.id);
+    const response: TCancelOrderResponseDto = {
+      message: "Purchase request canceled successfully.",
+      data: result,
+    };
 
-    res.status(200).json(result);
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -183,7 +197,11 @@ const createOrder: RequestHandler<{}, TCreateOrderResponseDto, TCreateOrderBodyD
   }
 };
 
-const createInstantOrder: RequestHandler<{}, {}, TCreateInstantOrderBodyDto> = async (req, res, next) => {
+const createInstantOrder: RequestHandler<{}, TCreateInstantOrderResponseDto, TCreateInstantOrderBodyDto> = async (
+  req,
+  res,
+  next,
+) => {
   try {
     const user = req.user;
 
@@ -198,10 +216,10 @@ const createInstantOrder: RequestHandler<{}, {}, TCreateInstantOrderBodyDto> = a
       approverName: user.name,
     };
 
-    const instantOrder = await orderService.createInstantOrder(command);
+    const result = await orderService.createInstantOrder(command);
     const response: TCreateInstantOrderResponseDto = {
       message: "Instant purchase completed successfully.",
-      data: instantOrder,
+      data: result,
     };
 
     res.status(201).json(response);
