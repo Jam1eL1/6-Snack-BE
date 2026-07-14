@@ -155,7 +155,7 @@ const cancelOrder: RequestHandler<TGetOrderParamsDto, {}, TCancelOrderBodyDto> =
   }
 };
 
-const createOrder: RequestHandler<{}, {}, TCreateOrderBodyDto> = async (req, res, next) => {
+const createOrder: RequestHandler<{}, TCreateOrderResponseDto, TCreateOrderBodyDto> = async (req, res, next) => {
   try {
     const user = req.user;
 
@@ -171,8 +171,11 @@ const createOrder: RequestHandler<{}, {}, TCreateOrderBodyDto> = async (req, res
       cartItemIds: req.body.cartItemIds,
     };
 
-    const order = await orderService.createOrder(command);
-    const response: TCreateOrderResponseDto = order;
+    const result = await orderService.createOrder(command);
+    const response: TCreateOrderResponseDto = {
+      message: "Order created successfully.",
+      data: result,
+    };
 
     res.status(201).json(response);
   } catch (error) {

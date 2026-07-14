@@ -61,7 +61,10 @@ export type TOrderBudgetResponseDto = {
   currentMonthExpense: number | null;
 };
 
-export type TCreateOrderResponseDto = TCreateOrderResult;
+export type TCreateOrderResponseDto = {
+  message: string;
+  data: TCreateOrderResult;
+};
 
 export type TUpdateOrderStatusResponseDto = {
   message: string;
