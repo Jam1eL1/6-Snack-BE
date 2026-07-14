@@ -88,10 +88,10 @@ const getOrderWithCartItemIdsById = async (id: Order["id"]) => {
 
 const updateOrder = async (
   id: Order["id"],
-  body: Pick<Order, "approver" | "adminMessage" | "status">,
+  updateData: Pick<Order, "approver" | "adminMessage" | "status">,
   tx?: Prisma.TransactionClient,
 ) => {
-  const { approver, adminMessage, status } = body;
+  const { approver, adminMessage, status } = updateData;
   const client = tx || prisma;
 
   return await client.order.update({

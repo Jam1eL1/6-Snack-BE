@@ -151,7 +151,7 @@ type TCompleteOrderApprovalCommand = Omit<TUpdateOrderStatusCommand, "status"> &
 const completeOrderApproval = async (
   orderId: Order["id"],
   companyId: Company["id"],
-  body: TCompleteOrderApprovalCommand,
+  command: TCompleteOrderApprovalCommand,
 ): Promise<TUpdateOrderStatusResult> => {
   const { year, month } = getDateForBudget();
 
@@ -160,7 +160,7 @@ const completeOrderApproval = async (
   if (!order) throw new NotFoundError("Order not found.");
 
   return await prisma.$transaction(async (tx) => {
-    const updatedOrder = await orderRepository.updateOrder(orderId, body, tx);
+    const updatedOrder = await orderRepository.updateOrder(orderId, command, tx);
     const { deliveryFee, productsPriceTotal } = updatedOrder;
 
     // Retrieve budget through service so missing current-month budget is backfilled
