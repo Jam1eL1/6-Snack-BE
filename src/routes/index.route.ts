@@ -9,7 +9,6 @@ import myRouter from "./my.route";
 import inviteRouter from "./invite.route";
 import userRouter from "./user.route";
 import favoriteRouter from "./favorite.route";
-import paymentRouter from "./payment.route";
 
 const indexRouter = Router();
 
@@ -23,6 +22,5 @@ indexRouter.use("/auth", authRouter);
 indexRouter.use("/invite", inviteRouter);
 indexRouter.use("/users", userRouter);
 indexRouter.use("/favorites", favoriteRouter);
-indexRouter.use("/payments", paymentRouter);
 
 export default indexRouter;

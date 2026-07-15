@@ -176,6 +176,8 @@ const completeOrderApproval = async (
 
     const totalCurrentMonthExpense = currentMonthExpense + productsPriceTotal + deliveryFee;
 
+    // TODO: Move expense and cumulative-sales updates to payment completion
+    // when the replacement payment flow is implemented.
     // Increase current month expense
     await budgetRepository.updateCurrentMonthExpense({ companyId, year, month }, totalCurrentMonthExpense, tx);
 
