@@ -7,6 +7,7 @@ import {
   TGetOrderStatus,
 } from "../types/order.types";
 import { AuthenticationError } from "../types/error";
+import { STANDARD_DELIVERY_FEE_CENTS } from "../constants/money.constants";
 
 const SORT_OPTIONS: Record<"latest" | "priceLow" | "priceHigh", Prisma.OrderOrderByWithRelationInput> = {
   latest: { createdAt: "desc" },
@@ -169,7 +170,7 @@ const createOrder = async (
       adminMessage: orderData.adminMessage,
       requestMessage: orderData.requestMessage,
       productsPriceTotal: totalPrice,
-      deliveryFee: 5,
+      deliveryFee: STANDARD_DELIVERY_FEE_CENTS,
       status: user.role === "USER" ? "PENDING" : "INSTANT_APPROVED",
     },
   });
