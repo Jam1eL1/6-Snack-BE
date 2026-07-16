@@ -44,9 +44,9 @@ model Company {
 model MonthlyBudget {
   id                  Int       @id @default(autoincrement())
   companyId           Int
-  currentMonthExpense Int       @default(0) // Total expense for the current month
-  currentMonthBudget  Int       @default(0) // Budget for the current month
-  monthlyBudget       Int       @default(0) // Default monthly budget
+  currentMonthExpense Int       @default(0) // Current-month expense in CAD cents
+  currentMonthBudget  Int       @default(0) // Current-month budget in CAD cents
+  monthlyBudget       Int       @default(0) // Default monthly budget in CAD cents
   year                String
   month               String
   createdAt           DateTime  @default(now())
@@ -62,7 +62,7 @@ model Product {
   categoryId      Int
   creatorId       String
   name            String
-  price           Int
+  price           Int // CAD cents
   imageUrl        String
   linkUrl         String
   cumulativeSales Int       @default(0)
@@ -108,7 +108,7 @@ model Receipt {
   productId   Int
   orderId     String
   productName String
-  price       Int
+  price       Int // CAD cents captured when the Order is created
   imageUrl    String
   quantity    Int
   createdAt   DateTime @default(now())
@@ -124,8 +124,8 @@ model Order {
   approver           String?
   adminMessage       String?
   requestMessage     String?
-  deliveryFee        Int
-  productsPriceTotal Int
+  deliveryFee        Int // CAD cents
+  productsPriceTotal Int // CAD cents
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
   status             OrderStatus
@@ -144,9 +144,9 @@ model Payment {
   method         String?
   requestedAt    String
   approvedAt     String?
-  totalAmount    Int
-  suppliedAmount Int
-  vat            Int
+  totalAmount    Int // CAD cents
+  suppliedAmount Int // CAD cents
+  vat            Int // CAD cents
 
   order Order @relation(fields: [orderId], references: [id])
 }
