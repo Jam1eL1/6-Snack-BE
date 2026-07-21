@@ -18,13 +18,15 @@ model User {
   deletedAt          DateTime?
   hashedRefreshToken String?
 
-  role      Role
-  cartItems CartItem[]
-  favorites Favorite[]
-  company   Company    @relation(fields: [companyId], references: [id])
-  orders    Order[]    @relation("UserOrders")
-  invites   Invite[]   @relation("InvitedBy")
-  products  Product[]  @relation("ProductCreator")
+  role                  Role
+  cartItems             CartItem[]
+  favorites             Favorite[]
+  company               Company    @relation(fields: [companyId], references: [id])
+  orders                Order[]    @relation("UserOrders")
+  invites               Invite[]   @relation("InvitedBy")
+  products              Product[]  @relation("ProductCreator")
+  paymentAssignedOrders Order[]    @relation("OrderPaymentAssignee")
+  authorizedPayments    Payment[]  @relation("AuthorizedPaymentPayer")
 }
 
 model Company {
@@ -118,37 +120,45 @@ model Receipt {
 }
 
 model Order {
-  id                 String      @id @default(uuid())
-  companyId          Int
-  userId             String
-  approver           String?
-  adminMessage       String?
-  requestMessage     String?
-  deliveryFee        Int // CAD cents
-  productsPriceTotal Int // CAD cents
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  status             OrderStatus
+  id                   String      @id @default(uuid())
+  companyId            Int
+  userId               String
+  approver             String?
+  adminMessage         String?
+  requestMessage       String?
+  deliveryFee          Int // CAD cents
+  productsPriceTotal   Int // CAD cents
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  status               OrderStatus
+  paymentAssigneeId    String?
+  paymentClaimExpireAt DateTime?
+  paymentAssignee      User?       @relation("OrderPaymentAssignee", fields: [paymentAssigneeId], references: [id], onDelete: SetNull)
 
   receipts Receipt[]
-  payment  Payment[]
+  payment  Payment?
   user     User      @relation("UserOrders", fields: [userId], references: [id])
   company  Company   @relation(fields: [companyId], references: [id])
+
+  @@index([paymentAssigneeId])
 }
 
 model Payment {
-  id             Int     @id @default(autoincrement())
-  paymentKey     String
-  orderId        String
-  orderName      String
-  method         String?
-  requestedAt    String
-  approvedAt     String?
-  totalAmount    Int // CAD cents
-  suppliedAmount Int // CAD cents
-  vat            Int // CAD cents
+  id                Int           @id @default(autoincrement())
+  orderId           String        @unique
+  authorizedPayerId String
+  amount            Int // CAD cents
+  method            PaymentMethod @default(DUMMY)
+  status            PaymentStatus @default(PENDING)
+  failureReason     String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  completedAt       DateTime?
 
-  order Order @relation(fields: [orderId], references: [id])
+  order           Order @relation(fields: [orderId], references: [id])
+  authorizedPayer User  @relation("AuthorizedPaymentPayer", fields: [authorizedPayerId], references: [id])
+
+  @@index([authorizedPayerId])
 }
 
 model Invite {
@@ -189,4 +199,14 @@ enum OrderStatus {
   REJECTED
   CANCELED
   INSTANT_APPROVED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum PaymentMethod {
+  DUMMY
 }
