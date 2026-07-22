@@ -1,5 +1,5 @@
 import { Prisma, Product, User } from "../generated/prisma/client";
-import prisma from "../lib/prisma";
+import prisma from "../config/prisma";
 
 const getCartItemsByUserId = async (userId: string) => {
   return await prisma.cartItem.findMany({
