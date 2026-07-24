@@ -42,11 +42,7 @@ const acquirePaymentClaim = async (
   });
 };
 
-const clearPaymentClaim = async (
-  orderId: Order["id"],
-  adminId: User["id"],
-  tx: Prisma.TransactionClient,
-) => {
+const clearPaymentClaim = async (orderId: Order["id"], adminId: User["id"], tx: Prisma.TransactionClient) => {
   return await tx.order.updateMany({
     where: {
       id: orderId,
@@ -316,6 +312,31 @@ const updateOrderStatus = async (
   }
 };
 
+const getOrderForPaymentStart = async (orderId: Order["id"], tx: Prisma.TransactionClient) => {
+  return await tx.order.findUnique({
+    where: {
+      id: orderId,
+    },
+    select: {
+      id: true,
+      companyId: true,
+      status: true,
+      productsPriceTotal: true,
+      deliveryFee: true,
+      paymentAssigneeId: true,
+      paymentClaimExpiresAt: true,
+      payment: {
+        select: {
+          id: true,
+          status: true,
+          authorizedPayerId: true,
+          amount: true,
+        },
+      },
+    },
+  });
+};
+
 export default {
   getOrders,
   getOrdersTotalCount,
@@ -325,10 +346,10 @@ export default {
   updateOrder,
   revertOrder,
   deleteReceiptAndOrder,
-  // OrderRequest related features
   createOrder,
   getOrdersByUserId,
   updateOrderStatus,
   acquirePaymentClaim,
   clearPaymentClaim,
+  getOrderForPaymentStart,
 };

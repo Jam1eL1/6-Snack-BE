@@ -1,6 +1,13 @@
-import { Company, Order, User } from "../generated/prisma/client";
+import { Company, Order, Prisma, User } from "../generated/prisma/client";
 import orderRepository from "../repositories/order.repository";
-import { NotFoundError, ValidationError, ForbiddenError, BadRequestError, AuthenticationError } from "../types/error";
+import {
+  NotFoundError,
+  ValidationError,
+  ForbiddenError,
+  BadRequestError,
+  AuthenticationError,
+  ConflictError,
+} from "../types/error";
 import {
   TCompanyOrderDetailForAdminResult,
   TCancelOrderResult,
@@ -13,6 +20,8 @@ import {
   TGetOrderByIdResult,
   TGetOrdersByUserIdResult,
   TGetOrdersResult,
+  TStartOrderPaymentCommand,
+  TStartOrderPaymentResult,
   TUpdateOrderStatusCommand,
   TUpdateOrderStatusResult,
 } from "../types/order.types";
@@ -22,6 +31,8 @@ import prisma from "../config/prisma";
 import productRepository from "../repositories/product.repository";
 import userRepository from "../repositories/user.repository";
 import budgetService from "./budget.service";
+import paymentRepository from "../repositories/payment.repository";
+import { PAYMENT_CLAIM_DURATION_MS } from "../constants/payment.constants";
 
 // Get order history (pending or approved)
 
@@ -214,10 +225,7 @@ const updateOrder = async (
   }
 
   if (command.status === "APPROVED") {
-    return completeOrderApproval(orderId, companyId, {
-      ...command,
-      status: "APPROVED",
-    });
+    throw new ConflictError("Use the payment flow to process this Order.");
   }
   return orderRepository.updateOrder(orderId, command);
 };
@@ -320,6 +328,119 @@ const createInstantOrder = async (command: TCreateInstantOrderCommand): Promise<
   return approvedOrder;
 };
 
+const startOrderPayment = async (
+  orderId: Order["id"],
+  command: TStartOrderPaymentCommand,
+): Promise<TStartOrderPaymentResult> => {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const order = await orderRepository.getOrderForPaymentStart(orderId, tx);
+
+      if (!order || order.companyId !== command.companyId) {
+        throw new NotFoundError("Order not found.");
+      }
+
+      if (order.status !== "PENDING") {
+        throw new ConflictError("Order is no longer available for payment.");
+      }
+
+      const now = new Date();
+      const currentAssigneeId = order.paymentAssigneeId;
+      const currentExpiresAt = order.paymentClaimExpiresAt;
+      const isActive = Boolean(currentAssigneeId && currentExpiresAt && currentExpiresAt > now);
+
+      if (order.payment) {
+        if (order.payment.status === "FAILED") {
+          throw new ConflictError("Failed Payment must be retried.", {
+            paymentId: order.payment.id,
+          });
+        }
+
+        if (order.payment.status === "PAID") {
+          throw new ConflictError("Payment is already complete.", {
+            paymentId: order.payment.id,
+          });
+        }
+
+        if (isActive && currentAssigneeId === command.adminId) {
+          return {
+            orderId: order.id,
+            paymentId: order.payment.id,
+          };
+        }
+
+        if (isActive) {
+          throw new ConflictError("Another admin owns this payment claim.");
+        }
+
+        const expiresAt = new Date(now.getTime() + PAYMENT_CLAIM_DURATION_MS);
+        const claim = await orderRepository.acquirePaymentClaim(
+          order.id,
+          command.companyId,
+          command.adminId,
+          now,
+          expiresAt,
+          tx,
+        );
+
+        if (claim.count !== 1) {
+          throw new ConflictError("Another admin acquired this payment.");
+        }
+
+        const payerUpdate = await paymentRepository.updatePayment(
+          order.payment.id,
+          "PENDING",
+          { authorizedPayerId: command.adminId },
+          tx,
+        );
+
+        if (payerUpdate.count !== 1) {
+          throw new ConflictError("Payment is no longer available.");
+        }
+
+        return {
+          orderId: order.id,
+          paymentId: order.payment.id,
+        };
+      }
+
+      const expiresAt = new Date(now.getTime() + PAYMENT_CLAIM_DURATION_MS);
+      const claim = await orderRepository.acquirePaymentClaim(
+        order.id,
+        command.companyId,
+        command.adminId,
+        now,
+        expiresAt,
+        tx,
+      );
+
+      if (claim.count !== 1) {
+        throw new ConflictError("Another admin acquired this Order.");
+      }
+
+      const payment = await paymentRepository.createPayment(
+        {
+          orderId: order.id,
+          authorizedPayerId: command.adminId,
+          amount: order.productsPriceTotal + order.deliveryFee,
+        },
+        tx,
+      );
+
+      return {
+        orderId: order.id,
+        paymentId: payment.id,
+      };
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new ConflictError("Payment already exists for this Order.");
+    }
+
+    throw error;
+  }
+};
+
 export default {
   getOrders,
   updateOrder,
@@ -331,4 +452,5 @@ export default {
   getOrdersByUserId,
   cancelOrder,
   createInstantOrder,
+  startOrderPayment,
 };

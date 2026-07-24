@@ -6,6 +6,7 @@ import type {
   TGetOrderByIdResult,
   TGetOrdersByUserIdResult,
   TGetOrdersResult,
+  TStartOrderPaymentResult,
   TUpdateOrderStatusResult,
 } from "../types/order.types";
 
@@ -77,4 +78,9 @@ export type TCancelOrderResponseDto = {
 export type TCreateInstantOrderResponseDto = {
   message: string;
   data: TCreateInstantOrderResult;
+};
+
+export type TStartOrderPaymentResponseDto = {
+  message: string;
+  data: TStartOrderPaymentResult;
 };

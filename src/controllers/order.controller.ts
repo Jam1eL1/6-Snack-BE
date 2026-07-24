@@ -15,6 +15,7 @@ import {
   TUpdateOrderStatusResponseDto,
   TGetOrdersResponseDto,
   TGetOrderResponseDto,
+  TStartOrderPaymentResponseDto,
 } from "../dtos/order.dto";
 import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import { AuthenticationError } from "../types/error";
@@ -22,6 +23,7 @@ import {
   TCreateInstantOrderCommand,
   TCreateOrderCommand,
   TGetOrdersQuery,
+  TStartOrderPaymentCommand,
   TUpdateOrderStatusCommand,
 } from "../types/order.types";
 
@@ -228,6 +230,35 @@ const createInstantOrder: RequestHandler<{}, TCreateInstantOrderResponseDto, TCr
   }
 };
 
+const startOrderPayment: RequestHandler<TGetOrderParamsDto, TStartOrderPaymentResponseDto> = async (
+  req,
+  res,
+  next,
+) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      throw new AuthenticationError("Invalid user.");
+    }
+
+    const orderId = req.params.orderId;
+    const command: TStartOrderPaymentCommand = {
+      adminId: user.id,
+      companyId: user.companyId,
+    };
+    const result = await orderService.startOrderPayment(orderId, command);
+    const response: TStartOrderPaymentResponseDto = {
+      message: "Payment started successfully.",
+      data: result,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getOrders,
   getOrder,
@@ -237,4 +268,5 @@ export default {
   getOrdersByUserId,
   cancelOrder,
   createInstantOrder,
+  startOrderPayment,
 };

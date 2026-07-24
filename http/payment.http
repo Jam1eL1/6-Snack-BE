@@ -4,6 +4,7 @@
 # http/payment/01-payment-get-claim.http
 # http/payment/02-payment-retry.http
 # http/payment/03-payment-fail.http
+# http/payment/04-order-payment-start.http
 #
 # Start the backend with `npm run dev`.
 # Run both login requests in 00-payment-auth.http first.

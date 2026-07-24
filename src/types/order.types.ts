@@ -1,4 +1,4 @@
-import { CartItem, Company, Order, User } from "../generated/prisma/client";
+import { CartItem, Company, Order, Payment, User } from "../generated/prisma/client";
 
 export type TGetOrdersItemResult = {
   id: string;
@@ -174,4 +174,14 @@ export type TGetOrdersByUserIdResult = TGetOrdersByUserIdItemResult[];
 
 export type TCancelOrderResult = Omit<TGetOrdersByUserIdItemResult, "status"> & {
   status: "CANCELED";
+};
+
+export type TStartOrderPaymentCommand = {
+  adminId: User["id"];
+  companyId: Company["id"];
+};
+
+export type TStartOrderPaymentResult = {
+  orderId: Order["id"];
+  paymentId: Payment["id"];
 };

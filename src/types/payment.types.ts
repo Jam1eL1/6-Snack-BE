@@ -38,3 +38,9 @@ export type TFailPaymentCommand = TClaimPaymentCommand & {
 };
 
 export type TFailPaymentResult = TGetPaymentResult;
+
+export type TCreatePaymentCommand = {
+  orderId: Order["id"];
+  authorizedPayerId: User["id"];
+  amount: Payment["amount"];
+};

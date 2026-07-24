@@ -1,5 +1,6 @@
 import { Payment, Prisma } from "../generated/prisma/client";
 import prisma from "../config/prisma";
+import { TCreatePaymentCommand } from "../types/payment.types";
 const getPaymentById = async (paymentId: Payment["id"], tx?: Prisma.TransactionClient) => {
   const client = tx ?? prisma;
   return client.payment.findUnique({
@@ -32,7 +33,14 @@ const updatePayment = async (
     data,
   });
 };
+
+const createPayment = async (command: TCreatePaymentCommand, tx: Prisma.TransactionClient) => {
+  return await tx.payment.create({
+    data: command,
+  });
+};
 export default {
   getPaymentById,
   updatePayment,
+  createPayment,
 };
