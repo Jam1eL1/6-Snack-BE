@@ -1,7 +1,7 @@
 import cartRepository from "../repositories/cart.repository";
 import { TAddToCartDto, TDeleteCartItemsDto, TToggleCheckDto } from "../dtos/cart.dto";
 import { BadRequestError, NotFoundError } from "../types/error";
-import prisma from "../lib/prisma";
+import prisma from "../config/prisma";
 
 const getMyCart = async (userId: string, isChecked: boolean) => {
   return await prisma.cartItem.findMany({

@@ -120,20 +120,20 @@ model Receipt {
 }
 
 model Order {
-  id                   String      @id @default(uuid())
-  companyId            Int
-  userId               String
-  approver             String?
-  adminMessage         String?
-  requestMessage       String?
-  deliveryFee          Int // CAD cents
-  productsPriceTotal   Int // CAD cents
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
-  status               OrderStatus
-  paymentAssigneeId    String?
-  paymentClaimExpireAt DateTime?
-  paymentAssignee      User?       @relation("OrderPaymentAssignee", fields: [paymentAssigneeId], references: [id], onDelete: SetNull)
+  id                    String      @id @default(uuid())
+  companyId             Int
+  userId                String
+  approver              String?
+  adminMessage          String?
+  requestMessage        String?
+  deliveryFee           Int // CAD cents
+  productsPriceTotal    Int // CAD cents
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  status                OrderStatus
+  paymentAssigneeId     String?
+  paymentClaimExpiresAt DateTime?
+  paymentAssignee       User?       @relation("OrderPaymentAssignee", fields: [paymentAssigneeId], references: [id], onDelete: SetNull)
 
   receipts Receipt[]
   payment  Payment?
