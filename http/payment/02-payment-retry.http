@@ -1,0 +1,40 @@
+@adminABaseUrl=http://localhost:8080
+@adminBBaseUrl=http://127.0.0.1:8080
+@paymentId=1
+
+# Run both requests in 00-payment-auth.http first.
+#
+# Initial database state:
+# Payment.status = FAILED
+# Payment.failureReason = Dummy payment failed.
+# Order.status = PENDING
+# Order.paymentAssigneeId = null
+# Order.paymentClaimExpiresAt = null
+
+### Admin A — Get Failed Payment
+# Expected: 200
+# Payment.status = FAILED
+GET {{adminABaseUrl}}/admin/payments/{{paymentId}}
+
+### Admin A — Retry Failed Payment
+# Expected: 200
+# Payment.status = PENDING
+# Payment.failureReason = null
+# Order.paymentAssigneeId = user-1
+# claim.isActive = true
+# claim.isMine = true
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/retry
+
+### Admin A — Retry the Same Payment Again
+# Send after the successful retry.
+# Expected: 409 because Payment is already PENDING.
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/retry
+
+### Admin B — Retry a Payment That Is No Longer Failed
+# Send after Admin A's successful retry.
+# Expected: 409
+POST {{adminBBaseUrl}}/admin/payments/{{paymentId}}/retry
+
+### Admin A — Retry Missing Payment
+# Expected: 404
+POST {{adminABaseUrl}}/admin/payments/999999/retry

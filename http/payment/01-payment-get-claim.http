@@ -1,0 +1,52 @@
+@adminABaseUrl=http://localhost:8080
+@adminBBaseUrl=http://127.0.0.1:8080
+@paymentId=1
+
+# Run both requests in 00-payment-auth.http first.
+#
+# Initial database state:
+# Payment.status = PENDING
+# Order.status = PENDING
+# Order.paymentAssigneeId = null
+# Order.paymentClaimExpiresAt = null
+
+### Admin A — Get Available Payment
+# Expected: 200
+# claim.isActive = false
+# claim.isMine = false
+GET {{adminABaseUrl}}/admin/payments/{{paymentId}}
+
+### Admin A — Claim Payment
+# Expected: 200
+# claim.isActive = true
+# claim.isMine = true
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/claim
+
+### Admin A — Repeat Active Claim
+# Send after Admin A claims.
+# Expected: 200
+# The existing expiration must not be extended.
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/claim
+
+### Admin B — Get Admin A's Active Payment
+# Expected: 200
+# claim.isActive = true
+# claim.isMine = false
+GET {{adminBBaseUrl}}/admin/payments/{{paymentId}}
+
+### Admin B — Try to Claim Admin A's Active Payment
+# Expected: 409
+POST {{adminBBaseUrl}}/admin/payments/{{paymentId}}/claim
+
+### Admin B — Reclaim an Expired Payment
+# Before sending, use Prisma Studio to set:
+# Order.paymentClaimExpiresAt = a time in the past
+#
+# Expected: 200
+# Order.paymentAssigneeId = user-2
+# Payment.authorizedPayerId = user-2
+POST {{adminBBaseUrl}}/admin/payments/{{paymentId}}/claim
+
+### Admin A — Claim Missing Payment
+# Expected: 404
+POST {{adminABaseUrl}}/admin/payments/999999/claim
