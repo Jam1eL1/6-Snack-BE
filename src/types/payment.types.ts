@@ -24,3 +24,9 @@ export type TGetPaymentResult = {
     isMine: boolean;
   };
 };
+
+export type TClaimPaymentCommand = {
+  adminId: User["id"];
+  companyId: Company["id"];
+};
+export type TClaimPaymentResult = TGetPaymentResult;

@@ -1,4 +1,4 @@
-import { Company, Order, Prisma } from "../generated/prisma/client";
+import { Company, Order, Prisma, User } from "../generated/prisma/client";
 import prisma from "../config/prisma";
 import {
   TCompanyUserOrderDetailStatus,
@@ -20,6 +20,27 @@ const STATUS_OPTIONS: TGetOrderStatus = {
   approved: ["APPROVED", "INSTANT_APPROVED"],
 };
 
+const acquirePaymentClaim = async (
+  orderId: Order["id"],
+  companyId: Company["id"],
+  adminId: User["id"],
+  now: Date,
+  expiresAt: Date,
+  tx: Prisma.TransactionClient,
+) => {
+  return await tx.order.updateMany({
+    where: {
+      id: orderId,
+      companyId,
+      status: "PENDING",
+      OR: [{ paymentAssigneeId: null }, { paymentClaimExpiresAt: null }, { paymentClaimExpiresAt: { lte: now } }],
+    },
+    data: {
+      paymentAssigneeId: adminId,
+      paymentClaimExpiresAt: expiresAt,
+    },
+  });
+};
 const getStatusCondition = (status: keyof TGetOrderStatus) => {
   const statusValue = STATUS_OPTIONS[status];
   return Array.isArray(statusValue) ? { status: { in: statusValue } } : { status: statusValue };
@@ -290,4 +311,5 @@ export default {
   createOrder,
   getOrdersByUserId,
   updateOrderStatus,
+  acquirePaymentClaim,
 };

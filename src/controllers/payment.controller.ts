@@ -1,8 +1,9 @@
 import { RequestHandler } from "express";
-import { TGetPaymentParamsDto, TGetPaymentResponseDto } from "../dtos/payment.dto";
+import { TClaimPaymentResponseDto, TGetPaymentParamsDto, TGetPaymentResponseDto } from "../dtos/payment.dto";
 import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import { AuthenticationError } from "../types/error";
 import paymentService from "../services/payment.service";
+import { TClaimPaymentCommand } from "../types/payment.types";
 
 const getPayment: RequestHandler<TGetPaymentParamsDto, TGetPaymentResponseDto> = async (req, res, next) => {
   try {
@@ -20,6 +21,29 @@ const getPayment: RequestHandler<TGetPaymentParamsDto, TGetPaymentResponseDto> =
   }
 };
 
+const claimPayment: RequestHandler<TGetPaymentParamsDto, TClaimPaymentResponseDto> = async (req, res, next) => {
+  try {
+    const user = req.user;
+    if (!user) throw new AuthenticationError("Invalid user.");
+
+    const paymentId = parseNumberOrThrow(req.params.paymentId, "paymentId");
+    const command: TClaimPaymentCommand = {
+      adminId: user.id,
+      companyId: user.companyId,
+    };
+    const result = await paymentService.claimPayment(paymentId, command);
+    const response: TClaimPaymentResponseDto = {
+      message: "Payment claimed successfully.",
+      data: result,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getPayment,
+  claimPayment,
 };

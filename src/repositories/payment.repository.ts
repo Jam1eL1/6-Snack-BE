@@ -21,6 +21,18 @@ const getPaymentById = async (paymentId: Payment["id"], tx?: Prisma.TransactionC
   });
 };
 
+const updatePayment = async (
+  paymentId: Payment["id"],
+  expectedStatus: Payment["status"],
+  data: Prisma.PaymentUncheckedUpdateManyInput,
+  tx: Prisma.TransactionClient,
+) => {
+  return await tx.payment.updateMany({
+    where: { id: paymentId, status: expectedStatus },
+    data,
+  });
+};
 export default {
   getPaymentById,
+  updatePayment,
 };

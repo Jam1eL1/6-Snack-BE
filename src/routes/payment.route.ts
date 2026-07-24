@@ -10,5 +10,11 @@ adminPaymentRouter.get(
   authorizeRoles("ADMIN", "SUPER_ADMIN"),
   paymentController.getPayment,
 );
+adminPaymentRouter.post(
+  "/:paymentId/claim",
+  authenticateToken,
+  authorizeRoles("ADMIN", "SUPER_ADMIN"),
+  paymentController.claimPayment,
+);
 
 export default adminPaymentRouter;
