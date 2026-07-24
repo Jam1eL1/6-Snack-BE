@@ -1,11 +1,43 @@
-@BASE_URL=http://localhost:8080
+@adminABaseUrl=http://localhost:8080
+@adminBBaseUrl=http://127.0.0.1:8080
+@paymentId=1
 
-### 결제 테스트
-POST {{BASE_URL}}/payments/confirm
+### Admin A — Login
+POST {{adminABaseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "paymentKey": "tgen_20250803201607MtVb1",
-  "orderId": "eYUTmd6RKOPf9t3IeY3rX",
-  "amount": "50000"
+  "email": "emma.johnson@snackdemo.com",
+  "password": "1q2w3e4r!"
 }
+
+### Admin A — Get Payment
+GET {{adminABaseUrl}}/admin/payments/{{paymentId}}
+
+### Admin A — Claim Payment
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/claim
+
+### Admin A — Repeat Claim
+# Expected: 200
+# The claim expiration should not be extended.
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/claim
+
+### Admin B — Login
+POST {{adminBBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "olivia.martin@snackdemo.com",
+  "password": "1q2w3e4r!"
+}
+
+### Admin B — Get Payment
+GET {{adminBBaseUrl}}/admin/payments/{{paymentId}}
+
+### Admin B — Claim While Admin A Owns Active Claim
+# Expected: 409 Conflict
+POST {{adminBBaseUrl}}/admin/payments/{{paymentId}}/claim
+
+### Missing Payment
+# Expected: 404 Not Found
+POST {{adminABaseUrl}}/admin/payments/999999/claim
