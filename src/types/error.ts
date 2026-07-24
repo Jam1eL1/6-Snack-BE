@@ -1,6 +1,6 @@
 export class AppError extends Error {
-  code?: number; // 선택적 속성으로 변경
-  data?: any; // 에러핸들러에서 사용하는 data 속성도 추가
+  code?: number;
+  data?: any;
 
   constructor(message: string, code?: number, data?: any) {
     super(message);
@@ -10,24 +10,30 @@ export class AppError extends Error {
   }
 }
 
-// 자주 사용하는 에러들을 위한 편의 클래스들
+export class ConflictError extends AppError {
+  constructor(message: string, data?: any) {
+    super(message, 409, data);
+    this.name = "ConflictError";
+  }
+}
+
 export class BadRequestError extends AppError {
   constructor(message: string, data?: any) {
-    super(message, 400, data); // 400은 기본값
+    super(message, 400, data);
     this.name = "BadRequestError";
   }
 }
 
 export class AuthenticationError extends AppError {
   constructor(message: string, data?: any) {
-    super(message, 401, data); // 401은 기본값
+    super(message, 401, data);
     this.name = "AuthenticationError";
   }
 }
 
 export class ForbiddenError extends AppError {
   constructor(message: string, data?: any) {
-    super(message, 403, data); // 403은 기본값
+    super(message, 403, data);
     this.name = "ForbiddenError";
   }
 }
