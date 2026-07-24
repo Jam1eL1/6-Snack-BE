@@ -4,12 +4,11 @@ import authenticateToken from "../middlewares/jwtAuth.middleware";
 import authorizeRoles from "../middlewares/authorizeRoles.middleware";
 import productController from "../controllers/product.controller";
 import budgetController from "../controllers/budget.controller";
-import { invalidateCache } from "../middlewares/cacheMiddleware";
-
+import adminPaymentRouter from "./payment.route";
 const adminRouter = Router();
 
 adminRouter.use("/orders", adminOrderRouter);
-
+adminRouter.use("/payments", adminPaymentRouter);
 // Get budget
 adminRouter.get(
   "/:companyId/budgets",

@@ -1,4 +1,4 @@
-import { Company, Order, Prisma } from "../generated/prisma/client";
+import { Company, Order, Prisma, User } from "../generated/prisma/client";
 import prisma from "../config/prisma";
 import {
   TCompanyUserOrderDetailStatus,
@@ -20,6 +20,65 @@ const STATUS_OPTIONS: TGetOrderStatus = {
   approved: ["APPROVED", "INSTANT_APPROVED"],
 };
 
+const acquirePaymentClaim = async (
+  orderId: Order["id"],
+  companyId: Company["id"],
+  adminId: User["id"],
+  now: Date,
+  expiresAt: Date,
+  tx: Prisma.TransactionClient,
+) => {
+  return await tx.order.updateMany({
+    where: {
+      id: orderId,
+      companyId,
+      status: "PENDING",
+      OR: [{ paymentAssigneeId: null }, { paymentClaimExpiresAt: null }, { paymentClaimExpiresAt: { lte: now } }],
+    },
+    data: {
+      paymentAssigneeId: adminId,
+      paymentClaimExpiresAt: expiresAt,
+    },
+  });
+};
+
+const clearPaymentClaim = async (orderId: Order["id"], adminId: User["id"], tx: Prisma.TransactionClient) => {
+  return await tx.order.updateMany({
+    where: {
+      id: orderId,
+      paymentAssigneeId: adminId,
+    },
+    data: {
+      paymentAssigneeId: null,
+      paymentClaimExpiresAt: null,
+    },
+  });
+};
+
+const completePaidOrder = async (
+  orderId: Order["id"],
+  adminId: User["id"],
+  approverName: User["name"],
+  status: Extract<Order["status"], "APPROVED" | "INSTANT_APPROVED">,
+  now: Date,
+  tx: Prisma.TransactionClient,
+) => {
+  return await tx.order.updateMany({
+    where: {
+      id: orderId,
+      status: "PENDING",
+      paymentAssigneeId: adminId,
+      paymentClaimExpiresAt: { gt: now },
+    },
+    data: {
+      status,
+      approver: approverName,
+      paymentAssigneeId: null,
+      paymentClaimExpiresAt: null,
+    },
+  });
+};
+
 const getStatusCondition = (status: keyof TGetOrderStatus) => {
   const statusValue = STATUS_OPTIONS[status];
   return Array.isArray(statusValue) ? { status: { in: statusValue } } : { status: statusValue };
@@ -37,6 +96,20 @@ const getOrders = async ({ offset, limit, orderBy, status }: TGetOrdersRepositor
     include: {
       user: { omit: { hashedRefreshToken: true, password: true } },
       receipts: true,
+      payment: {
+        select: {
+          id: true,
+          status: true,
+          amount: true,
+          authorizedPayerId: true,
+        },
+      },
+      paymentAssignee: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 };
@@ -63,6 +136,47 @@ const getOrderByIdAndStatus = async (
     include: {
       user: { omit: { hashedRefreshToken: true, password: true } },
       receipts: true,
+      payment: {
+        select: {
+          id: true,
+          status: true,
+          amount: true,
+          authorizedPayerId: true,
+        },
+      },
+      paymentAssignee: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+};
+
+const getAdminOrderById = async (id: Order["id"], companyId: Company["id"]) => {
+  return await prisma.order.findFirst({
+    where: {
+      id,
+      companyId,
+    },
+    include: {
+      user: { omit: { hashedRefreshToken: true, password: true } },
+      receipts: true,
+      payment: {
+        select: {
+          id: true,
+          status: true,
+          amount: true,
+          authorizedPayerId: true,
+        },
+      },
+      paymentAssignee: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 };
@@ -130,6 +244,7 @@ const createOrder = async (
     adminMessage?: string;
     requestMessage?: string;
     cartItemIds: number[];
+    status?: Order["status"];
   },
   tx?: Prisma.TransactionClient,
 ) => {
@@ -171,7 +286,7 @@ const createOrder = async (
       requestMessage: orderData.requestMessage,
       productsPriceTotal: totalPrice,
       deliveryFee: STANDARD_DELIVERY_FEE_CENTS,
-      status: user.role === "USER" ? "PENDING" : "INSTANT_APPROVED",
+      status: orderData.status ?? (user.role === "USER" ? "PENDING" : "INSTANT_APPROVED"),
     },
   });
 
@@ -277,17 +392,46 @@ const updateOrderStatus = async (
   }
 };
 
+const getOrderForPaymentStart = async (orderId: Order["id"], tx: Prisma.TransactionClient) => {
+  return await tx.order.findUnique({
+    where: {
+      id: orderId,
+    },
+    select: {
+      id: true,
+      companyId: true,
+      status: true,
+      productsPriceTotal: true,
+      deliveryFee: true,
+      paymentAssigneeId: true,
+      paymentClaimExpiresAt: true,
+      payment: {
+        select: {
+          id: true,
+          status: true,
+          authorizedPayerId: true,
+          amount: true,
+        },
+      },
+    },
+  });
+};
+
 export default {
   getOrders,
   getOrdersTotalCount,
   getOrderByIdAndStatus,
+  getAdminOrderById,
   getOrderById,
   getOrderWithCartItemIdsById,
   updateOrder,
   revertOrder,
   deleteReceiptAndOrder,
-  // OrderRequest related features
   createOrder,
   getOrdersByUserId,
   updateOrderStatus,
+  acquirePaymentClaim,
+  clearPaymentClaim,
+  completePaidOrder,
+  getOrderForPaymentStart,
 };

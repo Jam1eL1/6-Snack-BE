@@ -15,6 +15,7 @@ import {
   TUpdateOrderStatusResponseDto,
   TGetOrdersResponseDto,
   TGetOrderResponseDto,
+  TStartOrderPaymentResponseDto,
 } from "../dtos/order.dto";
 import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import { AuthenticationError } from "../types/error";
@@ -22,6 +23,7 @@ import {
   TCreateInstantOrderCommand,
   TCreateOrderCommand,
   TGetOrdersQuery,
+  TStartOrderPaymentCommand,
   TUpdateOrderStatusCommand,
 } from "../types/order.types";
 
@@ -42,7 +44,7 @@ const getOrders: RequestHandler<{}, TGetOrdersResponseDto, {}, TGetOrdersQueryDt
       status,
     };
 
-    const result = await orderService.getOrders(query, user.companyId);
+    const result = await orderService.getOrders(query, user.companyId, user.id);
     const response: TGetOrdersResponseDto = {
       message: "Orders retrieved successfully.",
       data: result,
@@ -69,8 +71,8 @@ const getOrder: RequestHandler<TGetOrderParamsDto, TGetOrderResponseDto, {}, TGe
     const { status } = req.query;
 
     const result = status
-      ? await orderService.getCompanyUserOrderDetailByStatus(orderId, status, user.companyId)
-      : await orderService.getCompanyUserOrderDetailById(orderId, user.companyId);
+      ? await orderService.getCompanyUserOrderDetailByStatus(orderId, status, user.companyId, user.id)
+      : await orderService.getCompanyUserOrderDetailById(orderId, user.companyId, user.id);
     const response: TGetOrderResponseDto = {
       message: "Order details retrieved successfully.",
       data: result,
@@ -213,16 +215,44 @@ const createInstantOrder: RequestHandler<{}, TCreateInstantOrderResponseDto, TCr
       userId: user.id,
       companyId: user.companyId,
       cartItemIds: req.body.cartItemIds,
-      approverName: user.name,
     };
 
     const result = await orderService.createInstantOrder(command);
     const response: TCreateInstantOrderResponseDto = {
-      message: "Instant purchase completed successfully.",
+      message: "Instant payment started successfully.",
       data: result,
     };
 
     res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const startOrderPayment: RequestHandler<TGetOrderParamsDto, TStartOrderPaymentResponseDto> = async (
+  req,
+  res,
+  next,
+) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      throw new AuthenticationError("Invalid user.");
+    }
+
+    const orderId = req.params.orderId;
+    const command: TStartOrderPaymentCommand = {
+      adminId: user.id,
+      companyId: user.companyId,
+    };
+    const result = await orderService.startOrderPayment(orderId, command);
+    const response: TStartOrderPaymentResponseDto = {
+      message: "Payment started successfully.",
+      data: result,
+    };
+
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -237,4 +267,5 @@ export default {
   getOrdersByUserId,
   cancelOrder,
   createInstantOrder,
+  startOrderPayment,
 };

@@ -1,4 +1,4 @@
-import { CartItem, Company, Order, User } from "../generated/prisma/client";
+import { CartItem, Company, Order, Payment, User } from "../generated/prisma/client";
 
 export type TGetOrdersItemResult = {
   id: string;
@@ -14,6 +14,8 @@ export type TGetOrdersItemResult = {
   status: string;
   requester: string;
   productName: string;
+  payment: TOrderPaymentSummaryResult;
+  paymentClaim: TOrderPaymentClaimResult;
 };
 
 export type TGetOrdersResult = {
@@ -66,7 +68,6 @@ export type TCreateInstantOrderCommand = {
   userId: User["id"];
   companyId: Company["id"];
   cartItemIds: CartItem["id"][];
-  approverName: User["name"];
 };
 
 export type TOrderProductResult = {
@@ -85,7 +86,22 @@ export type TOrderBudgetResult = {
   currentMonthExpense: number | null;
 };
 
-export type TCompanyOrderDetailForAdminResult = {
+export type TOrderPaymentSummaryResult = {
+  id: Payment["id"];
+  status: Payment["status"];
+  amount: Payment["amount"];
+  authorizedPayerId: User["id"];
+} | null;
+
+export type TOrderPaymentClaimResult = {
+  status: "AVAILABLE" | "PROCESSING";
+  assigneeId: User["id"] | null;
+  assigneeName: User["name"] | null;
+  expiresAt: Date | null;
+  isMine: boolean;
+};
+
+export type TCompanyOrderDetailBaseResult = {
   id: Order["id"];
   companyId: Company["id"];
   userId: User["id"];
@@ -102,7 +118,12 @@ export type TCompanyOrderDetailForAdminResult = {
   budget: TOrderBudgetResult;
 };
 
-export type TCreateOrderResult = TCompanyOrderDetailForAdminResult;
+export type TCompanyOrderDetailForAdminResult = TCompanyOrderDetailBaseResult & {
+  payment: TOrderPaymentSummaryResult;
+  paymentClaim: TOrderPaymentClaimResult;
+};
+
+export type TCreateOrderResult = TCompanyOrderDetailBaseResult;
 
 export type TUpdateOrderStatusResult = {
   id: Order["id"];
@@ -118,7 +139,7 @@ export type TUpdateOrderStatusResult = {
   status: TOrderStatus;
 };
 
-export type TCreateInstantOrderResult = TUpdateOrderStatusResult;
+export type TCreateInstantOrderResult = TStartOrderPaymentResult;
 
 export type TOrderUserSummaryResult = {
   id: User["id"];
@@ -174,4 +195,14 @@ export type TGetOrdersByUserIdResult = TGetOrdersByUserIdItemResult[];
 
 export type TCancelOrderResult = Omit<TGetOrdersByUserIdItemResult, "status"> & {
   status: "CANCELED";
+};
+
+export type TStartOrderPaymentCommand = {
+  adminId: User["id"];
+  companyId: Company["id"];
+};
+
+export type TStartOrderPaymentResult = {
+  orderId: Order["id"];
+  paymentId: Payment["id"];
 };

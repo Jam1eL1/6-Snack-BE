@@ -198,6 +198,33 @@ async function main() {
   createdOrders.forEach((order, index) => {
     orderIdMap.set(index + 1, order.id); // Map using 1-based index
   });
+  // Create one available Payment for claim endpoint testing
+  console.log("💳 Seeding claim test payment...");
+
+  const claimTestOrder = await prisma.order.findFirst({
+    where: {
+      companyId: firstCompanyId,
+      userId: "user-3",
+      status: "PENDING",
+      createdAt: new Date("2026-04-12"),
+    },
+  });
+
+  if (!claimTestOrder) {
+    throw new Error("Claim test Order not found.");
+  }
+
+  const claimTestPayment = await prisma.payment.create({
+    data: {
+      orderId: claimTestOrder.id,
+      authorizedPayerId: "user-1",
+      amount: claimTestOrder.productsPriceTotal + claimTestOrder.deliveryFee,
+      method: "DUMMY",
+      status: "PENDING",
+    },
+  });
+
+  console.log(`✅ Claim test Payment created with ID ${claimTestPayment.id}`);
 
   // 8. Insert Receipt data
   console.log("🧾 Seeding receipts...");

@@ -1,0 +1,48 @@
+@adminABaseUrl=http://localhost:8080
+@cartItemIdOne=REPLACE_WITH_ACTIVE_ADMIN_CART_ITEM_ID
+@cartItemIdTwo=REPLACE_WITH_ACTIVE_ADMIN_CART_ITEM_ID
+
+# Run the Admin A login request in 00-payment-auth.http first.
+#
+# Use active cart items that belong to Admin A.
+# The endpoint marks the selected cart items as deleted.
+
+### Admin A — Start Order Now Payment
+# @name startOrderNowPayment
+#
+# Expected: 201
+# Response contains orderId and paymentId.
+# Order.status = PENDING
+# Payment.status = PENDING
+# Order.paymentAssigneeId = user-1
+# Payment.authorizedPayerId = user-1
+POST {{adminABaseUrl}}/admin/orders/instant
+Content-Type: application/json
+
+{
+  "cartItemIds": [
+    {{cartItemIdOne}},
+    {{cartItemIdTwo}}
+  ]
+}
+
+### Admin A — Get Created Payment
+# Run after Start Order Now Payment.
+# Expected: 200
+# claim.isActive = true
+# claim.isMine = true
+GET {{adminABaseUrl}}/admin/payments/{{startOrderNowPayment.response.body.$.data.paymentId}}
+
+### Admin A — Resume Created Payment
+# Expected: 200
+# Returns the existing active claim without extending it.
+POST {{adminABaseUrl}}/admin/payments/{{startOrderNowPayment.response.body.$.data.paymentId}}/claim
+
+### Admin A — Order Now With Empty Cart Item IDs
+# Expected: 422
+POST {{adminABaseUrl}}/admin/orders/instant
+Content-Type: application/json
+
+{
+  "cartItemIds": []
+}

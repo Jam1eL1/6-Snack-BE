@@ -7,8 +7,10 @@ import {
   TUpdateMonthlyBudgetBody,
 } from "../types/budget.type";
 
-const getMonthlyBudget = async ({ companyId, year, month }: TMonthlyBudget) => {
-  return await prisma.monthlyBudget.findUnique({
+const getMonthlyBudget = async ({ companyId, year, month }: TMonthlyBudget, tx?: Prisma.TransactionClient) => {
+  const client = tx || prisma;
+
+  return await client.monthlyBudget.findUnique({
     where: {
       companyId_year_month: { companyId, year, month },
     },
@@ -87,11 +89,34 @@ const updateCurrentMonthExpense = async (
   });
 };
 
+const incrementCurrentMonthExpense = async (
+  budgetId: MonthlyBudget["id"],
+  expectedCurrentMonthExpense: MonthlyBudget["currentMonthExpense"],
+  amount: number,
+  tx: Prisma.TransactionClient,
+) => {
+  return await tx.monthlyBudget.updateMany({
+    where: {
+      id: budgetId,
+      currentMonthExpense: expectedCurrentMonthExpense,
+      currentMonthBudget: {
+        gte: expectedCurrentMonthExpense + amount,
+      },
+    },
+    data: {
+      currentMonthExpense: {
+        increment: amount,
+      },
+    },
+  });
+};
+
 export default {
   getMonthlyBudget,
   getTotalExpense,
   createMonthlyBudget,
   updateMonthlyBudget,
   updateCurrentMonthExpense,
+  incrementCurrentMonthExpense,
   upsertMonthlyBudget,
 };

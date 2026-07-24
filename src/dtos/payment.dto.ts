@@ -1,0 +1,40 @@
+import {
+  TClaimPaymentResult,
+  TCompletePaymentResult,
+  TFailPaymentResult,
+  TGetPaymentResult,
+  TRetryPaymentResult,
+} from "../types/payment.types";
+
+export type TGetPaymentParamsDto = {
+  paymentId: string;
+};
+
+export type TGetPaymentResponseDto = {
+  message: string;
+  data: TGetPaymentResult;
+};
+
+export type TClaimPaymentResponseDto = {
+  message: string;
+  data: TClaimPaymentResult;
+};
+
+export type TRetryPaymentResponseDto = {
+  message: string;
+  data: TRetryPaymentResult;
+};
+
+export type TFailPaymentBodyDto = {
+  failureReason: string;
+};
+
+export type TFailPaymentResponseDto = {
+  message: string;
+  data: TFailPaymentResult;
+};
+
+export type TCompletePaymentResponseDto = {
+  message: string;
+  data: TCompletePaymentResult;
+};

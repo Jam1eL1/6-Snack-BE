@@ -1,0 +1,50 @@
+@adminABaseUrl=http://localhost:8080
+@adminBBaseUrl=http://127.0.0.1:8080
+@orderId=REPLACE_WITH_PENDING_ORDER_ID
+
+# Run both requests in 00-payment-auth.http first.
+#
+# To test PROCESSING, use a PENDING Order with:
+# Order.paymentAssigneeId = user-1
+# Order.paymentClaimExpiresAt = a future time
+# Payment.status = PENDING
+
+### Admin A — Get Pending Order List
+# Expected for Admin A's active claim:
+# payment contains the small Payment summary.
+# paymentClaim.status = PROCESSING
+# paymentClaim.assigneeId = user-1
+# paymentClaim.assigneeName = Emma Johnson
+# paymentClaim.isMine = true
+GET {{adminABaseUrl}}/admin/orders?status=pending&page=1&limit=20&orderBy=latest
+
+### Admin B — Get the Same Pending Order List
+# Expected for the same active claim:
+# paymentClaim.status = PROCESSING
+# paymentClaim.isMine = false
+GET {{adminBBaseUrl}}/admin/orders?status=pending&page=1&limit=20&orderBy=latest
+
+### Admin A — Get Pending Order Detail
+# Expected:
+# payment contains id, status, amount, and authorizedPayerId.
+# paymentClaim.status = PROCESSING
+# paymentClaim.isMine = true
+GET {{adminABaseUrl}}/admin/orders/{{orderId}}?status=pending
+
+### Admin B — Get the Same Pending Order Detail
+# Expected:
+# paymentClaim.status = PROCESSING
+# paymentClaim.isMine = false
+GET {{adminBBaseUrl}}/admin/orders/{{orderId}}?status=pending
+
+### Admin B — Get Available State After Expiration
+# Before sending, use Prisma Studio to set:
+# Order.paymentClaimExpiresAt = a time in the past
+#
+# Expected:
+# paymentClaim.status = AVAILABLE
+# paymentClaim.assigneeId = null
+# paymentClaim.assigneeName = null
+# paymentClaim.expiresAt = null
+# paymentClaim.isMine = false
+GET {{adminBBaseUrl}}/admin/orders/{{orderId}}?status=pending

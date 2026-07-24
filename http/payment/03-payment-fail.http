@@ -1,0 +1,92 @@
+@adminABaseUrl=http://localhost:8080
+@adminBBaseUrl=http://127.0.0.1:8080
+@paymentId=1
+
+# Run both requests in 00-payment-auth.http first.
+#
+# Initial database state:
+# Payment.status = PENDING
+# Payment.failureReason = null
+# Order.status = PENDING
+# Order.paymentAssigneeId = null
+# Order.paymentClaimExpiresAt = null
+
+### Admin A — Claim Payment Before Failing It
+# Expected: 200
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/claim
+
+### Admin B — Try to Fail Admin A's Payment
+# Send while Admin A owns the active claim.
+# Expected: 409
+POST {{adminBBaseUrl}}/admin/payments/{{paymentId}}/fail
+Content-Type: application/json
+
+{
+  "failureReason": "Admin B must not be allowed to fail this Payment."
+}
+
+### Admin A — Fail Payment Without a Reason
+# Expected: 422
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/fail
+Content-Type: application/json
+
+{}
+
+### Admin A — Fail Payment With a Blank Reason
+# Expected: 422
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/fail
+Content-Type: application/json
+
+{
+  "failureReason": "   "
+}
+
+### Admin A — Fail Owned Payment
+# Expected: 200
+# Payment.status = FAILED
+# Payment.failureReason = Dummy payment was declined.
+# Order.status = PENDING
+# Order.paymentAssigneeId = null
+# Order.paymentClaimExpiresAt = null
+# claim.isActive = false
+# claim.isMine = false
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/fail
+Content-Type: application/json
+
+{
+  "failureReason": "Dummy payment was declined."
+}
+
+### Admin A — Fail the Same Payment Again
+# Send after the successful failure.
+# Expected: 409 because Payment is already FAILED.
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/fail
+Content-Type: application/json
+
+{
+  "failureReason": "Second failure attempt."
+}
+
+### Admin A — Fail With an Expired Claim
+# Reset through Prisma Studio before sending:
+# Payment.status = PENDING
+# Payment.failureReason = null
+# Order.paymentAssigneeId = user-1
+# Order.paymentClaimExpiresAt = a time in the past
+#
+# Expected: 409
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/fail
+Content-Type: application/json
+
+{
+  "failureReason": "Expired claim must not fail Payment."
+}
+
+### Admin A — Fail Missing Payment
+# Expected: 404
+POST {{adminABaseUrl}}/admin/payments/999999/fail
+Content-Type: application/json
+
+{
+  "failureReason": "Missing Payment."
+}

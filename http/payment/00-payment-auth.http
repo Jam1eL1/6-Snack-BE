@@ -1,0 +1,22 @@
+@adminABaseUrl=http://localhost:8080
+@adminBBaseUrl=http://127.0.0.1:8080
+
+### Admin A — Login
+# Company 1 SUPER_ADMIN
+POST {{adminABaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "emma.johnson@snackdemo.com",
+  "password": "1q2w3e4r!"
+}
+
+### Admin B — Login
+# Company 1 ADMIN
+POST {{adminBBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "olivia.martin@snackdemo.com",
+  "password": "1q2w3e4r!"
+}

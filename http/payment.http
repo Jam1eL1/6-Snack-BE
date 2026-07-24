@@ -1,11 +1,19 @@
-@BASE_URL=http://localhost:8080
-
-### 결제 테스트
-POST {{BASE_URL}}/payments/confirm
-Content-Type: application/json
-
-{
-  "paymentKey": "tgen_20250803201607MtVb1",
-  "orderId": "eYUTmd6RKOPf9t3IeY3rX",
-  "amount": "50000"
-}
+# Payment endpoint tests are split into:
+#
+# http/payment/00-payment-auth.http
+# http/payment/01-payment-get-claim.http
+# http/payment/02-payment-retry.http
+# http/payment/03-payment-fail.http
+# http/payment/04-order-payment-start.http
+# http/payment/05-order-now-payment.http
+# http/payment/06-admin-order-processing-state.http
+# http/payment/07-payment-complete.http
+#
+# Start the backend with `npm run dev`.
+# Run both login requests in 00-payment-auth.http first.
+# The VS Code REST Client cookie jar keeps the two sessions under
+# localhost and 127.0.0.1 as separate hosts.
+#
+# These tests require an existing Payment. Until
+# POST /admin/orders/:orderId/payment is implemented, create the Payment
+# through seed data or Prisma Studio.

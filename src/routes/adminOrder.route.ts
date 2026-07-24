@@ -28,6 +28,14 @@ adminOrderRouter.patch(
   orderController.updateOrder,
 );
 
+// Start or resume payment for a requested Order
+adminOrderRouter.post(
+  "/:orderId/payment",
+  authenticateToken,
+  authorizeRoles("ADMIN", "SUPER_ADMIN"),
+  orderController.startOrderPayment,
+);
+
 // Instant purchase (admin only)
 adminOrderRouter.post(
   "/instant",
