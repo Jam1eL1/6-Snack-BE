@@ -30,9 +30,7 @@ import {
 import budgetRepository from "../repositories/budget.repository";
 import getDateForBudget from "../utils/getDateForBudget";
 import prisma from "../config/prisma";
-import productRepository from "../repositories/product.repository";
 import userRepository from "../repositories/user.repository";
-import budgetService from "./budget.service";
 import paymentRepository from "../repositories/payment.repository";
 import { PAYMENT_CLAIM_DURATION_MS } from "../constants/payment.constants";
 
@@ -257,50 +255,6 @@ const formatCreatedCompanyUserOrder = async (
   return formattedOrder;
 };
 
-type TCompleteOrderApprovalCommand = Omit<TUpdateOrderStatusCommand, "status"> & {
-  status: "APPROVED" | "INSTANT_APPROVED";
-};
-
-const completeOrderApproval = async (
-  orderId: Order["id"],
-  companyId: Company["id"],
-  command: TCompleteOrderApprovalCommand,
-): Promise<TUpdateOrderStatusResult> => {
-  const { year, month } = getDateForBudget();
-
-  const order = await orderRepository.getOrderById(orderId);
-
-  if (!order) throw new NotFoundError("Order not found.");
-
-  return await prisma.$transaction(async (tx) => {
-    const updatedOrder = await orderRepository.updateOrder(orderId, command, tx);
-    const { deliveryFee, productsPriceTotal } = updatedOrder;
-
-    // Retrieve budget through service so missing current-month budget is backfilled
-    const monthlyBudget = await budgetService.getMonthlyBudget(companyId);
-
-    const { currentMonthExpense } = monthlyBudget;
-
-    // Approval fails when the remaining budget is insufficient
-    if (monthlyBudget.currentMonthBudget < currentMonthExpense + productsPriceTotal + deliveryFee)
-      throw new BadRequestError("Insufficient budget.");
-
-    const totalCurrentMonthExpense = currentMonthExpense + productsPriceTotal + deliveryFee;
-
-    // TODO: Move expense and cumulative-sales updates to payment completion
-    // when the replacement payment flow is implemented.
-    // Increase current month expense
-    await budgetRepository.updateCurrentMonthExpense({ companyId, year, month }, totalCurrentMonthExpense, tx);
-
-    const productIds = order.receipts.map((receipt) => receipt.productId);
-
-    // Increase product sales count
-    await productRepository.updateCumulativeSales(productIds, tx);
-
-    return updatedOrder;
-  });
-};
-
 const getCompanyOrderOrThrow = async (
   orderId: Order["id"],
   companyId: Company["id"],
@@ -328,15 +282,6 @@ const updateOrder = async (
     throw new ConflictError("Use the payment flow to process this Order.");
   }
   return orderRepository.updateOrder(orderId, command);
-};
-
-const completeInstantOrderApproval = async (
-  orderId: Order["id"],
-  companyId: Company["id"],
-  command: Omit<TCompleteOrderApprovalCommand, "status">,
-): Promise<TUpdateOrderStatusResult> => {
-  const order = await getCompanyOrderOrThrow(orderId, companyId);
-  return await completeOrderApproval(orderId, companyId, { ...command, status: "INSTANT_APPROVED" });
 };
 
 const createOrder = async (command: TCreateOrderCommand): Promise<TCreateOrderResult> => {
@@ -562,7 +507,6 @@ const startOrderPayment = async (
 export default {
   getOrders,
   updateOrder,
-  completeInstantOrderApproval,
   getCompanyUserOrderDetailById,
   getCompanyUserOrderDetailByStatus,
   createOrder,

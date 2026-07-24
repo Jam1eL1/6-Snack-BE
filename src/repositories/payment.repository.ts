@@ -39,8 +39,41 @@ const createPayment = async (command: TCreatePaymentCommand, tx: Prisma.Transact
     data: command,
   });
 };
+
+const getPaymentForCompletion = async (paymentId: Payment["id"], tx: Prisma.TransactionClient) => {
+  return await tx.payment.findUnique({
+    where: {
+      id: paymentId,
+    },
+    include: {
+      order: {
+        select: {
+          id: true,
+          companyId: true,
+          status: true,
+          productsPriceTotal: true,
+          deliveryFee: true,
+          paymentAssigneeId: true,
+          paymentClaimExpiresAt: true,
+          user: {
+            select: {
+              role: true,
+            },
+          },
+          receipts: {
+            select: {
+              productId: true,
+            },
+          },
+        },
+      },
+    },
+  });
+};
+
 export default {
   getPaymentById,
   updatePayment,
   createPayment,
+  getPaymentForCompletion,
 };

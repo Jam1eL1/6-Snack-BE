@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import {
   TClaimPaymentResponseDto,
+  TCompletePaymentResponseDto,
   TFailPaymentBodyDto,
   TFailPaymentResponseDto,
   TGetPaymentParamsDto,
@@ -10,7 +11,7 @@ import {
 import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import { AuthenticationError } from "../types/error";
 import paymentService from "../services/payment.service";
-import { TClaimPaymentCommand, TFailPaymentCommand } from "../types/payment.types";
+import { TClaimPaymentCommand, TCompletePaymentCommand, TFailPaymentCommand } from "../types/payment.types";
 
 const getPayment: RequestHandler<TGetPaymentParamsDto, TGetPaymentResponseDto> = async (req, res, next) => {
   try {
@@ -104,9 +105,35 @@ const failPayment: RequestHandler<TGetPaymentParamsDto, TFailPaymentResponseDto,
   }
 };
 
+const completePayment: RequestHandler<TGetPaymentParamsDto, TCompletePaymentResponseDto> = async (req, res, next) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      throw new AuthenticationError("Invalid user.");
+    }
+
+    const paymentId = parseNumberOrThrow(req.params.paymentId, "paymentId");
+    const command: TCompletePaymentCommand = {
+      adminId: user.id,
+      companyId: user.companyId,
+      approverName: user.name,
+    };
+    const result = await paymentService.completePayment(paymentId, command);
+    const response: TCompletePaymentResponseDto = {
+      message: "Payment completed successfully.",
+      data: result,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getPayment,
   claimPayment,
   retryPayment,
   failPayment,
+  completePayment,
 };

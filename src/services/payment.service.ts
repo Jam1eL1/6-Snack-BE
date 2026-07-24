@@ -3,15 +3,20 @@ import prisma from "../config/prisma";
 import { PAYMENT_CLAIM_DURATION_MS } from "../constants/payment.constants";
 import orderRepository from "../repositories/order.repository";
 import paymentRepository from "../repositories/payment.repository";
-import { ConflictError, NotFoundError } from "../types/error";
+import budgetRepository from "../repositories/budget.repository";
+import productRepository from "../repositories/product.repository";
+import { BadRequestError, ConflictError, NotFoundError } from "../types/error";
 import {
   TClaimPaymentCommand,
   TClaimPaymentResult,
+  TCompletePaymentCommand,
+  TCompletePaymentResult,
   TFailPaymentCommand,
   TFailPaymentResult,
   TGetPaymentResult,
   TRetryPaymentResult,
 } from "../types/payment.types";
+import getDateForBudget from "../utils/getDateForBudget";
 
 type TPaymentRecord = NonNullable<Awaited<ReturnType<typeof paymentRepository.getPaymentById>>>;
 
@@ -202,9 +207,139 @@ const failPayment = async (
   });
 };
 
+const completePayment = async (
+  paymentId: Payment["id"],
+  command: TCompletePaymentCommand,
+): Promise<TCompletePaymentResult> => {
+  return await prisma.$transaction(async (tx) => {
+    const payment = await paymentRepository.getPaymentForCompletion(paymentId, tx);
+
+    if (!payment || payment.order.companyId !== command.companyId) {
+      throw new NotFoundError("Payment not found.");
+    }
+
+    if (payment.status !== "PENDING" || payment.order.status !== "PENDING") {
+      throw new ConflictError("Payment is no longer available to complete.");
+    }
+
+    const now = new Date();
+    const assigneeId = payment.order.paymentAssigneeId;
+    const claimExpiresAt = payment.order.paymentClaimExpiresAt;
+
+    if (assigneeId !== command.adminId || !claimExpiresAt || claimExpiresAt <= now) {
+      throw new ConflictError("You do not own an active payment claim.");
+    }
+
+    if (payment.authorizedPayerId !== command.adminId) {
+      throw new ConflictError("Payment payer does not match the active claim owner.");
+    }
+
+    const expectedAmount = payment.order.productsPriceTotal + payment.order.deliveryFee;
+
+    if (payment.amount !== expectedAmount) {
+      throw new ConflictError("Payment amount does not match the Order total.");
+    }
+
+    const completed = await paymentRepository.updatePayment(
+      paymentId,
+      "PENDING",
+      {
+        status: "PAID",
+        completedAt: now,
+        failureReason: null,
+      },
+      tx,
+    );
+
+    if (completed.count !== 1) {
+      throw new ConflictError("Payment is no longer available to complete.");
+    }
+
+    const finalOrderStatus = payment.order.user.role === "USER" ? "APPROVED" : "INSTANT_APPROVED";
+    const completedOrder = await orderRepository.completePaidOrder(
+      payment.orderId,
+      command.adminId,
+      command.approverName,
+      finalOrderStatus,
+      now,
+      tx,
+    );
+
+    if (completedOrder.count !== 1) {
+      throw new ConflictError("Order is no longer available to complete.");
+    }
+
+    const { year, month, previousYear, previousMonth } = getDateForBudget();
+    const previousBudgetYear = month === "01" ? previousYear : year;
+    let monthlyBudget = await budgetRepository.getMonthlyBudget(
+      {
+        companyId: command.companyId,
+        year,
+        month,
+      },
+      tx,
+    );
+
+    if (!monthlyBudget) {
+      const previousBudget = await budgetRepository.getMonthlyBudget(
+        {
+          companyId: command.companyId,
+          year: previousBudgetYear,
+          month: previousMonth,
+        },
+        tx,
+      );
+      const defaultBudgetAmount = previousBudget?.monthlyBudget ?? 0;
+
+      monthlyBudget = await budgetRepository.upsertMonthlyBudget(
+        {
+          companyId: command.companyId,
+          year,
+          month,
+          currentMonthExpense: 0,
+          currentMonthBudget: defaultBudgetAmount,
+          monthlyBudget: defaultBudgetAmount,
+        },
+        tx,
+      );
+    }
+
+    if (monthlyBudget.currentMonthExpense + payment.amount > monthlyBudget.currentMonthBudget) {
+      throw new BadRequestError("Insufficient budget.");
+    }
+
+    const budgetUpdate = await budgetRepository.incrementCurrentMonthExpense(
+      monthlyBudget.id,
+      monthlyBudget.currentMonthExpense,
+      payment.amount,
+      tx,
+    );
+
+    if (budgetUpdate.count !== 1) {
+      throw new ConflictError("Budget changed while Payment was completing. Please try again.");
+    }
+
+    const productIds = [...new Set(payment.order.receipts.map((receipt) => receipt.productId))];
+    const productUpdate = await productRepository.updateCumulativeSales(productIds, tx);
+
+    if (productUpdate.count !== productIds.length) {
+      throw new ConflictError("One or more Products are no longer available.");
+    }
+
+    const completedPayment = await paymentRepository.getPaymentById(paymentId, tx);
+
+    if (!completedPayment) {
+      throw new NotFoundError("Payment not found.");
+    }
+
+    return formatPayment(completedPayment, command.adminId, now);
+  });
+};
+
 export default {
   getPayment,
   claimPayment,
   retryPayment,
   failPayment,
+  completePayment,
 };

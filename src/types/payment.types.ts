@@ -44,3 +44,9 @@ export type TCreatePaymentCommand = {
   authorizedPayerId: User["id"];
   amount: Payment["amount"];
 };
+
+export type TCompletePaymentCommand = TClaimPaymentCommand & {
+  approverName: User["name"];
+};
+
+export type TCompletePaymentResult = TGetPaymentResult;

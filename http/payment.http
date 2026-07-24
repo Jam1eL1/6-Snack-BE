@@ -7,6 +7,7 @@
 # http/payment/04-order-payment-start.http
 # http/payment/05-order-now-payment.http
 # http/payment/06-admin-order-processing-state.http
+# http/payment/07-payment-complete.http
 #
 # Start the backend with `npm run dev`.
 # Run both login requests in 00-payment-auth.http first.

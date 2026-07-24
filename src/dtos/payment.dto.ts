@@ -1,5 +1,6 @@
 import {
   TClaimPaymentResult,
+  TCompletePaymentResult,
   TFailPaymentResult,
   TGetPaymentResult,
   TRetryPaymentResult,
@@ -31,4 +32,9 @@ export type TFailPaymentBodyDto = {
 export type TFailPaymentResponseDto = {
   message: string;
   data: TFailPaymentResult;
+};
+
+export type TCompletePaymentResponseDto = {
+  message: string;
+  data: TCompletePaymentResult;
 };

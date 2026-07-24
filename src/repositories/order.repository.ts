@@ -55,6 +55,30 @@ const clearPaymentClaim = async (orderId: Order["id"], adminId: User["id"], tx: 
   });
 };
 
+const completePaidOrder = async (
+  orderId: Order["id"],
+  adminId: User["id"],
+  approverName: User["name"],
+  status: Extract<Order["status"], "APPROVED" | "INSTANT_APPROVED">,
+  now: Date,
+  tx: Prisma.TransactionClient,
+) => {
+  return await tx.order.updateMany({
+    where: {
+      id: orderId,
+      status: "PENDING",
+      paymentAssigneeId: adminId,
+      paymentClaimExpiresAt: { gt: now },
+    },
+    data: {
+      status,
+      approver: approverName,
+      paymentAssigneeId: null,
+      paymentClaimExpiresAt: null,
+    },
+  });
+};
+
 const getStatusCondition = (status: keyof TGetOrderStatus) => {
   const statusValue = STATUS_OPTIONS[status];
   return Array.isArray(statusValue) ? { status: { in: statusValue } } : { status: statusValue };
@@ -408,5 +432,6 @@ export default {
   updateOrderStatus,
   acquirePaymentClaim,
   clearPaymentClaim,
+  completePaidOrder,
   getOrderForPaymentStart,
 };

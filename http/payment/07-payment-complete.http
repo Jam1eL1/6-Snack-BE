@@ -1,0 +1,81 @@
+@adminABaseUrl=http://localhost:8080
+@adminBBaseUrl=http://127.0.0.1:8080
+@paymentId=1
+@orderNowCartItemIdOne=REPLACE_WITH_ACTIVE_ADMIN_CART_ITEM_ID
+@orderNowCartItemIdTwo=REPLACE_WITH_ACTIVE_ADMIN_CART_ITEM_ID
+
+# Run both requests in 00-payment-auth.http first.
+#
+# Requested-Order completion starting state:
+# Payment.status = PENDING
+# Order.status = PENDING
+# Order.paymentAssigneeId = null
+# Order.paymentClaimExpiresAt = null
+#
+# Record the current MonthlyBudget.currentMonthExpense and affected
+# Product.cumulativeSales values before completing Payment.
+
+### Admin A — Claim Requested-Order Payment
+# Expected: 200
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/claim
+
+### Admin B — Try to Complete Admin A's Payment
+# Expected: 409
+POST {{adminBBaseUrl}}/admin/payments/{{paymentId}}/complete
+
+### Admin A — Complete Requested-Order Payment
+# Expected: 200
+# Payment.status = PAID
+# Payment.completedAt is set
+# Order.status = APPROVED
+# Order.paymentAssigneeId = null
+# Order.paymentClaimExpiresAt = null
+# claim.isActive = false
+# claim.isMine = false
+# MonthlyBudget.currentMonthExpense increases by Payment.amount once
+# Each ordered Product.cumulativeSales increases once
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/complete
+
+### Admin A — Complete the Same Payment Again
+# Expected: 409
+# Budget and Product sales must not change again.
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/complete
+
+### Admin A — Complete Missing Payment
+# Expected: 404
+POST {{adminABaseUrl}}/admin/payments/999999/complete
+
+### Admin A — Complete With an Expired Claim
+# Reset a test Payment and Order through Prisma Studio before sending:
+# Payment.status = PENDING
+# Payment.completedAt = null
+# Payment.authorizedPayerId = user-1
+# Order.status = PENDING
+# Order.paymentAssigneeId = user-1
+# Order.paymentClaimExpiresAt = a time in the past
+#
+# Expected: 409
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/complete
+
+### Admin A — Start Order Now Payment
+# @name startOrderNowCompletion
+#
+# Expected: 201
+POST {{adminABaseUrl}}/admin/orders/instant
+Content-Type: application/json
+
+{
+  "cartItemIds": [
+    {{orderNowCartItemIdOne}},
+    {{orderNowCartItemIdTwo}}
+  ]
+}
+
+### Admin A — Complete Order Now Payment
+# Run immediately after Start Order Now Payment.
+#
+# Expected: 200
+# Payment.status = PAID
+# Order.status = INSTANT_APPROVED
+# Budget and Product sales update once
+POST {{adminABaseUrl}}/admin/payments/{{startOrderNowCompletion.response.body.$.data.paymentId}}/complete

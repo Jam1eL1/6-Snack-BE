@@ -30,5 +30,11 @@ adminPaymentRouter.post(
   validateFailPaymentBody,
   paymentController.failPayment,
 );
+adminPaymentRouter.post(
+  "/:paymentId/complete",
+  authenticateToken,
+  authorizeRoles("ADMIN", "SUPER_ADMIN"),
+  paymentController.completePayment,
+);
 
 export default adminPaymentRouter;
