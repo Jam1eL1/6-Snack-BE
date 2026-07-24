@@ -10,6 +10,7 @@ import {
 } from "../types/error";
 import {
   TCompanyOrderDetailForAdminResult,
+  TCompanyOrderDetailBaseResult,
   TCancelOrderResult,
   TCompanyUserOrderDetailStatus,
   TCreateInstantOrderCommand,
@@ -20,6 +21,7 @@ import {
   TGetOrderByIdResult,
   TGetOrdersByUserIdResult,
   TGetOrdersResult,
+  TOrderPaymentClaimResult,
   TStartOrderPaymentCommand,
   TStartOrderPaymentResult,
   TUpdateOrderStatusCommand,
@@ -37,12 +39,13 @@ import { PAYMENT_CLAIM_DURATION_MS } from "../constants/payment.constants";
 // Get order history (pending or approved)
 
 type TCompanyUserOrderDetailRecord = NonNullable<Awaited<ReturnType<typeof orderRepository.getOrderById>>>;
+type TAdminOrderDetailRecord = NonNullable<Awaited<ReturnType<typeof orderRepository.getAdminOrderById>>>;
 
 // helpers
-const addCurrentBudgetToCompanyUserOrderDetail = async (
-  formattedOrder: TCompanyOrderDetailForAdminResult,
+const addCurrentBudgetToCompanyUserOrderDetail = async <T extends TCompanyOrderDetailBaseResult>(
+  formattedOrder: T,
   companyId: number,
-): Promise<TCompanyOrderDetailForAdminResult> => {
+): Promise<T> => {
   const { year, month } = getDateForBudget();
   const budget = await budgetRepository.getMonthlyBudget({
     companyId,
@@ -65,6 +68,7 @@ const addCurrentBudgetToCompanyUserOrderDetail = async (
 const getOrders = async (
   { page, limit, orderBy, status }: TGetOrdersQuery,
   companyId: number,
+  adminId: User["id"],
 ): Promise<TGetOrdersResult> => {
   const offset = (page - 1) * limit;
 
@@ -76,19 +80,46 @@ const getOrders = async (
 
   const totalCount = await orderRepository.getOrdersTotalCount({ status }, companyId);
 
-  const formattedOrders = orders.map(({ user, receipts, ...rest }) => {
-    // When there are multiple products in one order
-    if (receipts.length >= 2) {
+  const formattedOrders = orders.map(
+    ({
+      user,
+      receipts,
+      paymentAssignee,
+      paymentAssigneeId,
+      paymentClaimExpiresAt,
+      payment,
+      ...rest
+    }) => {
+      const paymentClaim = formatOrderPaymentClaim(
+        {
+          paymentAssignee,
+          paymentAssigneeId,
+          paymentClaimExpiresAt,
+        },
+        adminId,
+      );
+
+      // When there are multiple products in one order
+      if (receipts.length >= 2) {
+        return {
+          ...rest,
+          requester: user.name,
+          productName: `${receipts[0].productName} and ${receipts.length - 1} more`,
+          payment,
+          paymentClaim,
+        };
+      }
+
+      // When there is only one product in the order
       return {
         ...rest,
         requester: user.name,
-        productName: `${receipts[0].productName} and ${receipts.length - 1} more`,
+        productName: receipts[0].productName,
+        payment,
+        paymentClaim,
       };
-    }
-
-    // When there is only one product in the order
-    return { ...rest, requester: user.name, productName: receipts[0].productName };
-  });
+    },
+  );
 
   return {
     orders: formattedOrders,
@@ -100,13 +131,14 @@ const getCompanyUserOrderDetailByStatus = async (
   orderId: Order["id"],
   status: TCompanyUserOrderDetailStatus,
   companyId: Company["id"],
+  adminId: User["id"],
 ): Promise<TCompanyOrderDetailForAdminResult> => {
   const order = await orderRepository.getOrderByIdAndStatus(orderId, status, companyId);
   if (!order) {
     throw new NotFoundError("Order history not found");
   }
 
-  const formattedOrder = formatCompanyUserOrderDetail(order);
+  const formattedOrder = formatCompanyUserOrderDetail(order, adminId);
 
   if (status === "pending") {
     return await addCurrentBudgetToCompanyUserOrderDetail(formattedOrder, companyId);
@@ -118,17 +150,85 @@ const getCompanyUserOrderDetailByStatus = async (
 const getCompanyUserOrderDetailById = async (
   orderId: Order["id"],
   companyId: Company["id"],
+  adminId: User["id"],
 ): Promise<TCompanyOrderDetailForAdminResult> => {
-  const order = await orderRepository.getOrderById(orderId);
-  if (!order || order.companyId !== companyId) {
+  const order = await orderRepository.getAdminOrderById(orderId, companyId);
+  if (!order) {
     throw new NotFoundError("Order information not found.");
   }
 
-  return formatCompanyUserOrderDetail(order);
+  return formatCompanyUserOrderDetail(order, adminId);
 };
 
-const formatCompanyUserOrderDetail = (order: TCompanyUserOrderDetailRecord): TCompanyOrderDetailForAdminResult => {
+const formatOrderPaymentClaim = (
+  order: Pick<
+    TAdminOrderDetailRecord,
+    "paymentAssignee" | "paymentAssigneeId" | "paymentClaimExpiresAt"
+  >,
+  adminId: User["id"],
+  now = new Date(),
+): TOrderPaymentClaimResult => {
+  const isActive = Boolean(
+    order.paymentAssigneeId &&
+      order.paymentClaimExpiresAt &&
+      order.paymentClaimExpiresAt > now,
+  );
+
+  if (!isActive) {
+    return {
+      status: "AVAILABLE",
+      assigneeId: null,
+      assigneeName: null,
+      expiresAt: null,
+      isMine: false,
+    };
+  }
+
+  return {
+    status: "PROCESSING",
+    assigneeId: order.paymentAssigneeId,
+    assigneeName: order.paymentAssignee?.name ?? null,
+    expiresAt: order.paymentClaimExpiresAt,
+    isMine: order.paymentAssigneeId === adminId,
+  };
+};
+
+const formatCompanyUserOrderDetail = (
+  order: TAdminOrderDetailRecord,
+  adminId: User["id"],
+): TCompanyOrderDetailForAdminResult => {
+  const {
+    receipts,
+    user,
+    paymentAssignee,
+    paymentAssigneeId,
+    paymentClaimExpiresAt,
+    payment,
+    ...rest
+  } = order;
+
+  return {
+    ...rest,
+    requester: user.name,
+    products: receipts,
+    budget: { currentMonthBudget: null, currentMonthExpense: null },
+    payment,
+    paymentClaim: formatOrderPaymentClaim(
+      {
+        paymentAssignee,
+        paymentAssigneeId,
+        paymentClaimExpiresAt,
+      },
+      adminId,
+    ),
+  };
+};
+
+const formatCreatedCompanyUserOrderDetail = (
+  order: TCompanyUserOrderDetailRecord,
+): TCreateOrderResult => {
   const { receipts, user, ...rest } = order;
+
   return {
     ...rest,
     requester: user.name,
@@ -148,7 +248,7 @@ const formatCreatedCompanyUserOrder = async (
     throw new NotFoundError("Created order not found.");
   }
 
-  const formattedOrder = formatCompanyUserOrderDetail(order);
+  const formattedOrder = formatCreatedCompanyUserOrderDetail(order);
 
   if (status === "pending") {
     return await addCurrentBudgetToCompanyUserOrderDetail(formattedOrder, companyId);

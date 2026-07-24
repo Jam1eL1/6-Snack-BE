@@ -44,7 +44,7 @@ const getOrders: RequestHandler<{}, TGetOrdersResponseDto, {}, TGetOrdersQueryDt
       status,
     };
 
-    const result = await orderService.getOrders(query, user.companyId);
+    const result = await orderService.getOrders(query, user.companyId, user.id);
     const response: TGetOrdersResponseDto = {
       message: "Orders retrieved successfully.",
       data: result,
@@ -71,8 +71,8 @@ const getOrder: RequestHandler<TGetOrderParamsDto, TGetOrderResponseDto, {}, TGe
     const { status } = req.query;
 
     const result = status
-      ? await orderService.getCompanyUserOrderDetailByStatus(orderId, status, user.companyId)
-      : await orderService.getCompanyUserOrderDetailById(orderId, user.companyId);
+      ? await orderService.getCompanyUserOrderDetailByStatus(orderId, status, user.companyId, user.id)
+      : await orderService.getCompanyUserOrderDetailById(orderId, user.companyId, user.id);
     const response: TGetOrderResponseDto = {
       message: "Order details retrieved successfully.",
       data: result,

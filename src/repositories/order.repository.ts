@@ -72,6 +72,20 @@ const getOrders = async ({ offset, limit, orderBy, status }: TGetOrdersRepositor
     include: {
       user: { omit: { hashedRefreshToken: true, password: true } },
       receipts: true,
+      payment: {
+        select: {
+          id: true,
+          status: true,
+          amount: true,
+          authorizedPayerId: true,
+        },
+      },
+      paymentAssignee: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 };
@@ -98,6 +112,47 @@ const getOrderByIdAndStatus = async (
     include: {
       user: { omit: { hashedRefreshToken: true, password: true } },
       receipts: true,
+      payment: {
+        select: {
+          id: true,
+          status: true,
+          amount: true,
+          authorizedPayerId: true,
+        },
+      },
+      paymentAssignee: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+};
+
+const getAdminOrderById = async (id: Order["id"], companyId: Company["id"]) => {
+  return await prisma.order.findFirst({
+    where: {
+      id,
+      companyId,
+    },
+    include: {
+      user: { omit: { hashedRefreshToken: true, password: true } },
+      receipts: true,
+      payment: {
+        select: {
+          id: true,
+          status: true,
+          amount: true,
+          authorizedPayerId: true,
+        },
+      },
+      paymentAssignee: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 };
@@ -342,6 +397,7 @@ export default {
   getOrders,
   getOrdersTotalCount,
   getOrderByIdAndStatus,
+  getAdminOrderById,
   getOrderById,
   getOrderWithCartItemIdsById,
   updateOrder,

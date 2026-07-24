@@ -14,6 +14,8 @@ export type TGetOrdersItemResult = {
   status: string;
   requester: string;
   productName: string;
+  payment: TOrderPaymentSummaryResult;
+  paymentClaim: TOrderPaymentClaimResult;
 };
 
 export type TGetOrdersResult = {
@@ -84,7 +86,22 @@ export type TOrderBudgetResult = {
   currentMonthExpense: number | null;
 };
 
-export type TCompanyOrderDetailForAdminResult = {
+export type TOrderPaymentSummaryResult = {
+  id: Payment["id"];
+  status: Payment["status"];
+  amount: Payment["amount"];
+  authorizedPayerId: User["id"];
+} | null;
+
+export type TOrderPaymentClaimResult = {
+  status: "AVAILABLE" | "PROCESSING";
+  assigneeId: User["id"] | null;
+  assigneeName: User["name"] | null;
+  expiresAt: Date | null;
+  isMine: boolean;
+};
+
+export type TCompanyOrderDetailBaseResult = {
   id: Order["id"];
   companyId: Company["id"];
   userId: User["id"];
@@ -101,7 +118,12 @@ export type TCompanyOrderDetailForAdminResult = {
   budget: TOrderBudgetResult;
 };
 
-export type TCreateOrderResult = TCompanyOrderDetailForAdminResult;
+export type TCompanyOrderDetailForAdminResult = TCompanyOrderDetailBaseResult & {
+  payment: TOrderPaymentSummaryResult;
+  paymentClaim: TOrderPaymentClaimResult;
+};
+
+export type TCreateOrderResult = TCompanyOrderDetailBaseResult;
 
 export type TUpdateOrderStatusResult = {
   id: Order["id"];
