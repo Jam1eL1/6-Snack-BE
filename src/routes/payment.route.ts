@@ -2,6 +2,7 @@ import { Router } from "express";
 import authenticateToken from "../middlewares/jwtAuth.middleware";
 import authorizeRoles from "../middlewares/authorizeRoles.middleware";
 import paymentController from "../controllers/payment.controller";
+import validateFailPaymentBody from "../middlewares/validateFailPaymentBody.middleware";
 
 const adminPaymentRouter = Router();
 adminPaymentRouter.get(
@@ -21,6 +22,13 @@ adminPaymentRouter.post(
   authenticateToken,
   authorizeRoles("ADMIN", "SUPER_ADMIN"),
   paymentController.retryPayment,
+);
+adminPaymentRouter.post(
+  "/:paymentId/fail",
+  authenticateToken,
+  authorizeRoles("ADMIN", "SUPER_ADMIN"),
+  validateFailPaymentBody,
+  paymentController.failPayment,
 );
 
 export default adminPaymentRouter;

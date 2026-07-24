@@ -32,3 +32,9 @@ export type TClaimPaymentCommand = {
 export type TClaimPaymentResult = TGetPaymentResult;
 
 export type TRetryPaymentResult = TGetPaymentResult;
+
+export type TFailPaymentCommand = TClaimPaymentCommand & {
+  failureReason: string;
+};
+
+export type TFailPaymentResult = TGetPaymentResult;

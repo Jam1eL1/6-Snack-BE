@@ -7,6 +7,8 @@ import { ConflictError, NotFoundError } from "../types/error";
 import {
   TClaimPaymentCommand,
   TClaimPaymentResult,
+  TFailPaymentCommand,
+  TFailPaymentResult,
   TGetPaymentResult,
   TRetryPaymentResult,
 } from "../types/payment.types";
@@ -146,8 +148,63 @@ const retryPayment = async (paymentId: Payment["id"], command: TClaimPaymentComm
     return formatPayment(retriedPayment, command.adminId, now);
   });
 };
+
+const failPayment = async (
+  paymentId: Payment["id"],
+  command: TFailPaymentCommand,
+): Promise<TFailPaymentResult> => {
+  return await prisma.$transaction(async (tx) => {
+    const payment = await paymentRepository.getPaymentById(paymentId, tx);
+
+    if (!payment || payment.order.companyId !== command.companyId) {
+      throw new NotFoundError("Payment not found.");
+    }
+
+    if (payment.status !== "PENDING" || payment.order.status !== "PENDING") {
+      throw new ConflictError("Payment is no longer available to fail.");
+    }
+
+    const now = new Date();
+    const assigneeId = payment.order.paymentAssigneeId;
+    const expiresAt = payment.order.paymentClaimExpiresAt;
+
+    if (assigneeId !== command.adminId || !expiresAt || expiresAt <= now) {
+      throw new ConflictError("You do not own an active payment claim.");
+    }
+
+    const failed = await paymentRepository.updatePayment(
+      paymentId,
+      "PENDING",
+      {
+        status: "FAILED",
+        failureReason: command.failureReason,
+      },
+      tx,
+    );
+
+    if (failed.count !== 1) {
+      throw new ConflictError("Payment is no longer available to fail.");
+    }
+
+    const clearedClaim = await orderRepository.clearPaymentClaim(payment.orderId, command.adminId, tx);
+
+    if (clearedClaim.count !== 1) {
+      throw new ConflictError("Payment claim is no longer available.");
+    }
+
+    const failedPayment = await paymentRepository.getPaymentById(paymentId, tx);
+
+    if (!failedPayment) {
+      throw new NotFoundError("Payment not found.");
+    }
+
+    return formatPayment(failedPayment, command.adminId, now);
+  });
+};
+
 export default {
   getPayment,
   claimPayment,
   retryPayment,
+  failPayment,
 };

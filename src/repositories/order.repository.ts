@@ -41,6 +41,24 @@ const acquirePaymentClaim = async (
     },
   });
 };
+
+const clearPaymentClaim = async (
+  orderId: Order["id"],
+  adminId: User["id"],
+  tx: Prisma.TransactionClient,
+) => {
+  return await tx.order.updateMany({
+    where: {
+      id: orderId,
+      paymentAssigneeId: adminId,
+    },
+    data: {
+      paymentAssigneeId: null,
+      paymentClaimExpiresAt: null,
+    },
+  });
+};
+
 const getStatusCondition = (status: keyof TGetOrderStatus) => {
   const statusValue = STATUS_OPTIONS[status];
   return Array.isArray(statusValue) ? { status: { in: statusValue } } : { status: statusValue };
@@ -312,4 +330,5 @@ export default {
   getOrdersByUserId,
   updateOrderStatus,
   acquirePaymentClaim,
+  clearPaymentClaim,
 };

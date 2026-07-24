@@ -1,4 +1,9 @@
-import { TClaimPaymentResult, TGetPaymentResult, TRetryPaymentResult } from "../types/payment.types";
+import {
+  TClaimPaymentResult,
+  TFailPaymentResult,
+  TGetPaymentResult,
+  TRetryPaymentResult,
+} from "../types/payment.types";
 
 export type TGetPaymentParamsDto = {
   paymentId: string;
@@ -17,4 +22,13 @@ export type TClaimPaymentResponseDto = {
 export type TRetryPaymentResponseDto = {
   message: string;
   data: TRetryPaymentResult;
+};
+
+export type TFailPaymentBodyDto = {
+  failureReason: string;
+};
+
+export type TFailPaymentResponseDto = {
+  message: string;
+  data: TFailPaymentResult;
 };
