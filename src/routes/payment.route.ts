@@ -16,5 +16,11 @@ adminPaymentRouter.post(
   authorizeRoles("ADMIN", "SUPER_ADMIN"),
   paymentController.claimPayment,
 );
+adminPaymentRouter.post(
+  "/:paymentId/retry",
+  authenticateToken,
+  authorizeRoles("ADMIN", "SUPER_ADMIN"),
+  paymentController.retryPayment,
+);
 
 export default adminPaymentRouter;

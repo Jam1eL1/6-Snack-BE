@@ -22,6 +22,12 @@ POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/claim
 # The claim expiration should not be extended.
 POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/claim
 
+### Admin A — Retry Failed Payment
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/retry
+
+### Admin A — Retry Again
+# Expected: 409 because Payment is now PENDING
+POST {{adminABaseUrl}}/admin/payments/{{paymentId}}/retry
 ### Admin B — Login
 POST {{adminBBaseUrl}}/auth/login
 Content-Type: application/json
@@ -37,6 +43,10 @@ GET {{adminBBaseUrl}}/admin/payments/{{paymentId}}
 ### Admin B — Claim While Admin A Owns Active Claim
 # Expected: 409 Conflict
 POST {{adminBBaseUrl}}/admin/payments/{{paymentId}}/claim
+
+### Admin B — Retry Non-Failed Payment
+# Expected: 409 because Admin A already changed FAILED -> PENDING
+POST {{adminBBaseUrl}}/admin/payments/{{paymentId}}/retry
 
 ### Missing Payment
 # Expected: 404 Not Found

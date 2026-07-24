@@ -1,10 +1,15 @@
-import { Company, Payment, User } from "../generated/prisma/client";
+import { Company, Payment, Prisma, User } from "../generated/prisma/client";
 import prisma from "../config/prisma";
 import { PAYMENT_CLAIM_DURATION_MS } from "../constants/payment.constants";
 import orderRepository from "../repositories/order.repository";
 import paymentRepository from "../repositories/payment.repository";
 import { ConflictError, NotFoundError } from "../types/error";
-import { TClaimPaymentCommand, TClaimPaymentResult, TGetPaymentResult } from "../types/payment.types";
+import {
+  TClaimPaymentCommand,
+  TClaimPaymentResult,
+  TGetPaymentResult,
+  TRetryPaymentResult,
+} from "../types/payment.types";
 
 type TPaymentRecord = NonNullable<Awaited<ReturnType<typeof paymentRepository.getPaymentById>>>;
 
@@ -92,7 +97,57 @@ const claimPayment = async (paymentId: Payment["id"], command: TClaimPaymentComm
   });
 };
 
+const retryPayment = async (paymentId: Payment["id"], command: TClaimPaymentCommand): Promise<TRetryPaymentResult> => {
+  //   -> start transaction
+  // -> load Payment and Order
+  // -> return 404 for missing or cross-company Payment
+  // -> require Order PENDING
+  // -> require Payment FAILED
+  return await prisma.$transaction(async (tx) => {
+    const payment = await paymentRepository.getPaymentById(paymentId, tx);
+
+    if (!payment || payment.order.companyId !== command.companyId) {
+      throw new NotFoundError("Payment not found.");
+    }
+
+    if (payment.status !== "FAILED" || payment.order.status !== "PENDING") {
+      throw new ConflictError("Payment is no longer available.");
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + PAYMENT_CLAIM_DURATION_MS);
+
+    const claim = await orderRepository.acquirePaymentClaim(
+      payment.orderId,
+      command.companyId,
+      command.adminId,
+      now,
+      expiresAt,
+      tx,
+    );
+
+    if (claim.count !== 1) {
+      throw new ConflictError("Another admin acquired this payment.");
+    }
+    const newData: Prisma.PaymentUncheckedUpdateManyInput = {
+      status: "PENDING",
+      authorizedPayerId: command.adminId,
+      failureReason: null,
+      completedAt: null,
+    };
+    const retry = await paymentRepository.updatePayment(paymentId, "FAILED", newData, tx);
+    if (retry.count !== 1) {
+      throw new ConflictError("Payment is no longer available to retry.");
+    }
+    const retriedPayment = await paymentRepository.getPaymentById(paymentId, tx);
+    if (!retriedPayment) {
+      throw new NotFoundError("Payment not found.");
+    }
+    return formatPayment(retriedPayment, command.adminId, now);
+  });
+};
 export default {
   getPayment,
   claimPayment,
+  retryPayment,
 };

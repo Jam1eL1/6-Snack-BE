@@ -30,3 +30,5 @@ export type TClaimPaymentCommand = {
   companyId: Company["id"];
 };
 export type TClaimPaymentResult = TGetPaymentResult;
+
+export type TRetryPaymentResult = TGetPaymentResult;
