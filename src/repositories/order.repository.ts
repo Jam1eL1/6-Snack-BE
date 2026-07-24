@@ -165,6 +165,7 @@ const createOrder = async (
     adminMessage?: string;
     requestMessage?: string;
     cartItemIds: number[];
+    status?: Order["status"];
   },
   tx?: Prisma.TransactionClient,
 ) => {
@@ -206,7 +207,7 @@ const createOrder = async (
       requestMessage: orderData.requestMessage,
       productsPriceTotal: totalPrice,
       deliveryFee: STANDARD_DELIVERY_FEE_CENTS,
-      status: user.role === "USER" ? "PENDING" : "INSTANT_APPROVED",
+      status: orderData.status ?? (user.role === "USER" ? "PENDING" : "INSTANT_APPROVED"),
     },
   });
 

@@ -215,12 +215,11 @@ const createInstantOrder: RequestHandler<{}, TCreateInstantOrderResponseDto, TCr
       userId: user.id,
       companyId: user.companyId,
       cartItemIds: req.body.cartItemIds,
-      approverName: user.name,
     };
 
     const result = await orderService.createInstantOrder(command);
     const response: TCreateInstantOrderResponseDto = {
-      message: "Instant purchase completed successfully.",
+      message: "Instant payment started successfully.",
       data: result,
     };
 

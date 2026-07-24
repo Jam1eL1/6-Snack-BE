@@ -306,26 +306,44 @@ const createInstantOrder = async (command: TCreateInstantOrderCommand): Promise<
     throw new ValidationError("Cart items are required.");
   }
 
-  // Create instant purchase order in a transaction
-  const result = await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx) => {
     const instantOrderData = {
       ...command,
       adminMessage: undefined,
       requestMessage: undefined,
+      status: "PENDING" as const,
     };
 
-    // Create order
     const order = await orderRepository.createOrder(instantOrderData, tx);
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + PAYMENT_CLAIM_DURATION_MS);
+    const claim = await orderRepository.acquirePaymentClaim(
+      order.id,
+      command.companyId,
+      command.userId,
+      now,
+      expiresAt,
+      tx,
+    );
 
-    return order;
+    if (claim.count !== 1) {
+      throw new ConflictError("Unable to acquire the Order payment claim.");
+    }
+
+    const payment = await paymentRepository.createPayment(
+      {
+        orderId: order.id,
+        authorizedPayerId: command.userId,
+        amount: order.productsPriceTotal + order.deliveryFee,
+      },
+      tx,
+    );
+
+    return {
+      orderId: order.id,
+      paymentId: payment.id,
+    };
   });
-
-  const approvedOrder = await completeInstantOrderApproval(result.id, command.companyId, {
-    approver: command.approverName,
-    adminMessage: "Auto-approved via instant purchase",
-  });
-
-  return approvedOrder;
 };
 
 const startOrderPayment = async (

@@ -66,7 +66,6 @@ export type TCreateInstantOrderCommand = {
   userId: User["id"];
   companyId: Company["id"];
   cartItemIds: CartItem["id"][];
-  approverName: User["name"];
 };
 
 export type TOrderProductResult = {
@@ -118,7 +117,7 @@ export type TUpdateOrderStatusResult = {
   status: TOrderStatus;
 };
 
-export type TCreateInstantOrderResult = TUpdateOrderStatusResult;
+export type TCreateInstantOrderResult = TStartOrderPaymentResult;
 
 export type TOrderUserSummaryResult = {
   id: User["id"];
