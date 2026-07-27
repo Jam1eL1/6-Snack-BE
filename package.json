@@ -2,12 +2,15 @@
   "name": "express-typescript-backend",
   "version": "1.0.0",
   "main": "dist/server.js",
+  "engines": {
+    "node": "^20.19 || ^22.12 || >=24"
+  },
   "scripts": {
-    "seed": "dotenv -e .env -- ts-node prisma/seed.ts",
+    "seed": "node --env-file=.env -r ts-node/register prisma/seed.ts",
     "start": "node --enable-source-maps dist/server.js",
     "dev": "ts-node-dev --respawn src/server.ts",
     "build": "tsc",
-    "ssh": "dotenv -- bash -c 'ssh -i \"$SSH_KEY_PATH\" -L 5432:$DB_HOST:5432 $EC2_USER@$EC2_HOST'",
+    "ssh": "node --env-file=.env scripts/sshTunnel.js",
     "cron": "node dist/cron/autoCreateMonthlyBudget.js"
   },
   "keywords": [],
@@ -23,7 +26,6 @@
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "ioredis": "^5.7.0",
@@ -51,7 +53,6 @@
     "@types/nodemailer": "^6.4.17",
     "@types/supertest": "^6.0.3",
     "cookie-parser": "^1.4.7",
-    "dotenv-cli": "^8.0.0",
     "jest": "^30.0.5",
     "nodemon": "^3.1.10",
     "prisma": "^7.5.0",

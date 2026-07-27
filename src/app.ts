@@ -1,6 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
-
+import "./config/env";
 import express, { Application, Request, Response } from "express";
 import indexRouter from "./routes/index.route";
 import errorHandler from "./middlewares/errorHandler.middleware";

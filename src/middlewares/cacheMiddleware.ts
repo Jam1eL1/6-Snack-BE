@@ -1,5 +1,4 @@
 import Redis from "ioredis";
-import "dotenv/config";
 import { Request, Response, NextFunction } from "express";
 
 // Redis 클라이언트 생성

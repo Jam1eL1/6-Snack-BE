@@ -11,7 +11,6 @@ import { orderMockData } from "./mocks/order.mock";
 import { receiptMockData } from "./mocks/receipt.mock";
 import { inviteMockData } from "./mocks/invite.mock";
 import { favoriteMockData } from "./mocks/favorite.mock";
-import "dotenv/config";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
