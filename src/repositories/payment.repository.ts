@@ -3,6 +3,7 @@ import prisma from "../config/prisma";
 import { TCreatePaymentCommand } from "../types/payment.types";
 const getPaymentById = async (paymentId: Payment["id"], tx?: Prisma.TransactionClient) => {
   const client = tx ?? prisma;
+
   return client.payment.findUnique({
     where: {
       id: paymentId,
@@ -16,6 +17,14 @@ const getPaymentById = async (paymentId: Payment["id"], tx?: Prisma.TransactionC
           status: true,
           paymentAssigneeId: true,
           paymentClaimExpiresAt: true,
+          receipts: {
+            select: {
+              productName: true,
+            },
+            orderBy: {
+              id: "asc",
+            },
+          },
         },
       },
     },

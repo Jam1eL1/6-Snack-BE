@@ -7,6 +7,7 @@ export type TGetPaymentOrderResult = {
   status: Order["status"];
   paymentAssigneeId: User["id"] | null;
   paymentClaimExpiresAt: Date | null;
+  productName: string;
 };
 export type TGetPaymentResult = {
   id: Payment["id"];

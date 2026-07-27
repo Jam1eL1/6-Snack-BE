@@ -32,11 +32,29 @@ const getPayment = async (
   return formatPayment(payment, adminId);
 };
 
+const formatOrderProductName = (receipts: { productName: string }[]) => {
+  const firstReceipt = receipts[0];
+
+  if (!firstReceipt) {
+    return "Order items";
+  }
+
+  if (receipts.length === 1) {
+    return firstReceipt.productName;
+  }
+
+  return `${firstReceipt.productName} and ${receipts.length - 1} more`;
+};
 const formatPayment = (payment: TPaymentRecord, adminId: string, now = new Date()): TGetPaymentResult => {
   const expiresAt = payment.order.paymentClaimExpiresAt;
   const isActive = Boolean(payment.order.paymentAssigneeId && expiresAt && expiresAt > now);
+  const { receipts, ...order } = payment.order;
   return {
     ...payment,
+    order: {
+      ...order,
+      productName: formatOrderProductName(receipts),
+    },
     claim: {
       isActive,
       isMine: isActive && payment.order.paymentAssigneeId === adminId,
@@ -154,10 +172,7 @@ const retryPayment = async (paymentId: Payment["id"], command: TClaimPaymentComm
   });
 };
 
-const failPayment = async (
-  paymentId: Payment["id"],
-  command: TFailPaymentCommand,
-): Promise<TFailPaymentResult> => {
+const failPayment = async (paymentId: Payment["id"], command: TFailPaymentCommand): Promise<TFailPaymentResult> => {
   return await prisma.$transaction(async (tx) => {
     const payment = await paymentRepository.getPaymentById(paymentId, tx);
 
