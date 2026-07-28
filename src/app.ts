@@ -11,22 +11,23 @@ import { isSentryEnabled } from "./instrument";
 import * as Sentry from "@sentry/node";
 
 const app: Application = express();
+const isProduction = process.env.NODE_ENV === "production";
+const allowedOrigins = isProduction
+  ? ["https://5nack.site"]
+  : ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://localhost:8080"];
 
 app.use(helmet());
 
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? ["https://5nack.site"]
-        : ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://localhost:8080"],
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   }),
 );
 
-if (process.env.NODE_ENV !== "production") {
+if (!isProduction) {
   app.use(morgan("dev"));
 }
 
