@@ -16,6 +16,20 @@ const findUserByEmailWithCompany = async (email: string, tx?: Prisma.Transaction
 };
 
 /**
+ * Finds a user by ID and includes company info.
+ * @param userId - User ID to look up
+ * @param tx - Transaction client (optional)
+ * @returns User with company info, or null
+ */
+const findUserByIdWithCompany = async (userId: string, tx?: Prisma.TransactionClient) => {
+  const client = tx || prisma;
+  return client.user.findUnique({
+    where: { id: userId },
+    include: { company: true },
+  });
+};
+
+/**
  * Finds a user by ID.
  * @param id - User ID to look up
  * @param tx - Transaction client (optional)
@@ -172,6 +186,7 @@ const runInTransaction = async <T>(
 
 export default {
   findUserByEmailWithCompany,
+  findUserByIdWithCompany,
   findUserById,
   findCompanyByBizNumber,
   findInviteById,
