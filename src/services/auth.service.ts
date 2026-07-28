@@ -1,13 +1,21 @@
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import { Role, Prisma } from '../generated/prisma/client';
-import authRepository from '../repositories/auth.repository';
-import { BadRequestError, AuthenticationError, NotFoundError, ValidationError } from '../types/error';
-import { getCurrentYearAndMonth, isExpired } from '../utils/date.utils';
-import { ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN } from '../constants/auth.constants';
+import bcrypt from "bcrypt";
+import { Role } from "../generated/prisma/client";
+import authRepository from "../repositories/auth.repository";
+import { AuthenticationError, NotFoundError, ValidationError } from "../types/error";
+import { getCurrentYearAndMonth, isExpired } from "../utils/date.utils";
+import {
+  signAccessToken,
+  signRefreshToken,
+  verifyAccessToken,
+  verifyRefreshToken,
+} from "../utils/authToken.utils";
 
-const JWT_SECRET: string = process.env.JWT_SECRET || 'your_very_strong_and_secret_jwt_key_please_change_this_in_production';
-
+const authenticateAccessToken = async (accessToken: string) => {
+  const payload = verifyAccessToken(accessToken);
+  const user = await authRepository.findUserByIdWithCompany(payload.userId);
+  if (!user || user.deletedAt) throw new AuthenticationError("Authentication is invalid.");
+  return user;
+};
 const signUpSuperAdmin = async (data: {
   email: string;
   name: string;
@@ -17,31 +25,40 @@ const signUpSuperAdmin = async (data: {
 }) => {
   const existingUser = await authRepository.findUserByEmailWithCompany(data.email);
   if (existingUser) {
-    throw new ValidationError('This email is already registered.');
+    throw new ValidationError("This email is already registered.");
   }
   const existingCompany = await authRepository.findCompanyByBizNumber(data.bizNumber);
   if (existingCompany) {
-    throw new ValidationError('This business registration number is already registered.');
+    throw new ValidationError("This business registration number is already registered.");
   }
   const hashedPassword = await bcrypt.hash(data.password, 10);
   const transactionResult = await authRepository.runInTransaction(async (prismaTransaction) => {
-    const createdCompany = await authRepository.createCompany({
-      name: data.companyName,
-      bizNumber: data.bizNumber,
-    }, prismaTransaction);
-    const createdUser = await authRepository.createUser({
-      email: data.email,
-      name: data.name,
-      password: hashedPassword,
-      role: Role.SUPER_ADMIN,
-      companyId: createdCompany.id,
-    }, prismaTransaction);
+    const createdCompany = await authRepository.createCompany(
+      {
+        name: data.companyName,
+        bizNumber: data.bizNumber,
+      },
+      prismaTransaction,
+    );
+    const createdUser = await authRepository.createUser(
+      {
+        email: data.email,
+        name: data.name,
+        password: hashedPassword,
+        role: Role.SUPER_ADMIN,
+        companyId: createdCompany.id,
+      },
+      prismaTransaction,
+    );
     const { currentYear, currentMonth } = getCurrentYearAndMonth();
-    const createdMonthlyBudget = await authRepository.createMonthlyBudget({
-      companyId: createdCompany.id,
-      year: currentYear,
-      month: currentMonth,
-    }, prismaTransaction);
+    const createdMonthlyBudget = await authRepository.createMonthlyBudget(
+      {
+        companyId: createdCompany.id,
+        year: currentYear,
+        month: currentMonth,
+      },
+      prismaTransaction,
+    );
     return { company: createdCompany, user: createdUser, monthlyBudget: createdMonthlyBudget };
   });
   return transactionResult;
@@ -50,27 +67,30 @@ const signUpSuperAdmin = async (data: {
 const signUpViaInvite = async (inviteId: string, password: string) => {
   const invite = await authRepository.findInviteById(inviteId);
   if (!invite) {
-    throw new NotFoundError('The invite link is invalid.');
+    throw new NotFoundError("The invite link is invalid.");
   }
   if (invite.isUsed) {
-    throw new ValidationError('This invite link has already been used.');
+    throw new ValidationError("This invite link has already been used.");
   }
   if (isExpired(invite.expiresAt)) {
-    throw new ValidationError('This invite link has expired.');
+    throw new ValidationError("This invite link has expired.");
   }
   const existingUser = await authRepository.findUserByEmailWithCompany(invite.email);
   if (existingUser) {
-    throw new ValidationError('This email is already registered.');
+    throw new ValidationError("This email is already registered.");
   }
   const hashedPassword = await bcrypt.hash(password, 10);
   const newUser = await authRepository.runInTransaction(async (prismaTransaction) => {
-    const createdUser = await authRepository.createUser({
-      email: invite.email,
-      name: invite.name,
-      password: hashedPassword,
-      role: invite.role,
-      companyId: invite.companyId,
-    }, prismaTransaction);
+    const createdUser = await authRepository.createUser(
+      {
+        email: invite.email,
+        name: invite.name,
+        password: hashedPassword,
+        role: invite.role,
+        companyId: invite.companyId,
+      },
+      prismaTransaction,
+    );
     await authRepository.updateInviteToUsed(inviteId, prismaTransaction);
     return createdUser;
   });
@@ -78,66 +98,84 @@ const signUpViaInvite = async (inviteId: string, password: string) => {
 };
 
 const login = async (email: string, password: string) => {
-  const user = await authRepository.findUserByEmailWithCompany(email);
-  if (!user) {
-    throw new AuthenticationError('Email or password is incorrect.');
-  }
-  if (user.deletedAt) {
-    throw new AuthenticationError('This account has been deleted.');
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = await authRepository.findUserByEmailWithCompany(normalizedEmail);
+  if (!user || user.deletedAt) {
+    throw new AuthenticationError("Email or password is incorrect.");
   }
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    throw new AuthenticationError('Email or password is incorrect.');
+    throw new AuthenticationError("Email or password is incorrect.");
   }
-  const accessToken = jwt.sign(
-    { userId: user.id, email: user.email, role: user.role },
-    JWT_SECRET,
-    { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
-  );
-  const refreshToken = jwt.sign(
-    { userId: user.id, email: user.email },
-    JWT_SECRET,
-    { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
-  );
+  const accessToken = signAccessToken(user.id, user.role);
+  const refreshToken = signRefreshToken(user.id);
   const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
   await authRepository.updateUserRefreshToken(user.id, hashedRefreshToken);
-  return { user, accessToken, refreshToken };
+
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      company: user.company,
+    },
+    accessToken,
+    refreshToken,
+  };
 };
 
 const refreshAccessToken = async (refreshToken: string) => {
-  try {
-    const decoded = jwt.verify(refreshToken, JWT_SECRET) as { userId: string; email: string };
-    const user = await authRepository.findUserById(decoded.userId);
-    if (!user || !user.hashedRefreshToken) {
-      throw new AuthenticationError('Refresh token is invalid.');
-    }
-    const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.hashedRefreshToken);
-    if (!isRefreshTokenValid) {
-      throw new AuthenticationError('Refresh token is invalid.');
-    }
-    const newAccessToken = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
-    );
-    const newRefreshToken = jwt.sign(
-      { userId: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
-    );
-    const newHashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
-    await authRepository.updateUserRefreshToken(user.id, newHashedRefreshToken);
-    return { newAccessToken, newRefreshToken, user };
-  } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      throw new AuthenticationError('Refresh token has expired.');
-    }
-    throw new AuthenticationError('Refresh token is invalid.');
+  const payload = verifyRefreshToken(refreshToken);
+  const user = await authRepository.findUserById(payload.userId);
+
+  if (!user || user.deletedAt || !user.hashedRefreshToken) {
+    throw new AuthenticationError("Refresh token is invalid.");
   }
+
+  const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.hashedRefreshToken);
+
+  if (!isRefreshTokenValid) {
+    throw new AuthenticationError("Refresh token is invalid.");
+  }
+
+  const newAccessToken = signAccessToken(user.id, user.role);
+  const newRefreshToken = signRefreshToken(user.id);
+  const newHashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
+
+  await authRepository.updateUserRefreshToken(user.id, newHashedRefreshToken);
+
+  return { newAccessToken, newRefreshToken };
 };
 
-const logout = async (userId: string) => {
-  await authRepository.updateUserRefreshToken(userId, null);
+const logout = async (refreshToken?: string): Promise<void> => {
+  if (!refreshToken) return;
+
+  let userId: string;
+
+  try {
+    userId = verifyRefreshToken(refreshToken).userId;
+  } catch (error) {
+    if (error instanceof AuthenticationError) return;
+    throw error;
+  }
+
+  const user = await authRepository.findUserById(userId);
+
+  if (!user?.hashedRefreshToken) return;
+
+  const isCurrentRefreshToken = await bcrypt.compare(refreshToken, user.hashedRefreshToken);
+
+  if (!isCurrentRefreshToken) return;
+
+  await authRepository.updateUserRefreshToken(user.id, null);
 };
 
-export default { signUpSuperAdmin, signUpViaInvite, login, refreshAccessToken, logout };
+export default {
+  signUpSuperAdmin,
+  signUpViaInvite,
+  login,
+  authenticateAccessToken,
+  refreshAccessToken,
+  logout,
+};

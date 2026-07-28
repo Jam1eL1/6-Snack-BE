@@ -19,12 +19,16 @@ const findUserByEmailWithCompany = async (email: string, tx?: Prisma.Transaction
  * Finds a user by ID and includes company info.
  * @param userId - User ID to look up
  * @param tx - Transaction client (optional)
- * @returns User with company info, or null
+ * @returns User with company info and without credential fields, or null
  */
 const findUserByIdWithCompany = async (userId: string, tx?: Prisma.TransactionClient) => {
   const client = tx || prisma;
   return client.user.findUnique({
     where: { id: userId },
+    omit: {
+      password: true,
+      hashedRefreshToken: true,
+    },
     include: { company: true },
   });
 };
@@ -74,10 +78,7 @@ const findInviteById = async (inviteId: string, tx?: Prisma.TransactionClient) =
  * @param tx - Transaction client (required)
  * @returns Created company info
  */
-const createCompany = async (
-  data: { name: string; bizNumber: string },
-  tx: Prisma.TransactionClient,
-) => {
+const createCompany = async (data: { name: string; bizNumber: string }, tx: Prisma.TransactionClient) => {
   return tx.company.create({
     data: {
       name: data.name,
@@ -127,7 +128,11 @@ const createUser = async (
  * @param tx - Transaction client (optional)
  * @returns Updated user info
  */
-const updateUserRefreshToken = async (userId: string, hashedRefreshToken: string | null, tx?: Prisma.TransactionClient) => {
+const updateUserRefreshToken = async (
+  userId: string,
+  hashedRefreshToken: string | null,
+  tx?: Prisma.TransactionClient,
+) => {
   const client = tx || prisma;
   return client.user.update({
     where: { id: userId },
