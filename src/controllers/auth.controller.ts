@@ -1,10 +1,9 @@
 import { RequestHandler } from "express";
 import { Role } from "../generated/prisma/client";
 import authService from "../services/auth.service";
-import { BadRequestError, ValidationError } from "../types/error";
+import { AuthenticationError, BadRequestError, ValidationError } from "../types/error";
 import { TInviteIdParamsDto } from "../dtos/invite.dto";
-import { ACCESS_TOKEN_COOKIE_MAX_AGE_MS, REFRESH_TOKEN_COOKIE_MAX_AGE_MS } from "../constants/auth.constants";
-
+import { clearAuthCookies, setAuthCookies } from "../utils/authCookie.utils";
 
 const signUpSuperAdmin: RequestHandler = async (req, res, next) => {
   try {
@@ -85,28 +84,20 @@ const signUpViaInvite: RequestHandler<TInviteIdParamsDto> = async (req, res, nex
 const login: RequestHandler = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
+
+    if (
+      typeof email !== "string" ||
+      typeof password !== "string" ||
+      !email.trim() ||
+      !password
+    ) {
       throw new BadRequestError("Email and password are both required.");
     }
+
     const { user, accessToken, refreshToken } = await authService.login(email, password);
-    const isProduction = process.env.NODE_ENV === "production";
-    const cookieDomain = isProduction ? ".5nack.site" : undefined;
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      domain: cookieDomain,
-      secure: isProduction,
-      sameSite: "lax",
-      maxAge: ACCESS_TOKEN_COOKIE_MAX_AGE_MS,
-      path: "/",
-    });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      domain: cookieDomain,
-      secure: isProduction,
-      sameSite: "lax",
-      maxAge: REFRESH_TOKEN_COOKIE_MAX_AGE_MS,
-      path: "/",
-    });
+
+    setAuthCookies(res, accessToken, refreshToken);
+
     console.log(`[Login success] User: ${user.email} (${user.role}), company: ${user.company.name})`);
     res.status(200).json({
       message: "Login completed successfully.",
@@ -129,32 +120,19 @@ const login: RequestHandler = async (req, res, next) => {
 
 const refreshToken: RequestHandler = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-      throw new BadRequestError("Refresh token was not provided. Please log in again.");
+    const currentRefreshToken = req.cookies.refreshToken;
+
+    if (!currentRefreshToken) {
+      throw new AuthenticationError("Refresh token was not provided.");
     }
-    const { newAccessToken, newRefreshToken, user } = await authService.refreshAccessToken(refreshToken);
-    const isProduction = process.env.NODE_ENV === "production";
-    const cookieDomain = isProduction ? ".5nack.site" : undefined;
-    res.cookie("accessToken", newAccessToken, {
-      httpOnly: true,
-      domain: cookieDomain,
-      secure: isProduction,
-      sameSite: "lax",
-      maxAge: ACCESS_TOKEN_COOKIE_MAX_AGE_MS,
-      path: "/",
-    });
-    res.cookie("refreshToken", newRefreshToken, {
-      httpOnly: true,
-      domain: cookieDomain,
-      secure: isProduction,
-      sameSite: "lax",
-      maxAge: REFRESH_TOKEN_COOKIE_MAX_AGE_MS,
-      path: "/",
-    });
-    console.log(`[Token refresh success] User: ${user.email}`);
+
+    const { newAccessToken, newRefreshToken } = await authService.refreshAccessToken(currentRefreshToken);
+
+    setAuthCookies(res, newAccessToken, newRefreshToken);
+
     res.status(200).json({ message: "A new access token has been issued." });
   } catch (error) {
+    clearAuthCookies(res);
     console.error("[Token refresh error]", error);
     next(error);
   }
@@ -162,29 +140,11 @@ const refreshToken: RequestHandler = async (req, res, next) => {
 
 const logout: RequestHandler = async (req, res, next) => {
   try {
-    if (!req.user) {
-      throw new BadRequestError("User is not authenticated.");
-    }
-    await authService.logout(req.user.id);
-    const isProduction = process.env.NODE_ENV === "production";
-    const cookieDomain = isProduction ? ".5nack.site" : undefined;
-    res.clearCookie("accessToken", {
-      httpOnly: true,
-      domain: cookieDomain,
-      secure: isProduction,
-      sameSite: "lax",
-      path: "/",
-    });
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      domain: cookieDomain,
-      secure: isProduction,
-      sameSite: "lax",
-      path: "/",
-    });
-    console.log(`[Logout success] User: ${req.user.email}`);
-    res.status(200).json({ message: "Logged out successfully." });
+    await authService.logout(req.cookies.refreshToken);
+    clearAuthCookies(res);
+    res.status(204).send();
   } catch (error) {
+    clearAuthCookies(res);
     console.error("[Logout error]", error);
     next(error);
   }

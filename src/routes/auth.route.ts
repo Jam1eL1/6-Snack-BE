@@ -1,5 +1,4 @@
 import { Router } from "express";
-import authenticateToken from "../middlewares/jwtAuth.middleware";
 import authController from "../controllers/auth.controller";
 
 const authRouter = Router();
@@ -56,9 +55,9 @@ authRouter.post("/refresh-token", authController.refreshToken);
 /**
  * User logout route.
  * @route POST /auth/logout
- * @returns {object} - Success message
- * @throws {AppError} - Unauthenticated user or error during logout
+ * @returns {void} - 204 response after clearing authentication cookies
+ * @throws {AppError} - Unexpected error during server-side token invalidation
  */
-authRouter.post("/logout", authenticateToken, authController.logout);
+authRouter.post("/logout", authController.logout);
 
 export default authRouter;
