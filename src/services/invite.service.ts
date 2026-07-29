@@ -55,7 +55,6 @@ const createInvite = async (
   const existingActiveInvite = await inviteRepository.findActiveInviteByEmail(email);
   if (existingActiveInvite) {
     await inviteRepository.deleteInviteById(existingActiveInvite.id);
-    console.log(`[Existing Invite Deleted] Email: ${email}, Invite ID: ${existingActiveInvite.id}`);
   }
 
   const newInvite = await inviteRepository.createInvite({
@@ -72,7 +71,6 @@ const createInvite = async (
 
   try {
     await sendInviteEmail(email, name, inviteLink, role, newInvite.expiresAt);
-    console.log(`[Invite Created and Email Sent Successfully] Email: ${email}, Invite ID: ${newInvite.id}`);
     return {
       message: "The invite link was successfully created and the email was sent.",
       inviteId: newInvite.id,
@@ -81,7 +79,7 @@ const createInvite = async (
       emailSent: true,
     };
   } catch (emailError) {
-    console.error("[Email Sending Failed]", emailError);
+    console.error("Failed to send invite email:", emailError);
     return {
       message: "The invite link was created, but email sending failed.",
       inviteId: newInvite.id,

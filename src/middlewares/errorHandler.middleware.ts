@@ -3,7 +3,7 @@ import { ErrorRequestHandler } from "express";
 const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
   let status = error.code ?? 500;
 
-  // Prisma 에러 처리
+  // Handle Prisma errors
   if (error.code === "P2002") {
     status = 409; // Conflict
   } else if (error.code === "P2025") {

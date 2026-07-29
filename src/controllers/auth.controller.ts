@@ -24,9 +24,6 @@ const signUpSuperAdmin: RequestHandler = async (req, res, next) => {
     const newUser = transactionResult.user;
     const registeredCompany = transactionResult.company;
     const monthlyBudget = transactionResult.monthlyBudget;
-    console.log(
-      `[Sign-up success] New SUPER_ADMIN user: ${newUser.email}, company: ${registeredCompany.name}, budget created: ${monthlyBudget.year}-${monthlyBudget.month}`,
-    );
     res.status(201).json({
       message: "Super admin sign-up completed successfully.",
       user: {
@@ -48,7 +45,6 @@ const signUpSuperAdmin: RequestHandler = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.error("[Sign-up error]", error);
     next(error);
   }
 };
@@ -65,7 +61,6 @@ const signUpViaInvite: RequestHandler<TInviteIdParamsDto> = async (req, res, nex
       throw new ValidationError("Password and password confirmation do not match.");
     }
     const newUser = await authService.signUpViaInvite(inviteId, password);
-    console.log(`[Invite sign-up success] New user: ${newUser.email} (${newUser.role})`);
     res.status(201).json({
       message: "Sign-up completed successfully.",
       user: {
@@ -76,7 +71,6 @@ const signUpViaInvite: RequestHandler<TInviteIdParamsDto> = async (req, res, nex
       },
     });
   } catch (error) {
-    console.error("[Invite sign-up error]", error);
     next(error);
   }
 };
@@ -98,7 +92,6 @@ const login: RequestHandler = async (req, res, next) => {
 
     setAuthCookies(res, accessToken, refreshToken);
 
-    console.log(`[Login success] User: ${user.email} (${user.role}), company: ${user.company.name})`);
     res.status(200).json({
       message: "Login completed successfully.",
       user: {
@@ -113,7 +106,6 @@ const login: RequestHandler = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.error("[Login error]", error);
     next(error);
   }
 };
@@ -133,7 +125,6 @@ const refreshToken: RequestHandler = async (req, res, next) => {
     res.status(200).json({ message: "A new access token has been issued." });
   } catch (error) {
     clearAuthCookies(res);
-    console.error("[Token refresh error]", error);
     next(error);
   }
 };
@@ -145,7 +136,6 @@ const logout: RequestHandler = async (req, res, next) => {
     res.status(204).send();
   } catch (error) {
     clearAuthCookies(res);
-    console.error("[Logout error]", error);
     next(error);
   }
 };

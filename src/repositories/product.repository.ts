@@ -7,7 +7,7 @@ import type {
   TProductWithFavorite,
 } from "../types/product.types";
 
-// 전체 상품을 조건에 맞게 조회 (찜한 상품 여부 포함)
+// Get products matching the conditions, including favorite status
 const findManyAll = async (
   options: TProductQueryOptions = {},
   tx?: Prisma.TransactionClient,
@@ -66,7 +66,7 @@ const findManyAll = async (
   }));
 };
 
-// 인기 상품 전용 정렬 (찜한 상품 여부 포함)
+// Sort popular products, including favorite status
 const findManyAllPopular = async ({
   categoryIds,
   skip = 0,
@@ -115,7 +115,7 @@ const findManyAllPopular = async ({
   }));
 };
 
-// 카테고리 + 하위 카테고리 ID 조회
+// Get category and child-category IDs
 const getCategory = async (
   category: number | undefined,
   client: Prisma.TransactionClient | typeof prisma,
@@ -130,7 +130,7 @@ const getCategory = async (
   return [category, ...subCategories.map((c) => c.id)];
 };
 
-// ID로 단일 상품 조회 (찜한 상품 여부 포함)
+// Get one product by ID, including favorite status
 const findById = async (
   id: number,
   userId?: string,
@@ -169,13 +169,13 @@ const findById = async (
   };
 };
 
-// 새로운 상품 생성
+// Create a product
 const create = (data: TCreateProductParams, tx?: Prisma.TransactionClient) => {
   const client = tx || prisma;
   return client.product.create({ data });
 };
 
-// 특정 사용자의 상품 목록 조회 (찜한 상품 여부 포함)
+// Get products for a specific user, including favorite status
 const findManyCreator = async (
   {
     creatorId,
@@ -220,7 +220,7 @@ const findManyCreator = async (
   }));
 };
 
-// 특정 사용자 상품 총 개수 조회
+// Count products for a specific user
 const countCreator = (creatorId: string, tx?: Prisma.TransactionClient) => {
   const client = tx || prisma;
   return client.product.count({
@@ -275,7 +275,7 @@ const update = async (id: number, data: Partial<TCreateProductParams>, tx?: Pris
     where: { id, deletedAt: null },
   });
 
-  if (!product) throw new Error("상품이 존재하지 않거나 이미 삭제되었습니다.");
+  if (!product) throw new Error("Product does not exist or has already been deleted.");
 
   return await client.product.update({
     where: { id },

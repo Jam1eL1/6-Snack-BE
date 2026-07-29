@@ -25,7 +25,7 @@ const getFavorites = async (userId: string, params: TGetFavoritesQuery) => {
 const createFavorite = async (userId: string, productId: number) => {
   const favorite = await favoriteRepository.getFavorite(userId, productId);
 
-  if (favorite) throw new BadRequestError("이미 찜한 상품입니다.");
+  if (favorite) throw new BadRequestError("Product is already in favorites.");
 
   return await favoriteRepository.createFavorite(userId, productId);
 };
@@ -33,7 +33,7 @@ const createFavorite = async (userId: string, productId: number) => {
 const deleteFavorite = async (userId: string, productId: number) => {
   const favorite = await favoriteRepository.getFavorite(userId, productId);
 
-  if (!favorite) throw new BadRequestError("이미 찜 해제한 상품입니다.");
+  if (!favorite) throw new BadRequestError("Product has already been removed from favorites.");
 
   return await favoriteRepository.deleteFavorite(userId, productId);
 };

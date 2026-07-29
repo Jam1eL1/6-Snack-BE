@@ -2,7 +2,7 @@ import { Product } from "../generated/prisma/client";
 
 export type TSortOption = "latest" | "popular" | "low" | "high";
 
-// 상품 쿼리 옵션
+// Product query options
 export type TProductQueryOptions = {
   sort?: TSortOption;
   category?: number;
@@ -14,12 +14,12 @@ export type TProductQueryOptions = {
   userId?: string;
 };
 
-// 내부 확장 옵션
+// Internal extension options
 export type TExtendedProductQueryOptions = TProductQueryOptions & {
   categoryIds?: number[];
 };
 
-// 찜한 상품 여부가 포함된 상품 타입
+// Product type with favorite status
 export type TProductWithFavorite = Product & {
   isFavorite: boolean;
   category: {
@@ -34,12 +34,12 @@ export type TProductWithFavorite = Product & {
   };
 };
 
-// 판매 수 포함된 상품
+// Product with sales count
 export type TProductSaleCount = Product & {
   saleCount: number;
 };
 
-// 크리에이터 관련 상품 쿼리
+// Creator product query
 export type TCreatorQueryOptions = {
   creatorId: string;
   skip?: number;
@@ -51,7 +51,7 @@ export type TCreatorQueryOptions = {
   userId?: string;
 };
 
-// 상품 생성 파라미터
+// Product creation parameters
 export type TCreateProductParams = {
   name: string;
   price: number;
@@ -61,31 +61,31 @@ export type TCreateProductParams = {
   creatorId: string;
 };
 
-// 전체 카테고리 (DB 조회 시)
+// Complete category returned from the database
 export type TCategory = {
   id: number;
   name: string;
   parentId: number | null;
 };
 
-// 대분류
+// Parent category
 export type TParentCategory = {
   id: number;
   name: string;
 };
 
-// 소분류
+// Child category
 export type TChildCategory = {
   id: number;
   name: string;
 };
 
-// 대분류 + 소분류 트리 구조
+// Parent and child category tree
 export type TCategoryTreeNode = TParentCategory & {
   children: TChildCategory[];
 };
 
-// 프론트 UI용: 대분류 배열 + 이름 기반 소분류 맵
+// Frontend UI shape: parent categories and child categories grouped by name
 export type TCategoryMap = {
   parentCategory: TParentCategory[];
   childrenCategory: Record<string, TChildCategory[]>;

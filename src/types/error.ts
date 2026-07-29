@@ -40,21 +40,21 @@ export class ForbiddenError extends AppError {
 
 export class NotFoundError extends AppError {
   constructor(message: string, data?: any) {
-    super(message, 404, data); // 404은 기본값
+    super(message, 404, data);
     this.name = "NotFoundError";
   }
 }
 
 export class ValidationError extends AppError {
   constructor(message: string, data?: any) {
-    super(message, 422, data); // 422는 기본값
+    super(message, 422, data);
     this.name = "ValidationError";
   }
 }
 
 export class ServerError extends AppError {
   constructor(message: string, data?: any) {
-    super(message, 500, data); // 500은 기본값
+    super(message, 500, data);
     this.name = "ServerError";
   }
 }

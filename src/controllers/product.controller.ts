@@ -31,7 +31,7 @@ const uploadProductImageAndGetUrl = async (file: Express.Multer.File) => {
   }
 };
 
-//상품등록
+// Create a product
 const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res) => {
   try {
     const { name, price, linkUrl, categoryId } = req.body;
@@ -74,7 +74,7 @@ const createProduct: RequestHandler<{}, {}, TCreateProductDto> = async (req, res
   }
 };
 
-//상품 조회
+// Get products
 const getProducts: RequestHandler<{}, {}, {}, TGetProductsQueryDto> = async (req, res, next) => {
   try {
     const { sort = "latest", category, cursor, limit } = req.query;
@@ -106,7 +106,7 @@ const getProducts: RequestHandler<{}, {}, {}, TGetProductsQueryDto> = async (req
   }
 };
 
-// 유저가 등록한 상품 목록
+// Get products created by the current user
 const getMyProducts: RequestHandler<{}, {}, {}, TGetMyProductsQueryDto> = async (req, res, next) => {
   try {
     const creatorId = req.user?.id;
@@ -157,7 +157,7 @@ const getMyProducts: RequestHandler<{}, {}, {}, TGetMyProductsQueryDto> = async 
   }
 };
 
-//상품 상세 페이지
+// Get product details
 export const getProductDetail: RequestHandler<TProductIdParamsDto> = async (req, res, next) => {
   try {
     const id = parseNumberOrThrow(req.params.id, "Product ID");
@@ -170,7 +170,7 @@ export const getProductDetail: RequestHandler<TProductIdParamsDto> = async (req,
   }
 };
 
-//상품 수정
+// Update a product
 export const updateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdateProductDto> = async (req, res, next) => {
   try {
     const id = parseNumberOrThrow(req.params.id, "Product ID");
@@ -213,7 +213,7 @@ export const updateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdateProdu
   }
 };
 
-// 상품 수정 어드민
+// Update a product as an administrator
 export const forceUpdateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdateProductDto> = async (
   req,
   res,
@@ -265,10 +265,10 @@ export const forceUpdateProduct: RequestHandler<TProductIdParamsDto, {}, TUpdate
   }
 };
 
-//상품 삭제
+// Delete a product
 export const deleteProduct: RequestHandler<{ id: string }> = async (req, res, next) => {
   try {
-    const productId = parseNumberOrThrow(req.params.id, "상품 ID");
+    const productId = parseNumberOrThrow(req.params.id, "product ID");
     const userId = req.user?.id;
 
     const product = await productService.getProductById(productId);
@@ -288,10 +288,10 @@ export const deleteProduct: RequestHandler<{ id: string }> = async (req, res, ne
   }
 };
 
-//상품 삭제 어드민
+// Delete a product as an administrator
 export const forceDeleteProduct: RequestHandler<{ id: string }> = async (req, res, next) => {
   try {
-    const productId = parseNumberOrThrow(req.params.id, "상품 ID");
+    const productId = parseNumberOrThrow(req.params.id, "product ID");
     const userRole = req.user?.role;
 
     const admin = userRole === Role.ADMIN || userRole === Role.SUPER_ADMIN;

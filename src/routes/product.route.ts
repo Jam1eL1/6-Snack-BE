@@ -7,7 +7,7 @@ const productRouter = Router();
 
 productRouter.get("/category", productController.getCategoryTree);
 
-// 상품 등록
+// Create a product
 productRouter.post(
   "/",
   authenticateToken,
@@ -15,28 +15,28 @@ productRouter.post(
   productController.createProduct,
 );
 
-// 상품 상세 조회
+// Get product details
 productRouter.get(
   "/:id",
   authenticateToken,
   productController.getProductDetail,
 );
 
-// 상품 수정
+// Update a product
 productRouter.patch(
   "/:id",
   authenticateToken,
   productController.updateProduct,
 );
 
-// 상품 삭제
+// Delete a product
 productRouter.delete(
   "/:id",
   authenticateToken,
   productController.deleteProduct,
 );
 
-// 상품 리스트 조회
+// Get products
 productRouter.get("/", authenticateToken, productController.getProducts);
 
 export default productRouter;

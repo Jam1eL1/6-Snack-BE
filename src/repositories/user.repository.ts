@@ -1,11 +1,11 @@
 import prisma from "../config/prisma";
 import { UserRole } from "../dtos/user.dto";
 
-// 현재 존재하는 회원인지 확인
+// Check whether the user currently exists
 const findActiveUserById = async (id: string) => {
   return await prisma.user.findFirst({
     where: { id, deletedAt: null },
-    // 비밀번호, refreshToken 정보 제외
+    // Exclude password and refresh-token data
     select: {
       id: true,
       email: true,
@@ -18,7 +18,7 @@ const findActiveUserById = async (id: string) => {
   });
 };
 
-// 유저 삭제 (soft delete)
+// Soft-delete a user
 const deleteUser = async (id: string) => {
   return await prisma.user.update({
     where: { id },
@@ -26,7 +26,7 @@ const deleteUser = async (id: string) => {
   });
 };
 
-// 유저 권한 업데이트
+// Update a user role
 const updateUserRole = async (id: string, role: UserRole) => {
   return await prisma.user.update({
     where: { id },
@@ -43,7 +43,7 @@ const updateUserRole = async (id: string, role: UserRole) => {
   });
 };
 
-// 유저 비밀번호 업데이트
+// Update a user password
 const updatePassword = async (id: string, hashedPassword: string) => {
   return await prisma.user.update({
     where: { id },
@@ -60,23 +60,23 @@ const updatePassword = async (id: string, hashedPassword: string) => {
   });
 };
 
-// 유저리스트 조회
+// Get users
 const findUsersByCompanyId = async (companyId: number, name?: string, cursor?: string, limit: number = 5) => {
   const whereClause = {
     companyId: companyId,
     role: {
-      not: "SUPER_ADMIN" as const, // 최고 관리자는 유저 목록에서 제외함
+      not: "SUPER_ADMIN" as const, // Exclude super administrators from the user list
     },
     deletedAt: null,
     ...(name && {
       name: {
         contains: name,
-        mode: "insensitive" as const, // 대소문자 구분 x
+        mode: "insensitive" as const, // Match without case sensitivity
       },
     }),
     ...(cursor && {
       id: {
-        lt: cursor, // cursor보다 작은 ID (이전 페이지)
+        lt: cursor, // IDs before the cursor
       },
     }),
   };
@@ -92,7 +92,7 @@ const findUsersByCompanyId = async (companyId: number, name?: string, cursor?: s
     take: limit + 1,
   });
 
-  // 다음 페이지 존재 여부 확인
+  // Check whether a next page exists
   const hasNext = users.length > limit;
   const actualUsers = hasNext ? users.slice(0, limit) : users;
 
@@ -103,7 +103,7 @@ const findUsersByCompanyId = async (companyId: number, name?: string, cursor?: s
   };
 };
 
-// 이전 페이지 확인용 (현재 커서보다 큰 ID가 있는지)
+// Check whether a previous page exists
 const hasPreviousPage = async (companyId: number, cursor: string, name?: string) => {
   const count = await prisma.user.count({
     where: {
@@ -119,7 +119,7 @@ const hasPreviousPage = async (companyId: number, cursor: string, name?: string)
         },
       }),
       id: {
-        gt: cursor, // cursor보다 큰 ID
+        gt: cursor, // IDs after the cursor
       },
     },
   });
@@ -127,7 +127,7 @@ const hasPreviousPage = async (companyId: number, cursor: string, name?: string)
   return count > 0;
 };
 
-// userId로 회사 포함 유저 조회
+// Get a user and company by user ID
 const findUserWithCompanyById = async (id: string) => {
   return await prisma.user.findUnique({
     where: { id },
@@ -143,5 +143,5 @@ export default {
   updatePassword,
   findUsersByCompanyId,
   hasPreviousPage,
-  findUserWithCompanyById, // 추가
+  findUserWithCompanyById,
 };

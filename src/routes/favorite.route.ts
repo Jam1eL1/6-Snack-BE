@@ -4,17 +4,17 @@ import favoriteController from "../controllers/favorite.controller";
 
 const favoriteRouter = Router();
 
-// 찜 목록 조회
+// Get favorites
 favoriteRouter.get("/", authenticateToken, favoriteController.getFavorites);
 
-// 찜하기
+// Add a favorite
 favoriteRouter.post(
   "/:productId",
   authenticateToken,
   favoriteController.createFavorite,
 );
 
-// 찜 해제하기
+// Remove a favorite
 favoriteRouter.delete(
   "/:productId",
   authenticateToken,

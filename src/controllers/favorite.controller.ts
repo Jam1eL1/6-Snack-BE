@@ -11,7 +11,7 @@ const getFavorites: RequestHandler<{}, {}, {}, TGetFavoritesQueryDto> = async (r
   const cursor = req.query.cursor ? Number(req.query.cursor) : undefined;
   const limit = parseNumberOrThrow(req.query.limit ?? "6", "limit");
 
-  if (!user) throw new AuthenticationError("유저 정보가 존재하지 않습니다.");
+  if (!user) throw new AuthenticationError("User information is unavailable.");
 
   const favorites = await favoriteService.getFavorites(user.id, { cursor, limit });
 
@@ -23,7 +23,7 @@ const createFavorite: RequestHandler<TFavoriteParamsDto> = async (req, res, next
   const user = req.user;
   const productId = parseNumberOrThrow(req.params.productId, "productId");
 
-  if (!user) throw new AuthenticationError("유저 정보가 존재하지 않습니다.");
+  if (!user) throw new AuthenticationError("User information is unavailable.");
 
   const favorite = await favoriteService.createFavorite(user.id, productId);
 
@@ -34,7 +34,7 @@ const createFavorite: RequestHandler<TFavoriteParamsDto> = async (req, res, next
 const deleteFavorite: RequestHandler<TFavoriteParamsDto> = async (req, res, next) => {
   const user = req.user;
 
-  if (!user) throw new AuthenticationError("유저 정보가 존재하지 않습니다.");
+  if (!user) throw new AuthenticationError("User information is unavailable.");
 
   const productId = parseNumberOrThrow(req.params.productId, "productId");
 

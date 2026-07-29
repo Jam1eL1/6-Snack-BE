@@ -46,7 +46,7 @@ export const uploadImageToS3 = async (file: Express.Multer.File) => {
 // export const getCloudFrontUrl = (s3Key: string) => {
 //   const cloudFrontDomain = process.env.CLOUDFRONT_DOMAIN;
 //   if (!cloudFrontDomain) {
-//     throw new Error("CLOUDFRONT_DOMAIN 환경변수가 설정되지 않았습니다.");
+//     throw new Error("CLOUDFRONT_DOMAIN is not configured.");
 //   }
 //   return `https://${cloudFrontDomain}/${s3Key}`;
 // };

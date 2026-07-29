@@ -26,9 +26,7 @@ const sendEmail = async (options: TEmailOptions): Promise<void> => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`[Email Sent Successfully] Recipient: ${options.to}`);
-  } catch (error) {
-    console.error("[Email Sending Failed]", error);
+  } catch {
     throw new Error("Failed to send email.");
   }
 };

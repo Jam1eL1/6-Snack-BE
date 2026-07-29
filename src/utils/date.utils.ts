@@ -1,6 +1,6 @@
 /**
- * 현재 년도와 월을 가져오는 유틸 함수
- * @returns {object} 현재 년도와 월
+ * Gets the current year and month.
+ * @returns {object} Current year and month.
  */
 export const getCurrentYearAndMonth = () => {
   const currentDate = new Date();
@@ -11,10 +11,10 @@ export const getCurrentYearAndMonth = () => {
 };
 
 /**
- * 날짜가 만료되었는지 확인하는 유틸 함수
- * @param expiresAt 만료 날짜
- * @returns {boolean} 만료 여부
+ * Checks whether a date has expired.
+ * @param expiresAt Expiration date.
+ * @returns {boolean} Whether the date has expired.
  */
 export const isExpired = (expiresAt: Date): boolean => {
   return new Date() > expiresAt;
-}; 
+};

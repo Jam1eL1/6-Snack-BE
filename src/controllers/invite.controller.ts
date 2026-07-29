@@ -9,7 +9,6 @@ const createInvite: RequestHandler<{}, any, TCreateInviteRequestDto> = async (re
     const result = await inviteService.createInvite(req.body, req.protocol, process.env.SIGNUP_HOST);
     res.status(201).json(result);
   } catch (error) {
-    console.error("[Invite Creation Error]", error);
     next(error);
   }
 };

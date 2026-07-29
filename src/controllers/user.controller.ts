@@ -4,7 +4,7 @@ import { RequestHandler } from "express";
 
 
 
-// 유저 프로필 조회
+// Get a user profile
 const getUserInfo: RequestHandler<TUserIdParamsDto> = async (req, res, next) => {
   try {
     const userId = req.params.userId;
@@ -17,7 +17,7 @@ const getUserInfo: RequestHandler<TUserIdParamsDto> = async (req, res, next) => 
   }
 };
 
-// 유저 탈퇴
+// Delete a user
 const deleteUser: RequestHandler<TUserIdParamsDto> = async (req, res, next) => {
   try {
     const userId = req.params.userId;
@@ -30,7 +30,7 @@ const deleteUser: RequestHandler<TUserIdParamsDto> = async (req, res, next) => {
   }
 };
 
-// 유저 권한 변경
+// Update a user role
 const updateRole: RequestHandler<TUserIdParamsDto, any, TUpdateRoleDto> = async (req, res, next) => {
   try {
     const userId = req.params.userId;
@@ -57,7 +57,7 @@ const updatePassword: RequestHandler<TUserIdParamsDto, any, TUpdatePasswordDto> 
   }
 };
 
-//  유저 조회
+// Get users
 const getUsersByCompany: RequestHandler<{}, any, {}, TGetUsersQueryDto> = async (req, res, next) => {
   try {
     const currentUser = req.user!;
@@ -68,11 +68,11 @@ const getUsersByCompany: RequestHandler<{}, any, {}, TGetUsersQueryDto> = async 
   }
 };
 
-// 내 정보 조회
+// Get the current user
 const getMe: RequestHandler = async (req, res, next) => {
   try {
     if (!req.user) {
-      throw new Error("사용자 정보를 찾을 수 없습니다. 다시 로그인해 주세요.");
+      throw new Error("User information was not found. Please log in again.");
     }
     const user = await userService.getMe(req.user.id);
     res.status(200).json({ user });
