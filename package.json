@@ -11,7 +11,8 @@
     "dev": "ts-node-dev --respawn src/server.ts",
     "build": "tsc",
     "ssh": "node --env-file=.env scripts/sshTunnel.js",
-    "cron": "node dist/cron/autoCreateMonthlyBudget.js"
+    "cron": "node dist/cron/autoCreateMonthlyBudget.js",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",

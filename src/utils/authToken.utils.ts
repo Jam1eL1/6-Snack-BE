@@ -4,16 +4,6 @@ import { Role } from "../generated/prisma/client";
 import { ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN } from "../constants/auth.constants";
 import { TAccessTokenPayload, TRefreshTokenPayload } from "../types/authToken.type";
 import { AuthenticationError } from "../types/error";
-/**
- * TODO
- * 1. Validate token secrets
- * 2. Sign the access token
- * 3. Sign the refresh token
- * 4. Build a token verification helper to share
- * 5. Build an accessToken verifying function
- * 6. BUild a refreshToken verifying function
- * 7. Export functions
- */
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
