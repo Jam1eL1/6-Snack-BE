@@ -7,13 +7,11 @@ import autoCreateMonthlyBudget from "./cron/autoCreateMonthlyBudget";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import { isSentryEnabled } from "./instrument";
-import * as Sentry from "@sentry/node";
 
 const app: Application = express();
 const isProduction = process.env.NODE_ENV === "production";
 const allowedOrigins = isProduction
-  ? ["https://5nack.site"]
+  ? ["https://sn5ck.com"]
   : ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://localhost:8080"];
 
 app.use(helmet());
@@ -42,10 +40,6 @@ app.get("/health", (req: Request, res: Response) => {
 app.use("/", indexRouter);
 
 autoCreateMonthlyBudget.start();
-
-if (isSentryEnabled) {
-  Sentry.setupExpressErrorHandler(app);
-}
 
 app.use(errorHandler);
 
