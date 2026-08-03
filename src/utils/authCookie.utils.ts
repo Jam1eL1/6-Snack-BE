@@ -7,7 +7,7 @@ const baseCookieOptions: CookieOptions = {
   httpOnly: true,
   secure: isProduction,
   sameSite: "lax",
-  domain: isProduction ? ".sn5ck.com" : undefined,
+  domain: isProduction ? ".sn8ck.com" : undefined,
 };
 
 const accessTokenCookieOptions: CookieOptions = {

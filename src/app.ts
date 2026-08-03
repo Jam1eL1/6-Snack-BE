@@ -11,7 +11,7 @@ import morgan from "morgan";
 const app: Application = express();
 const isProduction = process.env.NODE_ENV === "production";
 const allowedOrigins = isProduction
-  ? ["https://sn5ck.com"]
+  ? ["https://sn8ck.com"]
   : ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://localhost:8080"];
 
 app.use(helmet());
