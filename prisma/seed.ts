@@ -161,7 +161,7 @@ async function main() {
   });
 
   // Get the IDs of the created Products
-  const createdProducts = await prisma.product.findMany();
+  const createdProducts = await prisma.product.findMany({ orderBy: { id: "asc" } });
   const productIdMap = new Map(); // Original index -> actual ID mapping
   createdProducts.forEach((product, index) => {
     productIdMap.set(index + 1, product.id); // Map using 1-based index
@@ -180,19 +180,21 @@ async function main() {
   // 7. Insert Order data
   console.log("📋 Seeding orders...");
 
-  await prisma.order.createMany({
-    data: orderMockData.map((order) => ({
-      ...order,
-      companyId: order.companyId === 1 ? firstCompanyId : secondCompanyId,
-      status: order.status as any,
-      deliveryFee: order.deliveryFee,
-      productsPriceTotal: order.productsPriceTotal,
-    })),
-    skipDuplicates: true,
-  });
+  const createdOrders = [];
+  for (const order of orderMockData) {
+    const createdOrder = await prisma.order.create({
+      data: {
+        ...order,
+        companyId: order.companyId === 1 ? firstCompanyId : secondCompanyId,
+        status: order.status as any,
+        deliveryFee: order.deliveryFee,
+        productsPriceTotal: order.productsPriceTotal,
+      },
+    });
+    createdOrders.push(createdOrder);
+  }
 
-  // Get the IDs of the created Orders
-  const createdOrders = await prisma.order.findMany();
+  // Map mock order indexes to the exact IDs returned during insertion.
   const orderIdMap = new Map(); // Original index -> actual ID mapping
   createdOrders.forEach((order, index) => {
     orderIdMap.set(index + 1, order.id); // Map using 1-based index

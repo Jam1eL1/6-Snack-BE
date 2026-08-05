@@ -1,34 +1,30 @@
 export const favoriteMockData = [
-  {
-    userId: "user-1", // Alex Toporowski (SAP)
-    productId: 3, // Chips Ahoy! Original Cookies
-  },
-  {
-    userId: "user-1",
-    productId: 4, // Oreo Double Stuf Cookies
-  },
-  {
-    userId: "user-2", // Andrew Huberman (SAP)
-    productId: 1, // Lay’s Classic Potato Chips
-  },
-  {
-    userId: "user-2",
-    productId: 7, // Haribo Goldbears Gummy Candy
-  },
-  {
-    userId: "user-3", // Elizabeth Holmes (SAP)
-    productId: 5, // Hershey’s Milk Chocolate Bar
-  },
-  {
-    userId: "user-3",
-    productId: 10, // Pepsi 500ml
-  },
-  {
-    userId: "user-1-2", // Jamie Lee (RBC) - Adding a favorite for the second company user
-    productId: 6, // Lindt 70% Dark Chocolate
-  },
-  {
-    userId: "user-1-2",
-    productId: 8, // Mentos Mint Roll
-  },
+  { userId: "user-1", productId: 3, createdAt: new Date("2026-01-08T10:00:00Z") },
+  { userId: "user-1", productId: 4, createdAt: new Date("2026-02-14T12:30:00Z") },
+  { userId: "user-2", productId: 1, createdAt: new Date("2026-01-12T09:15:00Z") },
+  { userId: "user-2", productId: 7, createdAt: new Date("2026-03-05T14:20:00Z") },
+  { userId: "user-3", productId: 5, createdAt: new Date("2026-02-09T11:45:00Z") },
+  { userId: "user-3", productId: 10, createdAt: new Date("2026-03-18T16:10:00Z") },
+  { userId: "user-3", productId: 14, createdAt: new Date("2026-06-03T08:40:00Z") },
+  { userId: "user-4", productId: 2, createdAt: new Date("2026-03-22T13:25:00Z") },
+  { userId: "user-4", productId: 9, createdAt: new Date("2026-05-07T10:30:00Z") },
+  { userId: "user-4", productId: 13, createdAt: new Date("2026-07-02T15:00:00Z") },
+  { userId: "user-5", productId: 4, createdAt: new Date("2026-04-01T09:05:00Z") },
+  { userId: "user-5", productId: 8, createdAt: new Date("2026-05-12T12:15:00Z") },
+  { userId: "user-5", productId: 20, createdAt: new Date("2026-06-16T17:20:00Z") },
+  { userId: "user-6", productId: 16, createdAt: new Date("2026-04-18T14:00:00Z") },
+  { userId: "user-6", productId: 26, createdAt: new Date("2026-05-21T10:10:00Z") },
+  { userId: "user-6", productId: 27, createdAt: new Date("2026-07-08T11:35:00Z") },
+  { userId: "user-7", productId: 6, createdAt: new Date("2026-02-26T16:45:00Z") },
+  { userId: "user-7", productId: 15, createdAt: new Date("2026-06-20T09:30:00Z") },
+  { userId: "user-8", productId: 17, createdAt: new Date("2026-03-30T08:25:00Z") },
+  { userId: "user-8", productId: 19, createdAt: new Date("2026-07-11T13:55:00Z") },
+  { userId: "user-1-2", productId: 6, createdAt: new Date("2026-01-19T10:20:00Z") },
+  { userId: "user-1-2", productId: 8, createdAt: new Date("2026-04-23T15:40:00Z") },
+  { userId: "user-9", productId: 7, createdAt: new Date("2026-03-11T09:50:00Z") },
+  { userId: "user-9", productId: 18, createdAt: new Date("2026-06-25T14:35:00Z") },
+  { userId: "user-10", productId: 2, createdAt: new Date("2026-02-17T11:10:00Z") },
+  { userId: "user-10", productId: 14, createdAt: new Date("2026-05-29T16:25:00Z") },
+  { userId: "user-11", productId: 24, createdAt: new Date("2026-04-28T08:45:00Z") },
+  { userId: "user-11", productId: 25, createdAt: new Date("2026-07-17T12:05:00Z") },
 ];
