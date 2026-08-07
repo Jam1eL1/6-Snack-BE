@@ -284,8 +284,7 @@ const completePayment = async (
       throw new ConflictError("Order is no longer available to complete.");
     }
 
-    const { year, month, previousYear, previousMonth } = getDateForBudget();
-    const previousBudgetYear = month === "01" ? previousYear : year;
+    const { year, month, previousMonth, previousMonthYear } = getDateForBudget();
     let monthlyBudget = await budgetRepository.getMonthlyBudget(
       {
         companyId: command.companyId,
@@ -299,7 +298,7 @@ const completePayment = async (
       const previousBudget = await budgetRepository.getMonthlyBudget(
         {
           companyId: command.companyId,
-          year: previousBudgetYear,
+          year: previousMonthYear,
           month: previousMonth,
         },
         tx,

@@ -9,13 +9,13 @@ const createMonthlyBudget = async () => {
     return;
   }
 
-  const { year, month, previousMonth } = getDateForBudget();
+  const { year, month, previousMonth, previousMonthYear } = getDateForBudget();
 
   const monthlyBudgetData = await Promise.all(
     companies.map(async ({ id }) => {
       const previousMonthlyBudget = await budgetRepository.getMonthlyBudget({
         companyId: id,
-        year,
+        year: previousMonthYear,
         month: previousMonth,
       });
 

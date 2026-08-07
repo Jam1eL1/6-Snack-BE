@@ -6,10 +6,14 @@ import prisma from "../config/prisma";
 
 // Get budget and expense overview (ADMIN, SUPER_ADMIN)
 const getMonthlyBudget = async (companyId: MonthlyBudget["companyId"]) => {
-  const { year, month, previousYear, previousMonth } = getDateForBudget();
+  const { year, month, previousYear, previousMonth, previousMonthYear } = getDateForBudget();
 
   let currentBudget = await budgetRepository.getMonthlyBudget({ companyId, year, month });
-  const previousBudget = await budgetRepository.getMonthlyBudget({ companyId, year, month: previousMonth });
+  const previousBudget = await budgetRepository.getMonthlyBudget({
+    companyId,
+    year: previousMonthYear,
+    month: previousMonth,
+  });
   if (!currentBudget) {
     const defaultBudgetAmount = previousBudget?.monthlyBudget ?? 0;
     currentBudget = await budgetRepository.upsertMonthlyBudget({
