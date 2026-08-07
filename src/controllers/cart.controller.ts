@@ -32,7 +32,7 @@ const getMyCart: RequestHandler<{}, {}, {}, TGetMyCartQueryDto> = async (req, re
     const cart = await cartService.getMyCart(user.id, onlyChecked);
 
     if (user.role !== "USER") {
-      const budget = await budgetService.getMonthlyBudget(user.companyId);
+      const budget = await budgetService.getMonthlyBudget(user.companyId, user.companyId);
       res.json({
         cart,
         budget: {
