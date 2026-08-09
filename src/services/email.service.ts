@@ -33,7 +33,7 @@ const sendEmail = async (options: TEmailOptions): Promise<void> => {
 
 const generateInviteEmailTemplate = (name: string, inviteLink: string, role: string, expiresAt: Date): string => {
   const roleText = role === "ADMIN" ? "Admin" : "User";
-  const article = /^[aeiou]/i.test(roleText) ? "an" : "a";
+  const article = roleText === "Admin" ? "an" : "a";
   const formattedExpiresAt = expiresAt.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
