@@ -39,13 +39,13 @@ export const uploadImageToS3 = async (file: Express.Multer.File) => {
   }
 };
 
-// export const getCloudFrontUrl = (s3Key: string) => {
-//   const cloudFrontDomain = process.env.CLOUDFRONT_DOMAIN;
-//   if (!cloudFrontDomain) {
-//     throw new Error("CLOUDFRONT_DOMAIN is not configured.");
-//   }
-//   return `https://${cloudFrontDomain}/${s3Key}`;
-// };
+export const getCloudFrontUrl = (s3Key: string) => {
+  const cloudFrontDomain = process.env.CLOUDFRONT_DOMAIN;
+  if (!cloudFrontDomain) {
+    throw new Error("CLOUDFRONT_DOMAIN is not configured.");
+  }
+  return `https://${cloudFrontDomain}/${s3Key}`;
+};
 
 export const getS3URL = (s3Key: string) => {
   const bucketName = process.env.AWS_BUCKET_NAME;

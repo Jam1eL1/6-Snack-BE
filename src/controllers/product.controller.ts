@@ -8,7 +8,7 @@ import {
   NotFoundError,
   ServerError,
 } from "../types/error";
-import { getS3URL, uploadImageToS3 } from "../utils/s3";
+import { getCloudFrontUrl, uploadImageToS3 } from "../utils/s3";
 import { parseNumberOrThrow } from "../utils/parseNumberOrThrow";
 import {
   TCreateProductDto,
@@ -22,7 +22,7 @@ import { Role } from "../generated/prisma/client";
 const uploadProductImageAndGetUrl = async (file: Express.Multer.File) => {
   try {
     const s3Key = await uploadImageToS3(file);
-    return getS3URL(s3Key);
+    return getCloudFrontUrl(s3Key);
   } catch (error) {
     if (error instanceof Error) {
       throw new BadRequestError(error.message);
